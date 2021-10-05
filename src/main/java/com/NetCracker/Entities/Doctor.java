@@ -1,5 +1,6 @@
 package com.NetCracker.Entities;
 
-public class Doctor extends User
+public class Doctor
 {
+    //TODO - add doctor entity
 }

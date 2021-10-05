@@ -1,117 +1,60 @@
 package com.NetCracker.Entities;
 
+import com.NetCracker.Repositories.DoctorScheduleRepository;
+
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.TreeSet;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * This is a POJO class that represents schedule of a user (doctor or client).
- * Class consists of an appointment list and a reference to an appropriate user.
+ * This is a class that represents schedule of all doctors.
+ * This class is a singleton.
  */
 
-@Entity
-@Table(name = "schedule")
 public class Schedule
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(updatable = false, nullable = false)
-    @NotNull
-    private Integer id;
+    private static Schedule instance;
 
-    //This object is a TreeSet because we want to stored appointments in a chronological order
-    //Also get, remove and add operations are all common in our type of application.
-    @OneToMany(mappedBy = "schedule", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @NotNull
-    private TreeSet<Appointment> appointments;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinTable(name = "doctor_schedule_intervals_mapping", joinColumns =
+            {
+                @JoinColumn(name = "schedule_id", referencedColumnName = "id")
+            },
+            inverseJoinColumns =
+            {
+                @JoinColumn(name = "doctor_schedule_id", referencedColumnName = "id")
+            }
+            )
+    @MapKeyJoinColumn(name = "doctor_id", referencedColumnName = "id")
+    Map<Doctor, DoctorSchedule> doctorsSchedule;
 
-    @OneToOne(mappedBy = "User", cascade = CascadeType.ALL)
-    @NotNull
-    private User relatedTo;
+    public static Schedule getInstance()
+    {
+        if (instance == null)
+        {
+            instance = new Schedule();
+        }
+        return instance;
+    }
 
-    /**
-     * This constructor is to be used by Hibernate only
-     */
-    @Deprecated
     public Schedule()
-    {}
-
-    public Schedule(TreeSet<Appointment> appointments, User relatedTo)
     {
-        this.appointments = appointments;
-        this.relatedTo = relatedTo;
-        relatedTo.setSchedule(this);
+        doctorsSchedule = new HashMap<>();
     }
 
-    /**
-     * Creates a schedule that has no appointments yet.
-     * @param relatedTo defines a user whose schedule is constructed
-     */
-    public Schedule(User relatedTo)
+    public DoctorSchedule getDoctorSchedule(Doctor doctor)
     {
-        this.appointments = new TreeSet<>(Appointment.getChronologicalComparator());
-        this.relatedTo = relatedTo;
-        relatedTo.setSchedule(this);
+        return doctorsSchedule.get(doctor);
     }
 
-    /**
-     * This method is to be used by Hibernate only
-     * @param id is never updated in database
-     */
-    @Deprecated
-    public void setId(Integer id)
+    public Collection<DoctorSchedule> getAllDoctorSchedules()
     {
-        this.id = id;
+        return doctorsSchedule.values();
     }
 
-    public void setAppointments(TreeSet<Appointment> appointments)
+    public void addDoctorSchedule(Doctor doctor, DoctorSchedule schedule)
     {
-        this.appointments = appointments;
-    }
-
-    public void setRelatedTo(User relatedTo)
-    {
-        this.relatedTo = relatedTo;
-    }
-
-    public Integer getId()
-    {
-        return id;
-    }
-
-    public TreeSet<Appointment> getAppointments()
-    {
-        return appointments;
-    }
-
-    public User getRelatedTo()
-    {
-        return relatedTo;
-    }
-
-    /**
-     * Helper method to easily add an appointment to this schedule.
-     * Method takes care of a bidirectional association
-     * @param appointment - an object that needs to be added to this schedule.
-     */
-    public void addAppointment(Appointment appointment)
-    {
-        //TODO - refactor this to search through a collection only once
-        Appointment appointmentBeforeInserted = this.appointments.floor(appointment);
-        if (appointmentBeforeInserted != null && appointmentBeforeInserted.getAppointmentEnd().isAfter(appointment.getAppointmentStart()))
-        {
-            throw new IllegalArgumentException("Cannot assign appointment to a schedule. There already is an appointment " + appointmentBeforeInserted.getName() + " at " + appointment.getAppointmentStart());
-        }
-
-        Appointment appointmentAfterInserted = this.appointments.ceiling(appointment);
-        if (appointmentAfterInserted != null && appointmentAfterInserted.getAppointmentStart().isBefore(appointment.getAppointmentEnd()))
-        {
-            throw new IllegalArgumentException("Cannot assign appointment to a schedule. There already is an appointment " + appointmentAfterInserted.getName() + " at " + appointment.getAppointmentEnd());
-        }
-
-        this.appointments.add(appointment);
-        appointment.setSchedule(this);
+        doctorsSchedule.put(doctor, schedule);
     }
 }
