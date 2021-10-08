@@ -1,7 +1,7 @@
 package com.NetCracker.Services;
 
 import com.NetCracker.Entities.DoctorSchedule;
-import com.NetCracker.Entities.DoctorWorkingPattern;
+import com.NetCracker.Entities.DoctorSchedulePattern;
 import com.NetCracker.Entities.Schedule;
 import com.NetCracker.Entities.ScheduleStatus;
 import com.NetCracker.Repositories.DoctorScheduleRepository;
@@ -20,7 +20,7 @@ public class ScheduleMaintenanceService
     @Autowired
     private DoctorScheduleRepository doctorScheduleRepository;
 
-    public static DoctorWorkingPattern createCommonWorkingPattern()
+    public static DoctorSchedulePattern createCommonWorkingPattern()
     {
         List<ScheduleStatus> scheduleStatusList = new ArrayList<>();
 
@@ -34,10 +34,10 @@ public class ScheduleMaintenanceService
             scheduleStatusList.add(status);
         }
 
-        return new DoctorWorkingPattern(scheduleStatusList);
+        return new DoctorSchedulePattern(scheduleStatusList);
     }
 
-    public static void prolongScheduleByWorkingPattern(DoctorSchedule schedule, DoctorWorkingPattern pattern)
+    public static void prolongScheduleByWorkingPattern(DoctorSchedule schedule, DoctorSchedulePattern pattern)
     {
         pattern.getStatusList().forEach(status ->
         {
@@ -59,14 +59,25 @@ public class ScheduleMaintenanceService
         }
 
         Duration difference = Duration.between(schedule.getScheduleStartDate(), time);
+
         long hoursDifference = difference.toHours();
-        if (hoursDifference > (Integer.MAX_VALUE / 2) || hoursDifference * 2 > schedule.getIntervalStatusList().size())
+        long minutesAdditive = difference.toMinutes() % 60;
+
+        // Possible overflow is checked 6 strings below
+        long offsetInList = hoursDifference * 2;
+
+        if (minutesAdditive >= 15 && minutesAdditive < 45)
+        {
+            offsetInList++;
+        }
+
+        if (hoursDifference > (Integer.MAX_VALUE / 2 - 1) || offsetInList > schedule.getIntervalStatusList().size())
         {
             //param time point to the time that is after the last scheduled date
             return null;
         }
-        
-        return schedule.getIntervalStatusList().get((int) (hoursDifference * 2));
+
+        return schedule.getIntervalStatusList().get((int) offsetInList);
     }
 
     @Transactional

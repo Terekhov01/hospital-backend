@@ -4,8 +4,8 @@ import javax.persistence.Embeddable;
 import java.util.Objects;
 
 /**
- * This class represents status of a doctor in a time period (30 mins), compressed to a short number
- * 1st (the right bit of an integer) signals if a doctor is working or not
+ * This class represents status of a doctor in a time period (30 mins), compressed to a byte
+ * 1st (the right bit of a byte) signals if a doctor is working or not
  * 2nd signals if a doctor already has an assignment in this period of time
  * You may add more states
  */
@@ -13,7 +13,7 @@ import java.util.Objects;
 @Embeddable
 public class ScheduleStatus
 {
-    short status;
+    byte status;
 
     public ScheduleStatus()
     {
@@ -27,22 +27,22 @@ public class ScheduleStatus
         setBusy(isBusy);
     }
 
-    public short getStatus()
+    public byte getStatus()
     {
         return status;
     }
 
     public boolean getIsWorking()
     {
-        return (status & 1) == 0;
+        return (status & 1) == 1;
     }
 
     public boolean getIsBusy()
     {
-        return (status & 2) == 0;
+        return (status & (1 << 1)) == (1 << 1);
     }
 
-    public void setStatus(short status)
+    public void setStatus(byte status)
     {
         this.status = status;
     }
@@ -51,26 +51,26 @@ public class ScheduleStatus
     {
         if (value)
         {
-            status = (short) (status | 1);
+            status = (byte) (status | 1);
             return;
         }
 
-        //111111111111110 bin = 32766 dec
-        status = (short) (status & (Short.MAX_VALUE - 1));
+        //11111110 bin = 126 dec
+        status = (byte) (status & (Byte.MAX_VALUE - 1));
     }
 
     public void setBusy(boolean value)
     {
         if (!value)
         {
-            //111111111111101 bin = 32765 dec
-            status = (short) (status & (Short.MAX_VALUE - 1 << 1));
+            //11111101 bin = 125 dec
+            status = (byte) (status & (Byte.MAX_VALUE - (1 << 1)));
             return;
         }
 
         if (getIsWorking())
         {
-            status = (short) (status | 1 << 1);
+            status = (byte) (status | (1 << 1));
         }
         else
         {

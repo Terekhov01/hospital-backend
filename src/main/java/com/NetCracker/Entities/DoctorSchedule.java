@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Entity
+@Table(name = "doctor_schedule")
 public class DoctorSchedule
 {
     @Id
@@ -17,11 +18,14 @@ public class DoctorSchedule
     @NotNull
     private Long id;
 
-    //Always points to start of the day.
+    // Always points to start of the day.
     // Used LocalDateTime instead of LocalDate to avoid many type cast operations in business logic.
+    @NotNull
     LocalDateTime scheduleStartDate;
 
+    @NotNull
     @Embedded
+    @ElementCollection
     List<ScheduleStatus> intervalStatusList;
 
     /**

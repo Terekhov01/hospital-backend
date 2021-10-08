@@ -17,7 +17,7 @@ public class Schedule
     private static Schedule instance;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinTable(name = "doctor_schedule_intervals_mapping", joinColumns =
+    @JoinTable/*(name = "doctor_schedule_mapping", joinColumns =
             {
                 @JoinColumn(name = "schedule_id", referencedColumnName = "id")
             },
@@ -25,8 +25,8 @@ public class Schedule
             {
                 @JoinColumn(name = "doctor_schedule_id", referencedColumnName = "id")
             }
-            )
-    @MapKeyJoinColumn(name = "doctor_id", referencedColumnName = "id")
+            )*/
+    //@MapKeyJoinColumn(name = "doctor_id", referencedColumnName = "id")
     Map<Doctor, DoctorSchedule> doctorsSchedule;
 
     public static Schedule getInstance()
