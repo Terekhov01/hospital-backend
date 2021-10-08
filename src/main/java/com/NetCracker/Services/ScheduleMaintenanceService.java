@@ -80,12 +80,6 @@ public class ScheduleMaintenanceService
         return schedule.getIntervalStatusList().get((int) offsetInList);
     }
 
-    @Transactional
-    public void forcePersistSchedule(Schedule schedule)
-    {
-        doctorScheduleRepository.saveAll(schedule.getAllDoctorSchedules());
-    }
-
     @Override
     public String toString()
     {
