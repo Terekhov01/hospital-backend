@@ -11,52 +11,52 @@ import java.util.Objects;
  */
 
 @Embeddable
-public class ScheduleStatus
+public class ScheduleState
 {
-    byte status;
+    private byte state;
 
-    public ScheduleStatus()
+    public ScheduleState()
     {
-        status = 0;
+        state = 0;
     }
 
-    public ScheduleStatus(boolean isWorking, boolean isBusy)
+    public ScheduleState(boolean isWorking, boolean isBusy)
     {
-        status = 0;
+        state = 0;
         setWorking(isWorking);
         setBusy(isBusy);
     }
 
-    public byte getStatus()
+    public byte getState()
     {
-        return status;
+        return state;
     }
 
     public boolean getIsWorking()
     {
-        return (status & 1) == 1;
+        return (state & 1) == 1;
     }
 
     public boolean getIsBusy()
     {
-        return (status & (1 << 1)) == (1 << 1);
+        return (state & (1 << 1)) == (1 << 1);
     }
 
-    public void setStatus(byte status)
+    public void setState(byte state)
     {
-        this.status = status;
+        this.state = state;
     }
 
     public void setWorking(boolean value)
     {
         if (value)
         {
-            status = (byte) (status | 1);
+            state = (byte) (state | 1);
             return;
         }
 
         //11111110 bin = 126 dec
-        status = (byte) (status & (Byte.MAX_VALUE - 1));
+        state = (byte) (state & (Byte.MAX_VALUE - 1));
     }
 
     public void setBusy(boolean value)
@@ -64,13 +64,13 @@ public class ScheduleStatus
         if (!value)
         {
             //11111101 bin = 125 dec
-            status = (byte) (status & (Byte.MAX_VALUE - (1 << 1)));
+            state = (byte) (state & (Byte.MAX_VALUE - (1 << 1)));
             return;
         }
 
         if (getIsWorking())
         {
-            status = (byte) (status | (1 << 1));
+            state = (byte) (state | (1 << 1));
         }
         else
         {
@@ -82,14 +82,14 @@ public class ScheduleStatus
     public boolean equals(Object o)
     {
         if (this == o) return true;
-        if (!(o instanceof ScheduleStatus)) return false;
-        ScheduleStatus that = (ScheduleStatus) o;
-        return status == that.status;
+        if (!(o instanceof ScheduleState)) return false;
+        ScheduleState that = (ScheduleState) o;
+        return state == that.state;
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(status);
+        return Objects.hash(state);
     }
 }

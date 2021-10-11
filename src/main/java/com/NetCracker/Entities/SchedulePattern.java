@@ -11,27 +11,26 @@ import java.util.List;
  * 2-week interval is divided by 30-minute intervals. Doctor may either work or not during this small period.
  */
 @Entity
-@Table(name = "doctor_schedule_pattern")
-public class DoctorSchedulePattern
+@Table(name = "schedule_pattern")
+public class SchedulePattern
 {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(updatable = false)
-    @NotNull
     private Long id;
 
     @NotNull
-    @Embedded
-    @ElementCollection
-    private List<ScheduleStatus> statusList;
+    @CollectionTable(name = "schedule_pattern_interval", joinColumns = @JoinColumn(name = "schedule_pattern_id"))
+    @ElementCollection(fetch = FetchType.EAGER, targetClass = ScheduleState.class)
+    private List<ScheduleState> statusList;
 
-    public DoctorSchedulePattern()
+    public SchedulePattern()
     {
         //There are 672 30-minute intervals in 2 weeks
         statusList = new ArrayList<>(672);
     }
 
-    public DoctorSchedulePattern(List<ScheduleStatus> statusList)
+    public SchedulePattern(List<ScheduleState> statusList)
     {
         this.statusList = statusList;
     }
@@ -41,7 +40,7 @@ public class DoctorSchedulePattern
         return id;
     }
 
-    public List<ScheduleStatus> getStatusList()
+    public List<ScheduleState> getStatusList()
     {
         return statusList;
     }
@@ -56,7 +55,7 @@ public class DoctorSchedulePattern
         this.id = id;
     }
 
-    public void setStatusList(List<ScheduleStatus> statusList)
+    public void setStatusList(List<ScheduleState> statusList)
     {
         this.statusList = statusList;
     }

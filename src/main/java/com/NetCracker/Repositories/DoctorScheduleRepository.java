@@ -1,12 +1,12 @@
 package com.NetCracker.Repositories;
 
+import com.NetCracker.Entities.Doctor;
 import com.NetCracker.Entities.DoctorSchedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, Long>
+public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, Long>, CustomDoctorScheduleRepository
 {
-
+    DoctorSchedule findByRelatedDoctor(Doctor doctor);
 }

@@ -10,7 +10,10 @@ public class Doctor
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    private Long id;
+
+    /*@OneToOne(mappedBy = "doctor_schedule")
+    private DoctorSchedule schedule;*/
 
     //TODO - Implement constructor for this class. Remove @Deprecated if needed
     @Deprecated
@@ -18,13 +21,23 @@ public class Doctor
     {
     }
 
-    public Integer getId()
+    public Long getId()
     {
         return id;
     }
 
-    public void setId(Integer id)
+    /*public DoctorSchedule getSchedule()
+    {
+        return schedule;
+    }*/
+
+    public void setId(Long id)
     {
         this.id = id;
     }
+
+    /*public void setSchedule(DoctorSchedule schedule)
+    {
+        this.schedule = schedule;
+    }*/
 }
