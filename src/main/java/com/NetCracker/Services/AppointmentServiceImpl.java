@@ -32,7 +32,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         if (result.isPresent()) {
             theAppointment = result.get();
         } else {
-            throw new RuntimeException("Did not find employee id - " + theId);
+            throw new RuntimeException("Did not find appointment id - " + theId);
         }
 
         return theAppointment;
