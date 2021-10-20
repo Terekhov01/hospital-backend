@@ -1,12 +1,20 @@
 import com.NetCracker.Entities.*;
+import com.NetCracker.Entities.Schedule.DoctorSchedule;
+import com.NetCracker.Entities.Schedule.SchedulePattern;
+import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleInterval;
 import com.NetCracker.Main;
 import com.NetCracker.Repositories.DoctorRepository;
 import com.NetCracker.Repositories.DoctorScheduleRepository;
 import com.NetCracker.Services.SchedulePatternFactory;
 import com.NetCracker.Services.ScheduleService;
+
+import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -17,8 +25,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.time.Duration;
 
 /**
  * <br>DISCLAIMER<br/>
@@ -33,13 +44,13 @@ import java.util.List;
 public class ScheduleServiceIntegrationTest
 {
     @Autowired
-    DoctorRepository doctorRepository;
+    private DoctorRepository doctorRepository;
 
     @Autowired
-    DoctorScheduleRepository doctorScheduleRepository;
+    private DoctorScheduleRepository doctorScheduleRepository;
 
     @Autowired
-    TransactionTemplate txTemplate;
+    private TransactionTemplate txTemplate;
 
     @Autowired
     private ScheduleService scheduleService;
@@ -47,82 +58,107 @@ public class ScheduleServiceIntegrationTest
     Doctor doctor1;
     Doctor doctor2;
     SchedulePattern commonWorkingPattern;
+    LocalDate commonTimeStart;
+    LocalDate modernTimeStart;
     DoctorSchedule commonSchedule;
     DoctorSchedule modernSchedule;
 
     ScheduleServiceIntegrationTest()
     {
-        commonWorkingPattern = SchedulePatternFactory.createCommonWorkingPattern(8, 17);
-        commonSchedule = new DoctorSchedule(LocalDate.EPOCH);
-        modernSchedule = new DoctorSchedule(LocalDate.of(2000, 1, 1));
+        doctor1 = new Doctor();
+        doctor2 = new Doctor();
+        //TODO - refactor when doctor entity is ready to use
+        commonWorkingPattern = SchedulePatternFactory.createCommonWorkingPattern(14, LocalTime.of(8, 0), LocalTime.of(17, 0));
+        commonTimeStart = LocalDate.of(1970, 1, 1);
+        commonSchedule = new DoctorSchedule(doctor1);
+        modernTimeStart = LocalDate.of(2000, 1, 1);
+        modernSchedule = new DoctorSchedule(doctor2);
     }
 
     @Transactional
     void initializeDatabaseWithTestData()
     {
-        doctor1 = new Doctor();
-        doctor2 = new Doctor();
-        //TODO - refactor when doctor entity is ready to use
         doctorRepository.save(doctor1);
         doctorRepository.save(doctor2);
-        scheduleService.addDoctorSchedule(doctor1, commonSchedule);
-        scheduleService.addDoctorSchedule(doctor2, modernSchedule);
+        scheduleService.addSchedule(commonSchedule);
+        scheduleService.addSchedule(modernSchedule);
 
-        scheduleService.prolongScheduleByPattern(doctor1, commonWorkingPattern);
-        scheduleService.prolongScheduleByPattern(doctor2, commonWorkingPattern);
+        scheduleService.prolongScheduleByPattern(doctor1, commonWorkingPattern, commonTimeStart);
+        scheduleService.prolongScheduleByPattern(doctor2, commonWorkingPattern, modernTimeStart);
     }
+
+    //Тест - 2 врача, запись на 2 месяца вперёд, проверка на правилный диапазон
+    //Изменить лист - вместо кучи строк добавить столбец со временем
 
     @Test
     void testStatusGet()
     {
         initializeDatabaseWithTestData();
-        ScheduleState status1 = scheduleService.getStatus(doctor1,
+        ScheduleInterval status1 = scheduleService.getStatus(doctor1,
                 LocalDateTime.of(1970, 1, 2, 11, 30, 0));
-        ScheduleState status2 = scheduleService.getStatus(doctor1,
+        ScheduleInterval status2 = scheduleService.getStatus(doctor1,
                 LocalDateTime.of(1970, 1, 2, 17, 30, 0));
 
         Assertions.assertNotNull(status1);
-        Assertions.assertEquals(status1.getState(), 1);
+        Assertions.assertFalse(status1.isAssigned());
 
-        Assertions.assertNotNull(status2);
-        Assertions.assertEquals(status2.getState(), 0);
+        Assertions.assertNull(status2);
     }
 
     @Test
     void testStatusSet()
     {
         initializeDatabaseWithTestData();
-        ScheduleState status = new ScheduleState(true, true);
+        ScheduleInterval state = new ScheduleInterval(commonSchedule, commonTimeStart.atStartOfDay().plusHours(5).plusMinutes(30), true);
 
         txTemplate.execute(new TransactionCallbackWithoutResult() {
 
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus st)
             {
-                scheduleService.getDoctorSchedule(doctor1).getIntervalStatusList().set(11, status);
+                scheduleService.addInterval(state);
             }
         });
 
-        ScheduleState actualStatus = scheduleService.getStatus(doctor1,
-                LocalDateTime.of(1970, 1, 1, 5, 30, 0));
+        ScheduleInterval actualStatus = scheduleService.getStatus(doctor1, commonTimeStart.atStartOfDay().plusHours(5).plusMinutes(30));
 
-        Assertions.assertNotNull(actualStatus, "Status is null!");
-        Assertions.assertTrue(actualStatus.getIsWorking());
-        Assertions.assertTrue(actualStatus.getIsBusy());
+        Assertions.assertNotNull(actualStatus, "Status is null! Schedule was not updated!");
+        Assertions.assertTrue(actualStatus.isAssigned());
+    }
+
+    Set<ScheduleInterval> fillScheduleIntervalsTestValues(DoctorSchedule schedule, LocalDate startDate)
+    {
+        Set<ScheduleInterval> expectedCommonSet = new TreeSet<>(ScheduleInterval.dateAscendComparator);
+        for (LocalDateTime timeCnt = LocalDate.EPOCH.atStartOfDay(); timeCnt.isBefore(LocalDate.EPOCH.atStartOfDay().plusDays(14)); timeCnt = timeCnt.plusMinutes(30))
+        {
+            if (timeCnt.toLocalTime().compareTo(LocalTime.of(8, 0)) >= 0 && timeCnt.toLocalTime().compareTo(LocalTime.of(17, 0)) < 0)
+            {
+                expectedCommonSet.add(new ScheduleInterval(schedule, startDate.atStartOfDay().plus(Duration.between(LocalDate.EPOCH.atStartOfDay(), timeCnt)), true));
+            }
+        }
+
+        return expectedCommonSet;
     }
 
     @Test
     void DBIntegrationTestCreate()
     {
         initializeDatabaseWithTestData();
+
+        DoctorSchedule expectedSchedule = new DoctorSchedule(doctor1);
+
+        Set<ScheduleInterval> expectedSet = fillScheduleIntervalsTestValues(expectedSchedule, commonTimeStart);
+
+        expectedSchedule.setStateSet(expectedSet);
+
         txTemplate.execute(new TransactionCallbackWithoutResult() {
 
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status)
             {
-                doctorScheduleRepository.saveAll(scheduleService.getAllDoctorSchedules());
-                DoctorSchedule loadedSchedule = doctorScheduleRepository.getById(scheduleService.getDoctorSchedule(doctor1).getId());
-                Assertions.assertEquals(scheduleService.getDoctorSchedule(doctor1), loadedSchedule);
+                DoctorSchedule loadedSchedule = scheduleService.getDoctorSchedule(doctor1);
+                expectedSchedule.setId(loadedSchedule.getId());
+                Assertions.assertEquals(expectedSchedule, loadedSchedule);
             }
         });
     }
@@ -138,24 +174,40 @@ public class ScheduleServiceIntegrationTest
             protected void doInTransactionWithoutResult(TransactionStatus st)
             {
                 // Updating contents, setting both doctors to always work and be busy
-                scheduleService.getAllDoctorSchedules().forEach(doctorSchedule -> doctorSchedule.getIntervalStatusList().forEach(status ->
+                scheduleService.getAllDoctorSchedules().forEach(doctorSchedule -> doctorSchedule.getStateSet().forEach(state ->
                 {
-                    status.setWorking(true);
-                    status.setBusy(true);
+                    state.setAssigned(true);
                 }));
 
-                doctorScheduleRepository.saveAll(scheduleService.getAllDoctorSchedules());
-                DoctorSchedule commonLoadedSchedule = doctorScheduleRepository.findByRelatedDoctor(doctor1);
-                DoctorSchedule modernLoadedSchedule = doctorScheduleRepository.findByRelatedDoctor(doctor2);
+                /*ScheduleInterval x = scheduleService.getDoctorSchedule(doctor1).getStateSet().iterator().next();
 
-                List<ScheduleState> expected = new ArrayList<>();
-                for (int i = 0; i < 672; i++)
-                {
-                    expected.add(new ScheduleState(true, true));
-                }
+                ScheduleInterval y = new ScheduleInterval(commonSchedule, commonTimeStart.atStartOfDay().plusHours(8), true);
 
-                Assertions.assertEquals(expected, commonLoadedSchedule.getIntervalStatusList());
-                Assertions.assertEquals(expected, modernLoadedSchedule.getIntervalStatusList());
+                var a = x.hashCode();
+                var aa = y.hashCode();
+                var aaa = x.equals(y);
+
+                //scheduleService.getDoctorSchedule(doctor1).getStateSet().forEach(Hibernate::initialize);
+
+                boolean c = scheduleService.getDoctorSchedule(doctor1).getStateSet().contains(y);*/
+
+
+                DoctorSchedule commonLoadedSchedule = scheduleService.getDoctorSchedule(doctor1);
+                DoctorSchedule modernLoadedSchedule = scheduleService.getDoctorSchedule(doctor2);
+
+                Set<ScheduleInterval> expectedCommon = fillScheduleIntervalsTestValues(commonLoadedSchedule, commonTimeStart);
+                Set<ScheduleInterval> expectedModern = fillScheduleIntervalsTestValues(modernLoadedSchedule, modernTimeStart);
+
+                Assertions.assertEquals(expectedCommon.size(), commonLoadedSchedule.getStateSet().size());
+                //Assertions.assertArrayEquals(expectedCommon.toArray(), commonLoadedSchedule.getStateSet().toArray());
+                MatcherAssert.assertThat(commonLoadedSchedule.getStateSet(), containsInAnyOrder(expectedCommon.toArray()));
+
+                Assertions.assertEquals(expectedModern.size(), modernLoadedSchedule.getStateSet().size());
+                //Assertions.assertArrayEquals(expectedModern.toArray(), modernLoadedSchedule.getStateSet().toArray());
+                MatcherAssert.assertThat(modernLoadedSchedule.getStateSet(), containsInAnyOrder(expectedModern.toArray()));
+
+                /*Assertions.assertEquals(expectedCommon, commonLoadedSchedule.getStateSet());
+                Assertions.assertEquals(expectedModern, modernLoadedSchedule.getStateSet());*/
             }
         });
     }
@@ -169,7 +221,7 @@ public class ScheduleServiceIntegrationTest
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status)
             {
-                doctorScheduleRepository.deleteAll(scheduleService.getAllDoctorSchedules());
+                scheduleService.removeSchedule(scheduleService.getAllDoctorSchedules());
                 List<DoctorSchedule> loadedSchedulesList = doctorScheduleRepository.findAll();
                 Assertions.assertEquals(0, loadedSchedulesList.size());
             }
