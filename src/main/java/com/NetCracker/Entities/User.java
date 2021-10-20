@@ -1,26 +1,21 @@
 package com.NetCracker.Entities;
+import lombok.Data;
 
 import javax.persistence.*;
 
-@MappedSuperclass
+@Data
+@Entity
+@Table(name = "user")
 public class User {
-
-    @Column(name = "LAST_NAME")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "first_name")
+    private String firstName;
+    @Column(name = "last_name")
     private String lastName;
-
-    public User() {
-    }
-
-    public User(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
+    @Column(name = "patronymic")
+    private String patronymic;
+    @Column(name = "phone_number")
+    private String phone_number;
 }
