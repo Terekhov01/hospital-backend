@@ -18,8 +18,7 @@ public class DoctorSchedule
 
     @NotNull
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "doctorSchedule")
-    //@JoinColumn(name = "doctor_schedule_id", referencedColumnName = "id", nullable = false)
-    private Set<ScheduleInterval> stateSet;
+    private TreeSet<ScheduleInterval> stateSet;
 
     @NotNull
     @OneToOne(cascade = CascadeType.MERGE)
@@ -39,7 +38,7 @@ public class DoctorSchedule
         stateSet = new TreeSet<>(ScheduleInterval.dateAscendComparator);
     }
 
-    public DoctorSchedule(Doctor relatedDoctor, Set<ScheduleInterval> stateSet)
+    public DoctorSchedule(Doctor relatedDoctor, TreeSet<ScheduleInterval> stateSet)
     {
         this(relatedDoctor);
         this.stateSet = stateSet;
@@ -50,7 +49,7 @@ public class DoctorSchedule
         return id;
     }
 
-    public Set<ScheduleInterval> getStateSet()
+    public TreeSet<ScheduleInterval> getStateSet()
     {
         return stateSet;
     }
@@ -70,7 +69,7 @@ public class DoctorSchedule
         this.id = id;
     }
 
-    public void setStateSet(Set<ScheduleInterval> stateSet)
+    public void setStateSet(TreeSet<ScheduleInterval> stateSet)
     {
         this.stateSet = stateSet;
     }

@@ -16,7 +16,6 @@ public class SchedulePatternInterval
     @Id
     @ManyToOne
     @JoinColumn(name = "schedule_pattern_id", referencedColumnName = "id")
-    @NotNull
     private SchedulePattern schedulePattern;
 
     //This field stores the 30-minute interval that field state refers to.
@@ -33,10 +32,19 @@ public class SchedulePatternInterval
     {
     }
 
+    /**
+     * Consider using other constructor if you want to persist (save to DB) a variable
+     */
     public SchedulePatternInterval(LocalDateTime intervalStartTime)
     {
         this.intervalStartTime = intervalStartTime.withSecond(0);
         this.intervalStartTime = this.intervalStartTime.withNano(0);
+    }
+
+    public SchedulePatternInterval(LocalDateTime intervalStartTime, SchedulePattern pattern)
+    {
+        this(intervalStartTime);
+        this.schedulePattern = pattern;
     }
 
     public SchedulePattern getSchedulePattern()

@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Objects;
 
+import static com.NetCracker.Utils.TimeIntervalUtils.floorHalfHourInterval;
+
 /**
  * This class represents status of a doctor in a time period (30 mins), compressed to a byte
  * 1st (the right bit of a byte) signals if a doctor is working or not
@@ -25,7 +27,6 @@ public class ScheduleInterval
     @Id
     @ManyToOne
     @JoinColumn(name = "doctor_schedule_id", referencedColumnName = "id")
-    @NotNull
     private DoctorSchedule doctorSchedule;
 
     //This field stores the 30-minute interval that field state refers to.
@@ -38,18 +39,17 @@ public class ScheduleInterval
     private boolean isAssigned;
 
     /**
-     * This constructor is for Hibernate only. Don't use it!
+     * Consider using other constructor if you want to persist (save to DB) created variable.
      */
-    @Deprecated
-    public ScheduleInterval()
+    public ScheduleInterval(LocalDateTime intervalStartTime)
     {
+        this.intervalStartTime = floorHalfHourInterval(intervalStartTime);
     }
 
     public ScheduleInterval(DoctorSchedule schedule, LocalDateTime intervalStartTime) throws NullPointerException
     {
+        this(intervalStartTime);
         doctorSchedule = schedule;
-        this.intervalStartTime = intervalStartTime.withSecond(0);
-        this.intervalStartTime = this.intervalStartTime.withNano(0);
         isAssigned = false;
     }
 
