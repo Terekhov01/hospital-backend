@@ -16,11 +16,13 @@ public class SchedulePatternFactory
      * @param workingDayEnd an hour
      * @return schedule pattern that has
      */
-    public static SchedulePattern createCommonWorkingPattern(int daysAmount, LocalTime workingDayStart, LocalTime workingDayEnd)
+    public static SchedulePattern createCommonWorkingPattern(String name, int daysAmount, LocalTime workingDayStart, LocalTime workingDayEnd)
     {
         workingDayStart = TimeIntervalUtils.floorHalfHourInterval(workingDayStart);
         workingDayEnd = TimeIntervalUtils.ceilHalfHourInterval(workingDayEnd);
-        Set<SchedulePatternInterval> scheduleIntervalSet = new TreeSet<>(SchedulePatternInterval.dateAscendComparator);
+        TreeSet<SchedulePatternInterval> scheduleIntervalSet = new TreeSet<>(SchedulePatternInterval.dateAscendComparator);
+
+        SchedulePattern pattern = new SchedulePattern(name);
 
         for (int i = 0; i < daysAmount; i++)
         {
@@ -28,10 +30,12 @@ public class SchedulePatternFactory
             LocalDateTime counterDateTime = LocalDateTime.of(LocalDate.EPOCH.plusDays(i), workingDayStart);
             for (; counterDateTime.toLocalTime().compareTo(workingDayEnd) < 0; counterDateTime = counterDateTime.plusMinutes(30))
             {
-                scheduleIntervalSet.add(new SchedulePatternInterval(counterDateTime));
+                scheduleIntervalSet.add(new SchedulePatternInterval(counterDateTime, pattern));
             }
         }
 
-        return new SchedulePattern(scheduleIntervalSet);
+        pattern.setStateSet(scheduleIntervalSet);
+
+        return pattern;
     }
 }

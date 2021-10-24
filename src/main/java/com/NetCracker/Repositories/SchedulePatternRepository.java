@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SchedulePatternRepository extends JpaRepository<SchedulePattern, SchedulePatternIntervalId>
+public interface SchedulePatternRepository extends JpaRepository<SchedulePattern, Long>
 {
 }
