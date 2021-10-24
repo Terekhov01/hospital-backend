@@ -1,62 +1,48 @@
-package com.NetCracker.Entities;
+package Hospital.doctors.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.Objects;
+import java.util.Date;
+import java.util.List;
 
 @Entity
-@Inheritance
-@Table(name = "doctor")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Doctor extends User {
+@AllArgsConstructor
+@Data
+@NoArgsConstructor
+public class Doctor {
+
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "DOCTOR_ID", unique = true, nullable = false)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    @Temporal(TemporalType.DATE)
+    private Date dateOfEmployment;
+//    @Temporal(TemporalType.DATE)
+//    private Date dateOfBirth;
+    //    private String name;
+//    private String surname;
+//    private String middlename;
+    //@OneToMany(mappedBy = "doc")
 
-    public Doctor() {
-        super();
-    }
+    //private List<Response> responses;
 
-    public Doctor(String lastName) {
-        super(lastName);
-    }
+    private String education;
 
-    public int getId() {
-        return id;
-    }
+    @OneToOne(optional = false)
+    @JoinColumn(name = "room_id", nullable = false, updatable = false)
+    private Room room;
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    @OneToOne(optional = false)
+    @JoinColumn(name = "specialization_id", nullable = false, updatable = false)
+    private Specialist specialist;
 
-    public String getLastName() {
-        return super.getLastName();
-    }
+//    @OneToOne(optional = false)
+//    @JoinColumn(name = "department_id", nullable = false, updatable = false)
+//    private Department department;
 
-    public void setLastName(String lastName) {
-        super.setLastName(lastName);
-    }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Doctor)) return false;
-        Doctor doctor = (Doctor) o;
-        return getId() == doctor.getId();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getId(), super.getLastName());
-    }
-
-    @Override
-    public String toString() {
-        return "Doctor{" +
-                "id=" + id +
-                '}';
-    }
+//unique = true
 }
