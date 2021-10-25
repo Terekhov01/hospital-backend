@@ -39,6 +39,13 @@ public class ScheduleInterval
     private boolean isAssigned;
 
     /**
+     * For Hibernate only
+     */
+    @Deprecated
+    ScheduleInterval()
+    {}
+
+    /**
      * Consider using other constructor if you want to persist (save to DB) created variable.
      */
     public ScheduleInterval(LocalDateTime intervalStartTime)
@@ -116,6 +123,14 @@ public class ScheduleInterval
         return Objects.hash(intervalStartTime, (doctorSchedule == null) ? null : doctorSchedule.getId(), isAssigned);
     }
 
+    public static class ScheduleIntervalDateAscendComparator implements Comparator<ScheduleInterval>
+    {
+        @Override
+        public int compare(ScheduleInterval o1, ScheduleInterval o2)
+        {
+            return o1.getIntervalStartTime().compareTo(o2.getIntervalStartTime());
+        }
+    }
     public static final Comparator<ScheduleInterval> dateAscendComparator = new Comparator<ScheduleInterval>() {
         @Override
         public int compare(ScheduleInterval o1, ScheduleInterval o2) {

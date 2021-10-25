@@ -49,21 +49,9 @@ public class ScheduleService
 
     public DoctorSchedule getDoctorSchedule(Doctor doctor) throws DataAccessException
     {
+        //return doctor.getSchedule();
         return doctorScheduleRepository.findByRelatedDoctor(doctor.getId());
     }
-
-    /*public Set<DoctorSchedule> getDoctorSchedule(Collection<String> doctorNames)
-    {
-        Set<DoctorSchedule> schedules = new HashSet<>();
-        doctorNames.forEach(name -> schedules.add(getDoctorSchedule(name)));
-
-        return schedules;
-    }
-
-    public DoctorSchedule getDoctorSchedule(String doctorName)
-    {
-        return doctorScheduleRepository.findByName()
-    }*/
 
     public List<Doctor> getAllDoctors() throws DataAccessException
     {
@@ -76,33 +64,36 @@ public class ScheduleService
     }
 
     @Transactional
-    public void add(Iterable<DoctorSchedule> schedules) throws DataAccessException
+    public void save(Iterable<DoctorSchedule> schedules) throws DataAccessException
     {
-        schedules.forEach(this::add);
+        schedules.forEach(this::save);
     }
 
     @Transactional
-    public void add(DoctorSchedule schedule) throws DataAccessException
+    public void save(DoctorSchedule schedule) throws DataAccessException
     {
         doctorScheduleRepository.save(schedule);
+        schedule.getRelatedDoctor().setSchedule(schedule);
     }
 
     @Transactional
-    public void remove(Iterable<DoctorSchedule> schedules) throws DataAccessException
+    public void delete(Iterable<DoctorSchedule> schedules) throws DataAccessException
     {
-        schedules.forEach(this::remove);
+        schedules.forEach(this::delete);
     }
 
-    @Transactional()
-    public void remove(DoctorSchedule schedule) throws DataAccessException
+    @Transactional
+    public void delete(DoctorSchedule schedule) throws DataAccessException
     {
         doctorScheduleRepository.delete(schedule);
+        schedule.getRelatedDoctor().setSchedule(null);
     }
 
     @Transactional
     public void addInterval(ScheduleInterval interval) throws DataAccessException
     {
         scheduleIntervalRepository.save(interval);
+        interval.getDoctorSchedule().getStateSet().add(interval);
     }
 
     @Transactional
@@ -116,14 +107,17 @@ public class ScheduleService
             return;
         }
 
-        TreeSet<ScheduleInterval> scheduleIntervalSet = schedule.getStateSet();
+        SortedSet<ScheduleInterval> scheduleIntervalSet = schedule.getStateSet();
 
         pattern.getStateSet().forEach(patternInterval ->
                 scheduleIntervalSet.add(new ScheduleInterval(schedule, dayToApplyPatternFrom, patternInterval))
                 );
 
-        schedule.setStateSet(scheduleIntervalSet);
         scheduleIntervalRepository.saveAll(scheduleIntervalSet);
+        schedule.setStateSet(scheduleIntervalSet);
+        /*scheduleIntervalSet.first().setAssigned(true);
+        var t = getDoctorState(schedule.getRelatedDoctor(), scheduleIntervalSet.first().getIntervalStartTime());
+        System.err.println("A");*/
     }
 
     /**
@@ -135,9 +129,14 @@ public class ScheduleService
      * or status of a doctor.
      */
     @Transactional
-    public ScheduleInterval getDoctorStatus(Doctor doctor, LocalDateTime time) throws DataAccessException
+    public ScheduleInterval getDoctorState(Doctor doctor, LocalDateTime time) throws DataAccessException
     {
-        return scheduleIntervalRepository.getById(new ScheduleIntervalId(doctor.getId(), time));
+        if (doctor.getSchedule() == null)
+        {
+            return null;
+        }
+
+        return scheduleIntervalRepository.findById(new ScheduleIntervalId(doctor.getSchedule().getId(), time)).orElse(null);
     }
 
     @Override

@@ -18,11 +18,19 @@ public class Doctor
     @OneToOne(mappedBy = "relatedDoctor")
     DoctorSchedule schedule;
 
+    String name;
+
     //TODO - Implement constructor for this class. Remove @Deprecated if needed
     @Deprecated
     public Doctor()
     {
         schedule = null;
+    }
+
+    public Doctor(String name)
+    {
+        schedule = null;
+        this.name = name;
     }
 
     public Long getId()
@@ -35,6 +43,11 @@ public class Doctor
         return schedule;
     }
 
+    public String getName()
+    {
+        return name;
+    }
+
     public void setId(Long id)
     {
         this.id = id;
@@ -43,6 +56,11 @@ public class Doctor
     public void setSchedule(DoctorSchedule schedule)
     {
         this.schedule = schedule;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
     }
 
     @Override
@@ -57,6 +75,10 @@ public class Doctor
     @Override
     public int hashCode()
     {
+        if (schedule == null)
+        {
+            return Objects.hash(id);
+        }
         return Objects.hash(id, schedule.getId());
     }
 }

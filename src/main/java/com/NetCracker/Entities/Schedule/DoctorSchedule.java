@@ -2,6 +2,7 @@ package com.NetCracker.Entities.Schedule;
 
 import com.NetCracker.Entities.Doctor;
 import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleInterval;
+import org.hibernate.annotations.SortComparator;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -16,12 +17,16 @@ public class DoctorSchedule
     @Column(updatable = false)
     private Long id;
 
+    /**
+     * Must contain TreeSet instance!
+     */
     @NotNull
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "doctorSchedule")
-    private TreeSet<ScheduleInterval> stateSet;
+    @SortComparator(ScheduleInterval.ScheduleIntervalDateAscendComparator.class)
+    private SortedSet<ScheduleInterval> stateSet;
 
     @NotNull
-    @OneToOne(cascade = CascadeType.MERGE)
+    @OneToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "doctor_id", referencedColumnName = "id")
     private Doctor relatedDoctor;
 
@@ -35,7 +40,7 @@ public class DoctorSchedule
     public DoctorSchedule(Doctor relatedDoctor)
     {
         this.relatedDoctor = relatedDoctor;
-        stateSet = new TreeSet<>(ScheduleInterval.dateAscendComparator);
+        stateSet = new TreeSet<ScheduleInterval>(ScheduleInterval.dateAscendComparator);
     }
 
     public DoctorSchedule(Doctor relatedDoctor, TreeSet<ScheduleInterval> stateSet)
@@ -49,7 +54,7 @@ public class DoctorSchedule
         return id;
     }
 
-    public TreeSet<ScheduleInterval> getStateSet()
+    public SortedSet<ScheduleInterval> getStateSet() throws IllegalStateException
     {
         return stateSet;
     }
@@ -69,7 +74,7 @@ public class DoctorSchedule
         this.id = id;
     }
 
-    public void setStateSet(TreeSet<ScheduleInterval> stateSet)
+    public void setStateSet(SortedSet<ScheduleInterval> stateSet)
     {
         this.stateSet = stateSet;
     }

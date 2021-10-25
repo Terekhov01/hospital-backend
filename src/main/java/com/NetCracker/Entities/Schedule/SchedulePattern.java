@@ -1,10 +1,13 @@
 package com.NetCracker.Entities.Schedule;
 
+import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleInterval;
 import com.NetCracker.Entities.Schedule.ScheduleElements.SchedulePatternInterval;
+import org.hibernate.annotations.SortComparator;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
@@ -26,15 +29,16 @@ public class SchedulePattern
 
     @NotNull
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "schedulePattern")
-    private TreeSet<SchedulePatternInterval> stateSet;
+    @SortComparator(SchedulePatternInterval.SchedulePatternIntervalDateAscendComparator.class)
+    private SortedSet<SchedulePatternInterval> stateSet;
 
     public SchedulePattern(String name)
     {
         this.name = name;
-        stateSet = new TreeSet<>(SchedulePatternInterval.dateAscendComparator);
+        stateSet = new TreeSet<SchedulePatternInterval>(SchedulePatternInterval.dateAscendComparator);
     }
 
-    public SchedulePattern(String name, TreeSet<SchedulePatternInterval> stateSet)
+    public SchedulePattern(String name, SortedSet<SchedulePatternInterval> stateSet)
     {
         this.name = name;
         this.stateSet = stateSet;
@@ -50,8 +54,13 @@ public class SchedulePattern
         return name;
     }
 
-    public Set<SchedulePatternInterval> getStateSet()
+    public SortedSet<SchedulePatternInterval> getStateSet()
     {
+        if (!(stateSet instanceof TreeSet<SchedulePatternInterval>))
+        {
+            throw new IllegalStateException("stateSet does not contain a TreeSet!");
+        }
+
         return stateSet;
     }
 
@@ -65,7 +74,7 @@ public class SchedulePattern
         this.id = id;
     }
 
-    public void setStateSet(TreeSet<SchedulePatternInterval> stateSet)
+    public void setStateSet(SortedSet<SchedulePatternInterval> stateSet)
     {
         this.stateSet = stateSet;
     }

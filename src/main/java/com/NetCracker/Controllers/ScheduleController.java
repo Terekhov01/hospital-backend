@@ -1,19 +1,18 @@
 package com.NetCracker.Controllers;
 
-import com.NetCracker.Entities.Schedule.DoctorSchedule;
-import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleInterval;
+import com.NetCracker.Entities.Doctor;
 import com.NetCracker.Services.ScheduleService;
+import com.NetCracker.Services.ScheduleViewService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
-import java.util.*;
-import static java.util.Map.entry;
-import java.util.stream.Collectors;
 
 @RestController
 public class ScheduleController
@@ -21,41 +20,59 @@ public class ScheduleController
     @Autowired
     private ScheduleService scheduleService;
 
+    @Autowired
+    private ScheduleViewService scheduleViewService;
+
     @GetMapping("/schedule")
-    public void presentAllSchedules(@RequestParam(name = "doctorIds", required = false) Long[] doctorIds,
-                                    @RequestParam(name = "startDateTime", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDateTime,
-                                    @RequestParam(name = "endDateTime", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDateTime,
-                                    @RequestParam(name = "getFreeTimeOnly", required = false) boolean getFreeTimeOnly)
+    public ResponseEntity<String> presentAllSchedules(@RequestParam(name = "doctorIds", required = false) Long[] doctorIds,
+                                                      @RequestParam(name = "startDateTime", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDateTime,
+                                                      @RequestParam(name = "endDateTime", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDateTime,
+                                                      @RequestParam(name = "getFreeTimeOnly", required = false) Boolean getFreeTimeOnly)
     {
-        Set<DoctorSchedule> schedules = scheduleService.getDoctorSchedule(Arrays.stream(doctorIds).toList());
-
-        ScheduleInterval intervalStart = new ScheduleInterval(startDateTime);
-        ScheduleInterval intervalEnd = new ScheduleInterval(endDateTime);
-
-        //Required data - each doctor is matched with set of scheduleIntervals - time, when (s)he is working (not busy)
-        Map<Long, SortedSet<ScheduleInterval>> scheduleRangedIntervals = schedules.stream().collect(
-                Collectors.toMap(
-                    schedule -> schedule.getName(),
-                    schedule -> schedule.getStateSet().subSet(intervalStart, intervalEnd)
-                )
-            );
-
-        if (getFreeTimeOnly)
+        //If no array provided return all doctors' info
+        if (doctorIds == null)
         {
-            //Remove all assigned intervals
-            for (var intervalSet : scheduleRangedIntervals.values())
+            try
             {
-                intervalSet.removeIf(ScheduleInterval::isAssigned);
+                doctorIds = scheduleService.getAllDoctors().stream().map(Doctor::getId).toArray(Long[]::new);
             }
-
-            //Remove all entries that have empty value
-            scheduleRangedIntervals = scheduleRangedIntervals.entrySet().stream().filter(pair -> pair.getValue().size() != 0)
-                    .map(pair -> entry(pair.getKey(), pair.getValue()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            catch (DataAccessException e)
+            {
+                return new ResponseEntity<String>(
+                        "Server could not retrieve information from database (all doctor Ids)",
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
 
+        //If no startDateTime provided use all available data by default
+        if (startDateTime == null)
+        {
+            startDateTime = LocalDateTime.MIN;
+        }
 
-        //TODO - return HttpResponse, not a map
-        return scheduleRangedIntervals;
+        //If no endDateTime provided use all available data by default
+        if (endDateTime == null)
+        {
+            endDateTime = LocalDateTime.MAX;
+        }
+
+        //If no specifier provided show when doctors do their jobs
+        if (getFreeTimeOnly == null)
+        {
+            getFreeTimeOnly = false;
+        }
+
+        String jsonTable = "";
+
+        try
+        {
+            jsonTable = scheduleViewService.getScheduleTableJson(doctorIds, startDateTime, endDateTime, getFreeTimeOnly);
+        }
+        catch (DataAccessException | IllegalStateException e)
+        {
+            return new ResponseEntity<String>("Server could not retrieve information from database", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<String>(jsonTable, HttpStatus.OK);
     }
 }

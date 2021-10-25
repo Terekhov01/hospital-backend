@@ -82,6 +82,15 @@ public class SchedulePatternInterval
         return Objects.hash(intervalStartTime, (schedulePattern == null) ? null : schedulePattern.getId());
     }
 
+    public static class SchedulePatternIntervalDateAscendComparator implements Comparator<SchedulePatternInterval>
+    {
+        @Override
+        public int compare(SchedulePatternInterval o1, SchedulePatternInterval o2)
+        {
+            return o1.getIntervalStartTime().compareTo(o2.getIntervalStartTime());
+        }
+    }
+
     public static final Comparator<SchedulePatternInterval> dateAscendComparator = new Comparator<SchedulePatternInterval>() {
         @Override
         public int compare(SchedulePatternInterval o1, SchedulePatternInterval o2) {
