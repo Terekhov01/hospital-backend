@@ -2,6 +2,7 @@ package com.NetCracker.Entities.Schedule;
 
 import com.NetCracker.Entities.Doctor;
 import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleInterval;
+import com.google.gson.annotations.Expose;
 import org.hibernate.annotations.SortComparator;
 
 import javax.persistence.*;
@@ -15,6 +16,7 @@ public class DoctorSchedule
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(updatable = false)
+    @Expose
     private Long id;
 
     /**
@@ -23,11 +25,13 @@ public class DoctorSchedule
     @NotNull
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "doctorSchedule")
     @SortComparator(ScheduleInterval.ScheduleIntervalDateAscendComparator.class)
+    @Expose
     private SortedSet<ScheduleInterval> stateSet;
 
     @NotNull
     @OneToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "doctor_id", referencedColumnName = "id")
+    @Expose(serialize = false, deserialize = false)
     private Doctor relatedDoctor;
 
     /**

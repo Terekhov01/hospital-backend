@@ -1,6 +1,7 @@
 package com.NetCracker.Entities.Schedule.ScheduleElements;
 
 import com.NetCracker.Entities.Schedule.DoctorSchedule;
+import com.google.gson.annotations.Expose;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -27,15 +28,18 @@ public class ScheduleInterval
     @Id
     @ManyToOne
     @JoinColumn(name = "doctor_schedule_id", referencedColumnName = "id")
+    @Expose(serialize = false, deserialize = false)
     private DoctorSchedule doctorSchedule;
 
     //This field stores the 30-minute interval that field state refers to.
     @NotNull
     @Column(name = "interval_start_time")
     @Id
+    @Expose
     protected LocalDateTime intervalStartTime;
 
     @Column(name = "is_assigned")
+    @Expose
     private boolean isAssigned;
 
     /**
