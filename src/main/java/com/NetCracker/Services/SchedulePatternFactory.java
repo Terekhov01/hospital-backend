@@ -5,6 +5,7 @@ import com.NetCracker.Entities.Schedule.SchedulePattern;
 import com.NetCracker.Utils.TimeIntervalUtils;
 
 import java.time.*;
+import java.util.NavigableSet;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -21,7 +22,7 @@ public class SchedulePatternFactory
     {
         workingDayStart = TimeIntervalUtils.floorHalfHourInterval(workingDayStart);
         workingDayEnd = TimeIntervalUtils.ceilHalfHourInterval(workingDayEnd);
-        SortedSet<SchedulePatternInterval> scheduleIntervalSet = new TreeSet<>(SchedulePatternInterval.dateAscendComparator);
+        NavigableSet<SchedulePatternInterval> scheduleIntervalSet = new TreeSet<>(SchedulePatternInterval.dateAscendComparator);
 
         SchedulePattern pattern = new SchedulePattern(name);
 

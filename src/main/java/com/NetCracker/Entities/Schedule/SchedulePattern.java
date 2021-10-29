@@ -6,6 +6,7 @@ import org.hibernate.annotations.SortComparator;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.NavigableSet;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -38,7 +39,7 @@ public class SchedulePattern
         stateSet = new TreeSet<SchedulePatternInterval>(SchedulePatternInterval.dateAscendComparator);
     }
 
-    public SchedulePattern(String name, SortedSet<SchedulePatternInterval> stateSet)
+    public SchedulePattern(String name, NavigableSet<SchedulePatternInterval> stateSet)
     {
         this.name = name;
         this.stateSet = stateSet;

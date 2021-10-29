@@ -1,9 +1,6 @@
 package com.NetCracker.Controllers;
 
 import com.NetCracker.Entities.Doctor;
-import com.NetCracker.Entities.Schedule.DoctorSchedule;
-import com.NetCracker.Entities.Schedule.SchedulePattern;
-import com.NetCracker.Services.SchedulePatternFactory;
 import com.NetCracker.Services.ScheduleService;
 import com.NetCracker.Services.ScheduleViewService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,14 +8,12 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @RestController
 public class ScheduleController
@@ -30,6 +25,7 @@ public class ScheduleController
     private ScheduleViewService scheduleViewService;
 
     @GetMapping("/schedule")
+    @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<String> presentAllSchedules(@RequestParam(name = "doctorIds", required = false) Long[] doctorIds,
                                                       @RequestParam(name = "startDateTime", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDateTime,
                                                       @RequestParam(name = "endDateTime", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDateTime,
@@ -46,6 +42,7 @@ public class ScheduleController
             }
             catch (DataAccessException e)
             {
+                //TODO - log errors
                 return new ResponseEntity<String>(
                         "Server could not retrieve information from database (all doctor Ids)",
                         HttpStatus.INTERNAL_SERVER_ERROR);
@@ -74,14 +71,24 @@ public class ScheduleController
 
         try
         {
-            jsonTable = scheduleViewService.getScheduleTableJson(doctorIds, startDateTime, endDateTime, getFreeTimeOnly);
+            jsonTable = scheduleViewService.getScheduleAssignmentCalendarJson(doctorIds, startDateTime, endDateTime, getFreeTimeOnly);
         }
         catch (DataAccessException | IllegalStateException e)
         {
+            //TODO - log errors
             return new ResponseEntity<String>("Server could not retrieve information from database", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         System.out.println(jsonTable);
         return new ResponseEntity<String>(jsonTable, HttpStatus.OK);
+    }
+
+    @GetMapping("/test")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<String> testMapping()
+    {
+        String response = "{Geese are cool!}";
+        System.out.println(response);
+        return new ResponseEntity<String>(response, HttpStatus.OK);
     }
 }

@@ -25,10 +25,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.time.Duration;
 
 /**
@@ -124,9 +121,9 @@ public class ScheduleServiceIntegrationTest
         Assertions.assertTrue(actualStatus.isAssigned());
     }
 
-    SortedSet<ScheduleInterval> fillScheduleIntervalsTestValues(DoctorSchedule schedule, LocalDate startDate)
+    NavigableSet<ScheduleInterval> fillScheduleIntervalsTestValues(DoctorSchedule schedule, LocalDate startDate)
     {
-        SortedSet<ScheduleInterval> expectedCommonSet = new TreeSet<>(ScheduleInterval.dateAscendComparator);
+        NavigableSet<ScheduleInterval> expectedCommonSet = new TreeSet<>(ScheduleInterval.dateAscendComparator);
         for (LocalDateTime timeCnt = LocalDate.EPOCH.atStartOfDay(); timeCnt.isBefore(LocalDate.EPOCH.atStartOfDay().plusDays(14)); timeCnt = timeCnt.plusMinutes(30))
         {
             if (timeCnt.toLocalTime().compareTo(LocalTime.of(8, 0)) >= 0 && timeCnt.toLocalTime().compareTo(LocalTime.of(17, 0)) < 0)
@@ -145,7 +142,7 @@ public class ScheduleServiceIntegrationTest
 
         DoctorSchedule expectedSchedule = new DoctorSchedule(doctor1);
 
-        SortedSet<ScheduleInterval> expectedSet = fillScheduleIntervalsTestValues(expectedSchedule, commonTimeStart);
+        NavigableSet<ScheduleInterval> expectedSet = fillScheduleIntervalsTestValues(expectedSchedule, commonTimeStart);
 
         expectedSchedule.setStateSet(expectedSet);
 
