@@ -3,6 +3,7 @@ package com.NetCracker.Services;
 import com.NetCracker.Entities.Appointment;
 import com.NetCracker.Repositories.AppointmentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,12 +21,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public List<Appointment> findAll() {
-        return appointmentRepo.findAllByOrderByStartAsc();
+    @Transactional
+    public List<Appointment> getAll() {
+        return appointmentRepo.findAllByOrderByIdAsc();
     }
 
     @Override
-    public Appointment findById(int theId) {
+    @Transactional
+    public Appointment getById(int theId) {
         Optional<Appointment> result = appointmentRepo.findById(theId);
         Appointment theAppointment;
 
@@ -39,12 +42,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public void save(Appointment theAppointment) {
+    @Transactional
+    public void editAppointment(Appointment theAppointment) {
         appointmentRepo.save(theAppointment);
     }
 
     @Override
-    public void deleteById(int theId) {
+    @Transactional
+    public void delete(int theId) {
         appointmentRepo.deleteById(theId);
     }
 }

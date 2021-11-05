@@ -8,6 +8,13 @@ public class User {
     @Column(name = "LAST_NAME")
     private String lastName;
 
+    public User() {
+    }
+
+    public User(String lastName) {
+        this.lastName = lastName;
+    }
+
     public String getLastName() {
         return lastName;
     }

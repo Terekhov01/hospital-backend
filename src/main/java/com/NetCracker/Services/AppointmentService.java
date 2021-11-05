@@ -1,17 +1,19 @@
 package com.NetCracker.Services;
 
 import com.NetCracker.Entities.Appointment;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public interface AppointmentService {
 
-    public List<Appointment> findAll();
+    List<Appointment> getAll();
 
-    public Appointment findById(int theId);
+    Appointment getById(int theId);
 
-    public void save(Appointment theAppointment);
+    void editAppointment(Appointment theAppointment);
 
-    public void deleteById(int theId);
+    void delete(int theId);
 
 }

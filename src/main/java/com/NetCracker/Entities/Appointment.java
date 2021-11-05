@@ -1,17 +1,9 @@
 package com.NetCracker.Entities;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "appointment")
@@ -22,20 +14,10 @@ public class Appointment {
     @Column(name = "APPOINTMENT_ID", unique = true, nullable = false)
     private int id;
 
-    @Column(name = "START_DATE_TIME")
-    @NotNull
-    private LocalDateTime start;
-
-    @Column(name = "END_DATE_TIME")
-    private LocalDateTime end;
-
-    @Column(name = "ADDRESS")
-    @NotNull
-    private String address;
-
-    @Column(name = "ROOM")
-    @NotNull
-    private String room;
+    @OneToOne
+    @JoinColumn(name = "APPOINTMENT_REGISTRATION",
+            referencedColumnName = "APPOINTMENT_REGISTRATION_ID")
+    private AppointmentRegistration appointmentRegistration;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PATIENT", referencedColumnName = "PATIENT_ID")
@@ -46,6 +28,7 @@ public class Appointment {
     private Doctor doctor;
 
     @Lob
+    @Type(type = "org.hibernate.type.TextType")
     @Column(name = "DESCRIPTION")
     private String description;
 
@@ -56,15 +39,36 @@ public class Appointment {
     private String recipe;
 
     @Lob
+    @Type(type = "org.hibernate.type.TextType")
     @Column(name = "TREATMENT_PLAN")
     private String treatPlan;
 
     @Lob
+    @Type(type = "org.hibernate.type.TextType")
     @Column(name = "REHABILITATION_PLAN")
     private String rehabPlan;
 
     @Column(name = "DOCTORS_STATEMENT")
     private String docStatement;
+
+    public Appointment() {
+    }
+
+    public Appointment(int id, AppointmentRegistration appointmentRegistration,
+                       Patient patient, Doctor doctor, String description,
+                       String service, String recipe, String treatPlan,
+                       String rehabPlan, String docStatement) {
+        this.id = id;
+        this.appointmentRegistration = appointmentRegistration;
+        this.patient = patient;
+        this.doctor = doctor;
+        this.description = description;
+        this.service = service;
+        this.recipe = recipe;
+        this.treatPlan = treatPlan;
+        this.rehabPlan = rehabPlan;
+        this.docStatement = docStatement;
+    }
 
     public int getId() {
         return id;
@@ -72,38 +76,6 @@ public class Appointment {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public LocalDateTime getStart() {
-        return start;
-    }
-
-    public void setStart(LocalDateTime start) {
-        this.start = start;
-    }
-
-    public LocalDateTime getEnd() {
-        return end;
-    }
-
-    public void setEnd(LocalDateTime end) {
-        this.end = end;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getRoom() {
-        return room;
-    }
-
-    public void setRoom(String room) {
-        this.room = room;
     }
 
     public Patient getPatient() {
@@ -169,4 +141,48 @@ public class Appointment {
     public void setDocStatement(String docStatement) {
         this.docStatement = docStatement;
     }
+
+    public AppointmentRegistration getAppointmentRegistration() {
+        return appointmentRegistration;
+    }
+
+    public void setAppointmentRegistration(AppointmentRegistration appointmentRegistration) {
+        this.appointmentRegistration = appointmentRegistration;
+    }
+
+    @Override
+    public String toString() {
+        return "Appointment{" +
+                "id=" + id +
+                ", appointmentRegistration=" + appointmentRegistration +
+                ", patient=" + patient +
+                ", doctor=" + doctor +
+                ", description='" + description + '\'' +
+                ", service='" + service + '\'' +
+                ", recipe='" + recipe + '\'' +
+                ", treatPlan='" + treatPlan + '\'' +
+                ", rehabPlan='" + rehabPlan + '\'' +
+                ", docStatement='" + docStatement + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Appointment)) return false;
+        Appointment that = (Appointment) o;
+        return getId() == that.getId() && appointmentRegistration.equals(that.appointmentRegistration) &&
+                getPatient().equals(that.getPatient()) && getDoctor().equals(that.getDoctor()) &&
+                Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getService(),
+                that.getService()) && Objects.equals(getRecipe(), that.getRecipe()) &&
+                Objects.equals(getTreatPlan(), that.getTreatPlan()) && Objects.equals(getRehabPlan(),
+                that.getRehabPlan()) && Objects.equals(getDocStatement(), that.getDocStatement());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), appointmentRegistration, getPatient(), getDoctor(),
+                getDescription(), getService(), getRecipe(), getTreatPlan(), getRehabPlan(), getDocStatement());
+    }
+
 }

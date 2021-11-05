@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:postgresql://localhost:5433/appointment</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="georgo_testcracker" uuid="a612a24a-1441-43ce-abee-cef1a62a91e9">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://postgresql://postgresql-georgo.alwaysdata.net:5432/georgo_testcracker?serverTimezone=UTC</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
