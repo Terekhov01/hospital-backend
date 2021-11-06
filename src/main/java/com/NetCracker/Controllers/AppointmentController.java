@@ -82,6 +82,10 @@ class AppointmentController {
         Optional<Appointment> appointmentData = repository.findById(id);
         Optional<AppointmentRegistration> appointmentRegistrationData = appointmentRegistrations.
                 findByDoctorAndPatient(appointment.getDoctor().getLastName(), appointment.getPatient().getLastName());
+//        System.out.println("In updating a");
+//        System.out.println("Doc: " + appointment.getDoctor().getLastName());
+//        System.out.println("Pat: " + appointment.getPatient().getLastName());
+//        System.out.println("Is present? " + appointmentRegistrationData.isPresent());
         if (appointmentRegistrationData.isPresent()) {
             if (appointmentData.isPresent()) {
                 Appointment _appointment = appointmentData.get();
@@ -91,9 +95,9 @@ class AppointmentController {
                 _appointment.setRehabPlan(appointment.getRehabPlan());
                 _appointment.setService(appointment.getService());
                 _appointment.setTreatPlan(appointment.getTreatPlan());
-                _appointment.setDoctor(appointment.getDoctor());
-                _appointment.setPatient(appointment.getPatient());
-                _appointment.setAppointmentRegistration(appointment.getAppointmentRegistration());
+                _appointment.setDoctor(appointmentRegistrationData.get().getDoctor());
+                _appointment.setPatient(appointmentRegistrationData.get().getPatient());
+                _appointment.setAppointmentRegistration(appointmentRegistrationData.get());
                 return new ResponseEntity<>(repository.save(_appointment), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);

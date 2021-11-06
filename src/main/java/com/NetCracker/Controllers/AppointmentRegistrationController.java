@@ -88,16 +88,25 @@ public class AppointmentRegistrationController {
     @PutMapping("/appointmentRegistrations/{id}")
     public ResponseEntity<AppointmentRegistration> updateAppointmentRegistration(@PathVariable("id") int id, @RequestBody AppointmentRegistration appointmentRegistration) {
         Optional<AppointmentRegistration> appointmentRegistrationData = repository.findById(id);
-
-        if (appointmentRegistrationData.isPresent()) {
-            AppointmentRegistration _appointmentRegistration = appointmentRegistrationData.get();
-            _appointmentRegistration.setStart(appointmentRegistration.getStart());
-            _appointmentRegistration.setEnd(appointmentRegistration.getEnd());
-            _appointmentRegistration.setAddress(appointmentRegistration.getAddress());
-            _appointmentRegistration.setRoom(appointmentRegistration.getRoom());
-            _appointmentRegistration.setPatient(appointmentRegistration.getPatient());
-            _appointmentRegistration.setDoctor(appointmentRegistration.getDoctor());
-            return new ResponseEntity<>(repository.save(_appointmentRegistration), HttpStatus.OK);
+        Optional<Doctor> doctor = doctors.findDoctorByLastName(appointmentRegistration.getDoctor().getLastName());
+        Optional<Patient> patient = patients.findPatientByLastName(appointmentRegistration.getPatient().getLastName());
+//        System.out.println("In updating ar");
+//        System.out.println("Doc: " + appointmentRegistration.getDoctor().getLastName());
+//        System.out.println("Pat: " + appointmentRegistration.getPatient().getLastName());
+//        System.out.println("Is present? " + appointmentRegistrationData.isPresent());
+        if (doctor.isPresent() && patient.isPresent()) {
+            if (appointmentRegistrationData.isPresent()) {
+                AppointmentRegistration _appointmentRegistration = appointmentRegistrationData.get();
+                _appointmentRegistration.setStart(appointmentRegistration.getStart());
+                _appointmentRegistration.setEnd(appointmentRegistration.getEnd());
+                _appointmentRegistration.setAddress(appointmentRegistration.getAddress());
+                _appointmentRegistration.setRoom(appointmentRegistration.getRoom());
+                _appointmentRegistration.setPatient(patient.get());
+                _appointmentRegistration.setDoctor(doctor.get());
+                return new ResponseEntity<>(repository.save(_appointmentRegistration), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

@@ -16,9 +16,11 @@ public interface AppointmentRegistrationRepo extends JpaRepository<AppointmentRe
     @Query("select a from AppointmentRegistration a where a.id = :id")
     Optional<AppointmentRegistration> findById(@Param("id") Integer id);
 
-    @Query("select a from AppointmentRegistration a, Doctor d, Patient p where a.doctor.id = d.id and a.patient.id = p.id and p.lastName = :pat and d.lastName = :doc")
+    @Query("select a from AppointmentRegistration a, Doctor d, Patient p where a.doctor.id = d.id and a.patient.id = p.id and p.lastName = :pat and d.lastName = :doc and a.start = (select min(aa.start) from AppointmentRegistration aa, Doctor dd, Patient pp where aa.doctor.id = dd.id and aa.patient.id = pp.id and pp.lastName = :pat and dd.lastName = :doc)")
     Optional<AppointmentRegistration> findByDoctorAndPatient(@Param("doc") String doc, @Param("pat") String pat);
 
-    @Query("select a from AppointmentRegistration a, Doctor d, Patient p where a.doctor.id = d.id and a.patient.id = p.id and p.lastName = :pat and d.lastName = :doc and a.start = :start")
-    Optional<AppointmentRegistration> findByDoctorAndPatientAndStart(@Param("doc") String doc, @Param("pat") String pat, @Param("start") LocalDateTime start);
+//    @Query("select a from AppointmentRegistration a, Doctor d, Patient p where a.doctor.id = d.id and a.patient.id = p.id and p.lastName = :pat and d.lastName = :doc and a.start = :start and a.start = (select min(aa.start) from AppointmentRegistration aa)")
+//    Optional<AppointmentRegistration> findByDoctorAndPatientAndStart(@Param("doc") String doc, @Param("pat") String pat, @Param("start") LocalDateTime start);
 }
+
+
