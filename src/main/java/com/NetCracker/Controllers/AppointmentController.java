@@ -81,11 +81,12 @@ class AppointmentController {
     public ResponseEntity<Appointment> updateAppointment(@PathVariable("id") int id, @RequestBody Appointment appointment) {
         Optional<Appointment> appointmentData = repository.findById(id);
         Optional<AppointmentRegistration> appointmentRegistrationData = appointmentRegistrations.
-                findByDoctorAndPatient(appointment.getDoctor().getLastName(), appointment.getPatient().getLastName());
-//        System.out.println("In updating a");
-//        System.out.println("Doc: " + appointment.getDoctor().getLastName());
-//        System.out.println("Pat: " + appointment.getPatient().getLastName());
-//        System.out.println("Is present? " + appointmentRegistrationData.isPresent());
+                findByDoctorAndPatient(appointment.getAppointmentRegistration().getDoctor().getLastName(),
+                        appointment.getAppointmentRegistration().getPatient().getLastName());
+        System.out.println("In updating a");
+        System.out.println("Doc: " + appointment.getAppointmentRegistration().getDoctor().getLastName());
+        System.out.println("Pat: " + appointment.getAppointmentRegistration().getPatient().getLastName());
+        System.out.println("Is present? " + appointmentRegistrationData.isPresent());
         if (appointmentRegistrationData.isPresent()) {
             if (appointmentData.isPresent()) {
                 Appointment _appointment = appointmentData.get();

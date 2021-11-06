@@ -90,10 +90,10 @@ public class AppointmentRegistrationController {
         Optional<AppointmentRegistration> appointmentRegistrationData = repository.findById(id);
         Optional<Doctor> doctor = doctors.findDoctorByLastName(appointmentRegistration.getDoctor().getLastName());
         Optional<Patient> patient = patients.findPatientByLastName(appointmentRegistration.getPatient().getLastName());
-//        System.out.println("In updating ar");
-//        System.out.println("Doc: " + appointmentRegistration.getDoctor().getLastName());
-//        System.out.println("Pat: " + appointmentRegistration.getPatient().getLastName());
-//        System.out.println("Is present? " + appointmentRegistrationData.isPresent());
+        System.out.println("In updating ar");
+        System.out.println("Doc: " + appointmentRegistration.getDoctor().getLastName());
+        System.out.println("Pat: " + appointmentRegistration.getPatient().getLastName());
+        System.out.println("Is present? " + appointmentRegistrationData.isPresent());
         if (doctor.isPresent() && patient.isPresent()) {
             if (appointmentRegistrationData.isPresent()) {
                 AppointmentRegistration _appointmentRegistration = appointmentRegistrationData.get();
