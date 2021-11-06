@@ -1,48 +1,62 @@
-package Hospital.doctors.entity;
+package com.NetCracker.Entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.List;
+import java.util.Objects;
 
 @Entity
-@AllArgsConstructor
-@Data
-@NoArgsConstructor
-public class Doctor {
-
+@Inheritance
+@Table(name = "doctor")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class Doctor extends User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    @Temporal(TemporalType.DATE)
-    private Date dateOfEmployment;
-//    @Temporal(TemporalType.DATE)
-//    private Date dateOfBirth;
-    //    private String name;
-//    private String surname;
-//    private String middlename;
-    //@OneToMany(mappedBy = "doc")
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "DOCTOR_ID", unique = true, nullable = false)
+    private int id;
 
-    //private List<Response> responses;
+    public Doctor() {
+        super();
+    }
 
-    private String education;
+    public Doctor(String lastName) {
+        super(lastName);
+    }
 
-    @OneToOne(optional = false)
-    @JoinColumn(name = "room_id", nullable = false, updatable = false)
-    private Room room;
+    public int getId() {
+        return id;
+    }
 
-    @OneToOne(optional = false)
-    @JoinColumn(name = "specialization_id", nullable = false, updatable = false)
-    private Specialist specialist;
+    public void setId(int id) {
+        this.id = id;
+    }
 
-//    @OneToOne(optional = false)
-//    @JoinColumn(name = "department_id", nullable = false, updatable = false)
-//    private Department department;
+    public String getLastName() {
+        return super.getLastName();
+    }
 
+    public void setLastName(String lastName) {
+        super.setLastName(lastName);
+    }
 
-//unique = true
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Doctor)) return false;
+        Doctor doctor = (Doctor) o;
+        return getId() == doctor.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), super.getLastName());
+    }
+
+    @Override
+    public String toString() {
+        return "Doctor{" +
+                "id=" + id +
+                '}';
+    }
 }
