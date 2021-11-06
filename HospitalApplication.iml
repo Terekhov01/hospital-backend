@@ -22,7 +22,10 @@
       </configuration>
     </facet>
     <facet type="Spring" name="Spring">
-      <configuration />
+      <configuration>
+        <fileset id="spring-boot-dispatcherServletAutoConfiguration-mvc" profiles="development" autodetected="true" />
+        <fileset id="spring_boot_com.NetCracker.Main" profiles="development" autodetected="true" />
+      </configuration>
     </facet>
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_15">
