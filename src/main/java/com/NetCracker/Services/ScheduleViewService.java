@@ -2,8 +2,10 @@ package com.NetCracker.Services;
 
 import com.NetCracker.Entities.Schedule.DoctorSchedule;
 import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleInterval;
+import com.NetCracker.Repositories.DoctorRepository;
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,12 +29,12 @@ public class ScheduleViewService
         LocalDate date;
 
         @Expose
-        LocalTime startOfDay;
+        String startOfDay;
 
         @Expose
-        LocalTime endOfDay;
+        String endOfDay;
 
-        public DoctorScheduleTableDataDaily(LocalDate date, LocalTime startOfDay, LocalTime endOfDay)
+        public DoctorScheduleTableDataDaily(LocalDate date, String startOfDay, String endOfDay)
         {
             this.date = date;
             this.startOfDay = startOfDay;
@@ -42,16 +44,6 @@ public class ScheduleViewService
         public LocalDate getDate()
         {
             return date;
-        }
-
-        public LocalTime getStartOfDay()
-        {
-            return startOfDay;
-        }
-
-        public LocalTime getEndOfDay()
-        {
-            return endOfDay;
         }
 
         public static final Comparator<DoctorScheduleTableDataDaily> dateAscendComparator = new Comparator<DoctorScheduleTableDataDaily>() {
@@ -69,7 +61,7 @@ public class ScheduleViewService
         Long id;
 
         @Expose
-        String specialization;
+        String specializationName;
 
         @Expose
         String doctorName;
@@ -77,10 +69,10 @@ public class ScheduleViewService
         @Expose
         SortedSet<DoctorScheduleTableDataDaily> dailyInformation;
 
-        public DoctorScheduleTableData(DoctorSchedule schedule)
+        public DoctorScheduleTableData(DoctorSchedule schedule, LocalDate dateBeginRepresent, LocalDate dateEndRepresent)
         {
             this.id = schedule.getRelatedDoctor().getId();
-            this.specialization = "Goose";
+            this.specializationName = "Goose";
             //this.specialization = schedule.getRelatedDoctor().getSpecialization().toString();
             this.doctorName = schedule.getRelatedDoctor().getName();
             this.dailyInformation = new TreeSet<DoctorScheduleTableDataDaily>(DoctorScheduleTableDataDaily.dateAscendComparator);
@@ -89,20 +81,36 @@ public class ScheduleViewService
             LocalDate curDate = null;
             LocalTime startOfDay = null;
             LocalTime endOfDay = null;
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
             while (setIterator.hasNext())
             {
                 var interval = setIterator.next();
+
+                if (interval.getIntervalStartTime().isBefore(dateBeginRepresent.atStartOfDay()))
+                {
+                    continue;
+                }
+
+                if (interval.getIntervalStartTime().isAfter(dateEndRepresent.atStartOfDay()))
+                {
+                    break;
+                }
+
                 LocalDate intervalDate = interval.getIntervalStartTime().toLocalDate();
                 LocalTime intervalTime = interval.getIntervalStartTime().toLocalTime();
                 if (intervalDate.equals(curDate))
                 {
-                    endOfDay = intervalTime;
+                    if (intervalTime.plusMinutes(30).isAfter(endOfDay))
+                    {
+                        endOfDay = intervalTime.plusMinutes(30);
+                    }
                 }
                 else
                 {
                     if (curDate != null)
                     {
-                        dailyInformation.add(new DoctorScheduleTableDataDaily(curDate, startOfDay, endOfDay));
+                        dailyInformation.add(new DoctorScheduleTableDataDaily(curDate, startOfDay.format(formatter), endOfDay.format(formatter)));
                     }
 
                     curDate = intervalDate;
@@ -112,19 +120,43 @@ public class ScheduleViewService
             }
         }
 
-        /*public DoctorScheduleTableData(Long id, String specialization, String doctorName, SortedSet<ScheduleInterval> intervalSet)
-        {
-            this.id = id;
-            this.specialization = specialization;
-            this.doctorName = doctorName;
-            this.dailyInformation = intervalSet;
-        }
-
-        public Set<ScheduleInterval> getIntervalSet()
+        public Set<DoctorScheduleTableDataDaily> getIntervalSet()
         {
             return dailyInformation;
-        }*/
+        }
     }
+
+    /**
+     *
+     * @param doctorIds ids of doctors whose data to obtain.
+     * @return Json string that contains requested data in such format that it can be parsed by Angular.
+     * Returned data is presented in material table.
+     */
+    public String getScheduleTableJson(List<Long> doctorIds, LocalDate dateBeginRepresent, LocalDate dateEndRepresent)
+    {
+        Set<DoctorSchedule> schedules = scheduleService.getDoctorSchedule(doctorIds);
+
+        //Required data - each doctor is matched with set of scheduleIntervals - time, when (s)he is working (not busy)
+        Set<DoctorScheduleTableData> doctorScheduleTableDataSet = schedules.stream()
+                .map(schedule -> new DoctorScheduleTableData(schedule, dateBeginRepresent, dateEndRepresent))
+                .collect(Collectors.toSet());
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalDate.class, new JsonSerializer<LocalDate>()
+        {
+            @Override
+            public JsonElement serialize(LocalDate localDate, Type type, JsonSerializationContext jsonDeserializationContext) throws JsonParseException
+            {
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE;
+                return new JsonPrimitive(dateTimeFormatter.format(localDate));
+            }
+        });
+
+        Gson gson = gsonBuilder.excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
+
+        return gson.toJson(doctorScheduleTableDataSet);
+    }
+
 
     static class DoctorScheduleAssignmentCalendarData
     {
@@ -133,71 +165,39 @@ public class ScheduleViewService
         Long id;
 
         @Expose
-        String specialization;
+        String specializationName;
 
         @Expose
         String doctorName;
 
         @Expose
-        SortedSet<ScheduleInterval> dailyInformation;
+        SortedSet<ScheduleInterval> intervalCollection;
 
-        public DoctorScheduleAssignmentCalendarData(Long id, String specialization, String doctorName, SortedSet<ScheduleInterval> intervalSet)
+        public DoctorScheduleAssignmentCalendarData(Long id, String specializationName, String doctorName, SortedSet<ScheduleInterval> intervalSet)
         {
             this.id = id;
-            this.specialization = specialization;
+            this.specializationName = specializationName;
             this.doctorName = doctorName;
-            this.dailyInformation = intervalSet;
+            this.intervalCollection = intervalSet;
         }
 
         public Set<ScheduleInterval> getIntervalSet()
         {
-            return dailyInformation;
+            return intervalCollection;
         }
     }
 
-//    public String getScheduleTableJson(Long[] doctorIds, LocalDateTime startDateTime, LocalDateTime endDateTime/*, ZoneOffset zoneOffset*/, Boolean getFreeTimeOnly)
-//    {
-//        Set<DoctorSchedule> schedules = scheduleService.getDoctorSchedule(Arrays.stream(doctorIds).toList());
-//
-//        ScheduleInterval intervalStart = new ScheduleInterval(startDateTime);
-//        ScheduleInterval intervalEnd = new ScheduleInterval(endDateTime);
-//
-//        //Required data - each doctor is matched with set of scheduleIntervals - time, when (s)he is working (not busy)
-//        Set<DoctorScheduleTableData> doctorScheduleTableDataSet = schedules.stream().map(DoctorScheduleTableData::new)
-//                .collect(Collectors.toSet());
-//
-//
-//        if (getFreeTimeOnly)
-//        {
-//            //Remove all assigned intervals
-//            for (var doctorData : doctorScheduleTableDataSet)
-//            {
-//                doctorData.getIntervalSet().removeIf(ScheduleInterval::isAssigned);
-//            }
-//
-//            //Remove all entries that have empty value
-//            doctorScheduleTableDataSet.removeIf(doctorScheduleTableData -> doctorScheduleTableData.getIntervalSet().size() == 0);
-//        }
-//
-//        GsonBuilder gsonBuilder = new GsonBuilder();
-//        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new JsonSerializer<LocalDateTime>()
-//        {
-//            @Override
-//            public JsonElement serialize(LocalDateTime localDateTime, Type type, JsonSerializationContext jsonDeserializationContext) throws JsonParseException
-//            {
-//                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
-//                return new JsonPrimitive(dateTimeFormatter.format(localDateTime));
-//            }
-//        });
-//
-//        Gson gson = gsonBuilder.excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
-//
-//        return gson.toJson(doctorScheduleTableDataSet);
-//    }
-
-    public String getScheduleAssignmentCalendarJson(Long[] doctorIds, LocalDateTime startDateTime, LocalDateTime endDateTime/*, ZoneOffset zoneOffset*/, Boolean getFreeTimeOnly)
+    /**
+     *
+     * @param doctorIds ids of doctors whose information to obtain.
+     * @param startDateTime all returned dates must be after specified date and time
+     * @param endDateTime all returned dates must be before specified date and time
+     * @param getFreeTimeOnly signals whether to return moments when doctors already have appointments
+     * @return string that contains information about time intervals when doctors work and if they already have appointments
+     */
+    public String getScheduleAssignmentCalendarJson(List<Long> doctorIds, LocalDateTime startDateTime, LocalDateTime endDateTime, Boolean getFreeTimeOnly)
     {
-        Set<DoctorSchedule> schedules = scheduleService.getDoctorSchedule(Arrays.stream(doctorIds).toList());
+        Set<DoctorSchedule> schedules = scheduleService.getDoctorSchedule(doctorIds);
 
         ScheduleInterval intervalStart = new ScheduleInterval(startDateTime);
         ScheduleInterval intervalEnd = new ScheduleInterval(endDateTime);
@@ -244,5 +244,31 @@ public class ScheduleViewService
         Gson gson = gsonBuilder.excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
 
         return gson.toJson(doctorScheduleTableDataSet);
+    }
+
+    //Instances of this class are not managed by hibernate, so they can be serialized via Gson
+    static class DoctorShortInformation
+    {
+        Long id;
+        String doctorName;
+        String specializationName;
+
+        DoctorShortInformation(DoctorRepository.@NotNull DoctorShortInformation persistedPair)
+        {
+            this.id = persistedPair.getId();
+            this.doctorName = persistedPair.getName();
+            this.specializationName = "ABC";
+        }
+    }
+
+    public String getDoctorsShortInformation(List<Long> doctorIds)
+    {
+        //TODO - switch to related service, delete function.
+        var persistedDoctorIdNameCollection = scheduleService.getDoctorShortInformation(doctorIds);
+        var doctorIdNameCollection = new ArrayList<>();
+        persistedDoctorIdNameCollection.forEach(persistedPair ->
+                doctorIdNameCollection.add(new DoctorShortInformation(persistedPair)));
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(doctorIdNameCollection);
     }
 }

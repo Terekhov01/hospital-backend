@@ -139,9 +139,14 @@ public class ScheduleService
         return scheduleIntervalRepository.findById(new ScheduleIntervalId(doctor.getSchedule().getId(), time)).orElse(null);
     }
 
-    @Override
-    public String toString()
+    /**
+     * This function returns shortened information about doctors. It is used to help users set filters.
+     * @param doctorIds ids of doctors whose information to return
+     * @throws DataAccessException if retrieving information failed
+     */
+    @Transactional
+    public Collection<DoctorRepository.DoctorShortInformation> getDoctorShortInformation(List<Long> doctorIds) throws DataAccessException
     {
-        return super.toString();
+        return doctorRepository.findByIdIn(doctorIds);
     }
 }

@@ -13,7 +13,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class ScheduleController
@@ -24,21 +31,60 @@ public class ScheduleController
     @Autowired
     private ScheduleViewService scheduleViewService;
 
-    @GetMapping("/schedule")
-    @CrossOrigin(origins = "http://localhost:4200")
-    public ResponseEntity<String> presentAllSchedules(@RequestParam(name = "doctorIds", required = false) Long[] doctorIds,
-                                                      @RequestParam(name = "startDateTime", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDateTime,
-                                                      @RequestParam(name = "endDateTime", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDateTime,
-                                                      @RequestParam(name = "getFreeTimeOnly", required = false) Boolean getFreeTimeOnly)
+    String prepareDateStringToParse(String dateStr)
     {
-        System.out.println("/schedule");
+        if (dateStr.charAt(0) == ' ')
+        {
+            StringBuilder builder = new StringBuilder(dateStr);
+            builder.setCharAt(0, '+');
+            return builder.toString();
+        }
+        return dateStr;
+    }
+
+    List<Long> stringToLongList(String str) throws NumberFormatException
+    {
+        try
+        {
+            return Arrays.stream(str.split(",")).map(Long::valueOf).collect(Collectors.toList());
+        }
+        catch(NumberFormatException e)
+        {
+            return null;
+        }
+    }
+
+    LocalDate stringToLocalDate(String str)
+    {
+        DateTimeFormatter ISOFormatter = DateTimeFormatter.ISO_ZONED_DATE_TIME;
+        try
+        {
+            return LocalDateTime.parse(prepareDateStringToParse(str), ISOFormatter).toLocalDate();
+        }
+        catch (DateTimeParseException e)
+        {
+            return null;
+        }
+    }
+
+    @GetMapping("/schedule/table")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<String> getDataForTable(@RequestParam(name = "doctorIds", required = false) String doctorIdsStr,
+                                                  @RequestParam(name = "dateBeginRepresent", required = false) String dateBeginRepresentStr,
+                                                  @RequestParam(name = "dateEndRepresent", required = false) String dateEndRepresentStr
+    )
+    {
+        List<Long> doctorIds = new ArrayList<>();
+
+        LocalDate dateBeginRepresent = null;
+        LocalDate dateEndRepresent = null;
+
         //If no array provided return all doctors' info
-        if (doctorIds == null)
+        if (doctorIdsStr == null)
         {
             try
             {
-                var debug = scheduleService.getAllDoctors();
-                doctorIds = scheduleService.getAllDoctors().stream().map(Doctor::getId).toArray(Long[]::new);
+                doctorIds = scheduleService.getAllDoctors().stream().map(Doctor::getId).collect(Collectors.toList());
             }
             catch (DataAccessException e)
             {
@@ -48,17 +94,128 @@ public class ScheduleController
                         HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
+        else
+        {
+            doctorIds = stringToLongList(doctorIdsStr);
+            if (doctorIds == null)
+            {
+                return new ResponseEntity<String>("Invalid request - doctorIds is a malformed string representation", HttpStatus.BAD_REQUEST);
+            }
+        }
 
         //If no startDateTime provided use all available data by default
-        if (startDateTime == null)
+        if (dateBeginRepresentStr == null)
         {
-            startDateTime = LocalDateTime.MIN;
+            dateBeginRepresent = LocalDate.MIN;
+        }
+        else
+        {
+            dateBeginRepresent = stringToLocalDate(dateBeginRepresentStr);
+            if (dateBeginRepresent == null)
+            {
+                return new ResponseEntity<String>("Invalid request - dateBeginRepresent - could not parse temporal value", HttpStatus.BAD_REQUEST);
+            }
         }
 
         //If no endDateTime provided use all available data by default
-        if (endDateTime == null)
+        if (dateEndRepresentStr == null)
         {
-            endDateTime = LocalDateTime.MAX;
+            dateEndRepresent = LocalDate.MAX;
+        }
+        else
+        {
+            dateEndRepresent = stringToLocalDate(dateEndRepresentStr);
+            if (dateEndRepresent == null)
+            {
+                return new ResponseEntity<String>("Invalid request - dateEndRepresent - could not parse temporal value", HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        String jsonTable = "";
+        try
+        {
+            jsonTable = scheduleViewService.getScheduleTableJson(doctorIds, dateBeginRepresent, dateEndRepresent);
+        }
+        catch (DataAccessException | IllegalStateException e)
+        {
+            return new ResponseEntity<String>("Server could not retrieve information from database or serialize it", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        //TODO - delete in prod
+        System.out.println(jsonTable);
+
+        return new ResponseEntity<String>(jsonTable, HttpStatus.OK);
+    }
+
+    @GetMapping("/schedule/calendar")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<String> getDataForCalendar( @RequestParam(name = "doctorIds", required = false) String doctorIdsStr,
+                                                      @RequestParam(name = "startDate", required = false) String startDateStr,
+                                                      @RequestParam(name = "endDate", required = false) String endDateStr,
+                                                      @RequestParam(name = "getFreeTimeOnly", required = false) Boolean getFreeTimeOnly)
+    {
+        List<Long> doctorIds = new ArrayList<>();
+
+        LocalDate startDate = null;
+        LocalDate endDate = null;
+
+        System.out.println("/schedule");
+        //If no array provided return all doctors' info
+        if (doctorIdsStr == null)
+        {
+            try
+            {
+                var debug = scheduleService.getAllDoctors();
+                doctorIds = scheduleService.getAllDoctors().stream().map(Doctor::getId).toList();
+            }
+            catch (DataAccessException e)
+            {
+                //TODO - log errors
+                return new ResponseEntity<String>(
+                        "Server could not retrieve information from database - IDs of all doctors",
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+        else
+        {
+            doctorIds = stringToLongList(doctorIdsStr);
+            if (doctorIds == null)
+            {
+                return new ResponseEntity<String>("Invalid request - doctorIds is a malformed string representation", HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        //If no startDateTime provided use all available data by default
+        if (startDateStr == null)
+        {
+            startDate = LocalDate.MIN;
+        }
+        else
+        {
+            startDate = stringToLocalDate(startDateStr);
+            if (startDate == null)
+            {
+                return new ResponseEntity<String>("Invalid request - startDate - could not parse temporal value", HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        //If no endDateTime provided use all available data by default
+        if (endDateStr == null)
+        {
+            endDate = startDate.plusDays(7);
+        }
+        else
+        {
+            endDate = stringToLocalDate(endDateStr);
+            if (endDate == null)
+            {
+                return new ResponseEntity<String>("Invalid request - startDate - could not parse temporal value", HttpStatus.BAD_REQUEST);
+            }
+
+            if (endDate.isBefore(startDate))
+            {
+                return new ResponseEntity<String>("Invalid request - endDate is before startDate", HttpStatus.BAD_REQUEST);
+            }
         }
 
         //If no specifier provided show when doctors do their jobs
@@ -67,20 +224,54 @@ public class ScheduleController
             getFreeTimeOnly = false;
         }
 
-        String jsonTable = "";
+        String jsonCalendar = "";
 
         try
         {
-            jsonTable = scheduleViewService.getScheduleAssignmentCalendarJson(doctorIds, startDateTime, endDateTime, getFreeTimeOnly);
+            jsonCalendar = scheduleViewService.getScheduleAssignmentCalendarJson(doctorIds, startDate.atStartOfDay(), endDate.atStartOfDay(), getFreeTimeOnly);
         }
         catch (DataAccessException | IllegalStateException e)
         {
             //TODO - log errors
-            return new ResponseEntity<String>("Server could not retrieve information from database", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>(
+                    "Server could not retrieve information from database or serialize it - getting data for calendar",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        catch (Throwable e)
+        {
+            return new ResponseEntity<String>("Unknown error - retry later", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        System.out.println(jsonTable);
-        return new ResponseEntity<String>(jsonTable, HttpStatus.OK);
+        //TODO - delete in prod
+        System.out.println(jsonCalendar);
+
+        return new ResponseEntity<String>(jsonCalendar, HttpStatus.OK);
+    }
+
+    @GetMapping("/schedule/calendar/getDoctorNames")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<String> getDoctorNames(@RequestParam(name = "doctorIds", required = false) List<Long> doctorIds)
+    {
+        if (doctorIds == null)
+        {
+            doctorIds = scheduleService.getAllDoctors().stream().map(Doctor::getId).toList();
+        }
+
+        String doctorsShortInformation = null;
+        try
+        {
+            doctorsShortInformation = scheduleViewService.getDoctorsShortInformation(doctorIds);
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>(
+                    "Server could not retrieve information from database - getting doctor name and id",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        System.out.println(doctorsShortInformation);
+
+        return new ResponseEntity<String>(doctorsShortInformation, HttpStatus.OK);
     }
 
     @GetMapping("/test")
