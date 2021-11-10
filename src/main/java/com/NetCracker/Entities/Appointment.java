@@ -19,12 +19,10 @@ public class Appointment {
             referencedColumnName = "APPOINTMENT_REGISTRATION_ID")
     private AppointmentRegistration appointmentRegistration;
 
-    //delete this column?
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PATIENT", referencedColumnName = "PATIENT_ID")
     private Patient patient;
 
-    //delete this column?
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "DOCTOR", referencedColumnName = "DOCTOR_ID")
     private Doctor doctor;
