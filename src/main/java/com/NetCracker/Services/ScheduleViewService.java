@@ -253,22 +253,22 @@ public class ScheduleViewService
         String doctorName;
         String specializationName;
 
-        DoctorShortInformation(DoctorRepository.@NotNull DoctorShortInformation persistedPair)
+        DoctorShortInformation(DoctorRepository.@NotNull DoctorShortInformation persistedShortInformation)
         {
-            this.id = persistedPair.getId();
-            this.doctorName = persistedPair.getName();
-            this.specializationName = "ABC";
+            this.id = persistedShortInformation.getId();
+            this.doctorName = persistedShortInformation.getName();
+            this.specializationName = persistedShortInformation.getSpecialization();
         }
     }
 
     public String getDoctorsShortInformation(List<Long> doctorIds)
     {
         //TODO - switch to related service, delete function.
-        var persistedDoctorIdNameCollection = scheduleService.getDoctorShortInformation(doctorIds);
-        var doctorIdNameCollection = new ArrayList<>();
-        persistedDoctorIdNameCollection.forEach(persistedPair ->
-                doctorIdNameCollection.add(new DoctorShortInformation(persistedPair)));
+        var persistedDoctorShortInformationCollection = scheduleService.getDoctorShortInformation(doctorIds);
+        var doctorShortInformationCollection = new ArrayList<>();
+        persistedDoctorShortInformationCollection.forEach(persistedPair ->
+                doctorShortInformationCollection.add(new DoctorShortInformation(persistedPair)));
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return gson.toJson(doctorIdNameCollection);
+        return gson.toJson(doctorShortInformationCollection);
     }
 }

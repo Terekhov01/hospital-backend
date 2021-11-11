@@ -20,6 +20,8 @@ public class Doctor
 
     String name;
 
+    String specialization;
+
     //TODO - Implement constructor for this class. Remove @Deprecated if needed
     @Deprecated
     public Doctor()
@@ -48,6 +50,11 @@ public class Doctor
         return name;
     }
 
+    public String getSpecialization()
+    {
+        return specialization;
+    }
+
     public void setId(Long id)
     {
         this.id = id;
@@ -61,6 +68,11 @@ public class Doctor
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    public void setSpecialization(String specialization)
+    {
+        this.specialization = specialization;
     }
 
     @Override

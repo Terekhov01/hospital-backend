@@ -147,6 +147,6 @@ public class ScheduleService
     @Transactional
     public Collection<DoctorRepository.DoctorShortInformation> getDoctorShortInformation(List<Long> doctorIds) throws DataAccessException
     {
-        return doctorRepository.findByIdIn(doctorIds);
+        return doctorRepository.findByIdInOrderBySpecializationAscNameAsc(doctorIds);
     }
 }

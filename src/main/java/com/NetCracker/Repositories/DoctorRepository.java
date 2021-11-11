@@ -13,8 +13,10 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long>
     {
         Long getId();
         String getName();
+        String getSpecialization();
         //TODO - add specialization
     }
 
-    Collection<DoctorShortInformation> findByIdIn(Collection<Long> doctorIds);
+    //findByIdInOrderBySpecializationAscNameAsc
+    Collection<DoctorShortInformation> findByIdInOrderBySpecializationAscNameAsc(Collection<Long> doctorIds);
 }
