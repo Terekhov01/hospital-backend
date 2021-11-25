@@ -1,17 +1,18 @@
 package com.NetCracker.Controllers;
 
 import com.NetCracker.Entities.Doctor;
+import com.NetCracker.Entities.Schedule.SchedulePattern;
+import com.NetCracker.Services.SchedulePatternService;
 import com.NetCracker.Services.ScheduleService;
 import com.NetCracker.Services.ScheduleViewService;
+import com.google.gson.JsonParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,6 +20,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -29,6 +31,9 @@ public class ScheduleController
 
     @Autowired
     private ScheduleViewService scheduleViewService;
+
+    @Autowired
+    private SchedulePatternService schedulePatternService;
 
     String prepareDateStringToParse(String dateStr)
     {
@@ -271,6 +276,46 @@ public class ScheduleController
         System.out.println(doctorsShortInformation);
 
         return new ResponseEntity<String>(doctorsShortInformation, HttpStatus.OK);
+    }
+
+    @PostMapping("/schedule/add-pattern/")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<String> addSchedulePattern(@RequestBody Map<String,Object> responseBody)
+    {
+        var bodyParameters = (Map<String, Object>) responseBody.get("params");
+        var updates = (List<Object>)bodyParameters.get("updates");
+        if (updates.size() != 1)
+        {
+            return new ResponseEntity<String>("Too many parameters!", HttpStatus.BAD_REQUEST);
+        }
+
+        var parameter = (Map<String, String>)updates.get(0);
+        if (!parameter.get("param").equals("schedulePattern"))
+        {
+            return new ResponseEntity<String>("Invalid input data. Could not parse schedule pattern", HttpStatus.BAD_REQUEST);
+        }
+        String schedulePattern = parameter.get("value");
+
+        SchedulePattern newSchedulePattern;
+        try
+        {
+            newSchedulePattern = schedulePatternService.fromJson(schedulePattern);
+        }
+        catch (JsonParseException e)
+        {
+            return new ResponseEntity<String>("Invalid input data. Could not parse schedule pattern", HttpStatus.BAD_REQUEST);
+        }
+
+        try
+        {
+            schedulePatternService.save(newSchedulePattern);
+        }
+        catch(DataAccessException e)
+        {
+            return new ResponseEntity<String>("Could not save schedule pattern to database", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<String>("Saved", HttpStatus.OK);
     }
 
     @GetMapping("/test")

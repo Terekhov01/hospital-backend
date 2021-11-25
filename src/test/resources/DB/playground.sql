@@ -8,6 +8,14 @@ SELECT * FROM doctor_schedule
 
 SELECT * FROM schedule_interval
 
+SELECT * FROM schedule_pattern
+
+SELECT * FROM schedule_pattern_interval WHERE schedule_pattern_id = 26 ORDER BY day_number, interval_start_time
+
+DELETE FROM schedule_pattern
+
+DELETE FROM schedule_pattern_interval
+
 SELECT * FROM doctor
 
 SELECT * FROM ((SELECT * FROM doctor_schedule doc_sch WHERE doctor_id = 1) ds JOIN schedule_interval si ON ds.id = si.doctor_schedule_id) sch_int WHERE interval_start_time = '1970-01-01 05:30:00'

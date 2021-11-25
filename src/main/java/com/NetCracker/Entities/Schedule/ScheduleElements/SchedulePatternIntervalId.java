@@ -2,21 +2,25 @@ package com.NetCracker.Entities.Schedule.ScheduleElements;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Objects;
 
 public class SchedulePatternIntervalId implements Serializable
 {
     private Long schedulePattern;
 
-    private LocalDateTime intervalStartTime;
+    private Integer dayNumber;
+
+    private LocalTime intervalStartTime;
 
     public SchedulePatternIntervalId()
     {
     }
 
-    public SchedulePatternIntervalId(Long schedulePattern, LocalDateTime intervalStartTime)
+    public SchedulePatternIntervalId(Long schedulePattern, Integer dayNumber, LocalTime intervalStartTime)
     {
         this.schedulePattern = schedulePattern;
+        this.dayNumber = dayNumber;
         this.intervalStartTime = intervalStartTime;
     }
 
@@ -25,7 +29,12 @@ public class SchedulePatternIntervalId implements Serializable
         return schedulePattern;
     }
 
-    public LocalDateTime getIntervalStartTime()
+    public Integer getDayNumber()
+    {
+        return dayNumber;
+    }
+
+    public LocalTime getIntervalStartTime()
     {
         return intervalStartTime;
     }
@@ -35,7 +44,12 @@ public class SchedulePatternIntervalId implements Serializable
         this.schedulePattern = schedulePattern;
     }
 
-    public void setIntervalStartTime(LocalDateTime intervalStartTime)
+    public void setDayNumber(Integer dayNumber)
+    {
+        this.dayNumber = dayNumber;
+    }
+
+    public void setIntervalStartTime(LocalTime intervalStartTime)
     {
         this.intervalStartTime = intervalStartTime;
     }

@@ -57,10 +57,10 @@ public class SchedulePattern
 
     public SortedSet<SchedulePatternInterval> getStateSet()
     {
-        if (!(stateSet instanceof TreeSet<SchedulePatternInterval>))
+        /*if (!(stateSet instanceof TreeSet<SchedulePatternInterval>))
         {
             throw new IllegalStateException("stateSet does not contain a TreeSet!");
-        }
+        }*/
 
         return stateSet;
     }
