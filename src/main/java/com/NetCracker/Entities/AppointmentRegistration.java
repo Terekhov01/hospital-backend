@@ -17,7 +17,11 @@ public class AppointmentRegistration {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "APPOINTMENT_REGISTRATION_ID", unique = true, nullable = false)
-    private int id;
+    private Long id;
+
+    @Column(name = "SERVICE")
+    @NotNull
+    private String service;
 
     @Column(name = "START_DATE_TIME")
     @NotNull
@@ -45,9 +49,30 @@ public class AppointmentRegistration {
     public AppointmentRegistration() {
     }
 
-    public AppointmentRegistration(LocalDateTime start, LocalDateTime end,
-                                   String address, String room, Patient patient,
-                                   Doctor doctor) {
+//    public AppointmentRegistration(LocalDateTime start, LocalDateTime end,
+//                                   String address, String room, Patient patient,
+//                                   Doctor doctor) {
+//        this.start = start;
+//        this.end = end;
+//        this.address = address;
+//        this.room = room;
+//        this.patient = patient;
+//        this.doctor = doctor;
+//    }
+
+
+    public String getService() {
+        return service;
+    }
+
+    public void setService(String service) {
+        this.service = service;
+    }
+
+    public AppointmentRegistration(String service, LocalDateTime start,
+                                   LocalDateTime end, String address, String room,
+                                   Patient patient, Doctor doctor) {
+        this.service = service;
         this.start = start;
         this.end = end;
         this.address = address;
@@ -56,11 +81,11 @@ public class AppointmentRegistration {
         this.doctor = doctor;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -112,28 +137,55 @@ public class AppointmentRegistration {
         this.doctor = doctor;
     }
 
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (!(o instanceof AppointmentRegistration)) return false;
+//        AppointmentRegistration that = (AppointmentRegistration) o;
+//        return getId() == that.getId() && getStart().equals(that.getStart()) &&
+//                Objects.equals(getEnd(), that.getEnd()) &&
+//                getAddress().equals(that.getAddress()) &&
+//                getRoom().equals(that.getRoom()) &&
+//                getPatient().equals(that.getPatient()) &&
+//                getDoctor().equals(that.getDoctor());
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(getId(), getStart(), getEnd(), getAddress(), getRoom(), getPatient(), getDoctor());
+//    }
+//
+//    @Override
+//    public String toString() {
+//        return "AppointmentRegistration{" +
+//                "id=" + id +
+//                ", start=" + start +
+//                ", end=" + end +
+//                ", address='" + address + '\'' +
+//                ", room='" + room + '\'' +
+//                ", patient=" + patient +
+//                ", doctor=" + doctor +
+//                '}';
+//    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AppointmentRegistration)) return false;
         AppointmentRegistration that = (AppointmentRegistration) o;
-        return getId() == that.getId() && getStart().equals(that.getStart()) &&
-                Objects.equals(getEnd(), that.getEnd()) &&
-                getAddress().equals(that.getAddress()) &&
-                getRoom().equals(that.getRoom()) &&
-                getPatient().equals(that.getPatient()) &&
-                getDoctor().equals(that.getDoctor());
+        return getId() == that.getId() && getService().equals(that.getService()) && getStart().equals(that.getStart()) && Objects.equals(getEnd(), that.getEnd()) && getAddress().equals(that.getAddress()) && getRoom().equals(that.getRoom()) && Objects.equals(getPatient(), that.getPatient()) && Objects.equals(getDoctor(), that.getDoctor());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getStart(), getEnd(), getAddress(), getRoom(), getPatient(), getDoctor());
+        return Objects.hash(getId(), getService(), getStart(), getEnd(), getAddress(), getRoom(), getPatient(), getDoctor());
     }
 
     @Override
     public String toString() {
         return "AppointmentRegistration{" +
                 "id=" + id +
+                ", service='" + service + '\'' +
                 ", start=" + start +
                 ", end=" + end +
                 ", address='" + address + '\'' +

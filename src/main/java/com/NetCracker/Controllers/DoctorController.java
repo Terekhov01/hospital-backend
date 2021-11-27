@@ -21,7 +21,7 @@ public class DoctorController {
     DoctorRepository repository;
 
     @GetMapping("/doctors")
-    public ResponseEntity<List<Doctor>> getAllDoctors(@RequestParam(required = false) Integer id) {
+    public ResponseEntity<List<Doctor>> getAllDoctors(@RequestParam(required = false) Long id) {
         try {
             List<Doctor> doctors = new ArrayList<>();
 
@@ -41,7 +41,7 @@ public class DoctorController {
     }
 
     @GetMapping("/doctors/id/{id}")
-    public ResponseEntity<Doctor> getDoctorById(@PathVariable("id") int id) {
+    public ResponseEntity<Doctor> getDoctorById(@PathVariable("id") Long id) {
         Optional<Doctor> doctorData = repository.findById(id);
 
         return doctorData.map(doctor ->
@@ -70,7 +70,7 @@ public class DoctorController {
     }
 
     @PutMapping("/doctors/{id}")
-    public ResponseEntity<Doctor> updateDoctor(@PathVariable("id") int id, @RequestBody Doctor doctor) {
+    public ResponseEntity<Doctor> updateDoctor(@PathVariable("id") Long id, @RequestBody Doctor doctor) {
         Optional<Doctor> doctorData = repository.findById(id);
 
         if (doctorData.isPresent()) {
@@ -83,7 +83,7 @@ public class DoctorController {
     }
 
     @DeleteMapping("/doctors/{id}")
-    public ResponseEntity<HttpStatus> deleteDoctor(@PathVariable("id") int id) {
+    public ResponseEntity<HttpStatus> deleteDoctor(@PathVariable("id") Long id) {
         try {
             repository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);

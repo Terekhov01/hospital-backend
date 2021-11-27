@@ -1,7 +1,7 @@
 package com.NetCracker.Exceptions;
 
 public class PatientNotFoundException extends RuntimeException {
-    public PatientNotFoundException(Integer id) {
+    public PatientNotFoundException(Long id) {
         super("Could not find a patient " + id);
     }
 }
