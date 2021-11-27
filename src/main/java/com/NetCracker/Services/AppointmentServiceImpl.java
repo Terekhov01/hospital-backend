@@ -28,7 +28,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
-    public Appointment getById(int theId) {
+    public Appointment getById(Long theId) {
         Optional<Appointment> result = appointmentRepo.findById(theId);
         Appointment theAppointment;
 
@@ -49,7 +49,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
-    public void delete(int theId) {
+    public void delete(Long theId) {
         appointmentRepo.deleteById(theId);
     }
 }

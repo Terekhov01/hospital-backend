@@ -22,7 +22,7 @@ public class PatientController {
     PatientRepository repository;
 
     @GetMapping("/patients")
-    public ResponseEntity<List<Patient>> getAllPatients(@RequestParam(required = false) Integer id) {
+    public ResponseEntity<List<Patient>> getAllPatients(@RequestParam(required = false) Long id) {
         try {
             List<Patient> patients = new ArrayList<>();
 
@@ -42,7 +42,7 @@ public class PatientController {
     }
 
     @GetMapping("/patients/id/{id}")
-    public ResponseEntity<Patient> getPatientById(@PathVariable("id") int id) {
+    public ResponseEntity<Patient> getPatientById(@PathVariable("id") Long id) {
         Optional<Patient> patientData = repository.findById(id);
 
         return patientData.map(patient ->
@@ -71,7 +71,7 @@ public class PatientController {
     }
 
     @PutMapping("/patients/{id}")
-    public ResponseEntity<Patient> updatePatient(@PathVariable("id") int id, @RequestBody Patient patient) {
+    public ResponseEntity<Patient> updatePatient(@PathVariable("id") Long id, @RequestBody Patient patient) {
         Optional<Patient> patientData = repository.findById(id);
 
         if (patientData.isPresent()) {
@@ -84,7 +84,7 @@ public class PatientController {
     }
 
     @DeleteMapping("/patients/{id}")
-    public ResponseEntity<HttpStatus> deletePatient(@PathVariable("id") int id) {
+    public ResponseEntity<HttpStatus> deletePatient(@PathVariable("id") Long id) {
         try {
             repository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);

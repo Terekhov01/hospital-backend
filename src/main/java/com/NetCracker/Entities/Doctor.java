@@ -1,5 +1,7 @@
 package com.NetCracker.Entities;
 
+import com.NetCracker.Entities.Schedule.DoctorSchedule;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
@@ -14,7 +16,19 @@ public class Doctor extends User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "DOCTOR_ID", unique = true, nullable = false)
-    private int id;
+    private Long id;
+
+    @OneToOne(mappedBy = "relatedDoctor")
+    @JsonBackReference
+    DoctorSchedule schedule;
+
+    public DoctorSchedule getSchedule() {
+        return schedule;
+    }
+
+    public void setSchedule(DoctorSchedule schedule) {
+        this.schedule = schedule;
+    }
 
     public Doctor() {
         super();
@@ -24,11 +38,11 @@ public class Doctor extends User {
         super(lastName);
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

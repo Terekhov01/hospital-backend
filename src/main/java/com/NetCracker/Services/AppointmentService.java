@@ -10,10 +10,10 @@ public interface AppointmentService {
 
     List<Appointment> getAll();
 
-    Appointment getById(int theId);
+    Appointment getById(Long theId);
 
     void editAppointment(Appointment theAppointment);
 
-    void delete(int theId);
+    void delete(Long theId);
 
 }

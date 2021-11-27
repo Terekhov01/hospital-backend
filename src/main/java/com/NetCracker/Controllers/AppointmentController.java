@@ -26,7 +26,7 @@ class AppointmentController {
     AppointmentRegistrationRepo appointmentRegistrations;
 
     @GetMapping("/appointments")
-    public ResponseEntity<List<Appointment>> getAllAppointments(@RequestParam(required = false) Integer id) {
+    public ResponseEntity<List<Appointment>> getAllAppointments(@RequestParam(required = false) Long id) {
         try {
             List<Appointment> appointments = new ArrayList<>();
 
@@ -46,7 +46,7 @@ class AppointmentController {
     }
 
     @GetMapping("/appointments/{id}")
-    public ResponseEntity<Appointment> getAppointmentById(@PathVariable("id") int id) {
+    public ResponseEntity<Appointment> getAppointmentById(@PathVariable("id") Long id) {
         Optional<Appointment> appointmentData = repository.findById(id);
 
         return appointmentData.map(appointment ->
@@ -59,17 +59,29 @@ class AppointmentController {
 
         Optional<AppointmentRegistration> appointmentRegistration =
                 appointmentRegistrations.findByDoctorAndPatient(
-                        appointment.getDoctor().getLastName(),
-                        appointment.getPatient().getLastName());
+                        appointment.getAppointmentRegistration().getDoctor().getLastName(),
+                        appointment.getAppointmentRegistration().getPatient().getLastName());
+//                        appointment.getDoctor().getLastName(),
+//                        appointment.getPatient().getLastName());
+//        System.out.println("Here1");
         if (appointmentRegistration.isPresent()) {
+//            System.out.println("Here2");
             try {
+//                System.out.println("Here3");
+//                System.out.println("File is" + (appointment.getFile() == null));
                 Appointment _appointment = repository
                         .save(new Appointment(appointment.getId(), appointmentRegistration.get(),
-                                appointmentRegistration.get().getPatient(), appointmentRegistration.get().getDoctor(), appointment.getDescription(),
-                                appointment.getService(), appointment.getRecipe(), appointment.getTreatPlan(),
-                                appointment.getRehabPlan(), appointment.getDocStatement()));
+//                                appointmentRegistration.get().getPatient(), appointmentRegistration.get().getDoctor(),
+                                appointment.getDescription(),
+//                                appointment.getFile(),
+//                                appointment.getService(),
+                                appointment.getRecipe(), appointment.getTreatPlan(),
+                                appointment.getRehabPlan(), appointment.getDocStatement()/*, appointment.getFile()*/));
+//                System.out.println("Here4");
                 return new ResponseEntity<>(_appointment, HttpStatus.CREATED);
             } catch (Exception e) {
+//                System.out.println("Here5");
+//                System.out.println("Exception: " + e.getMessage());
                 return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
@@ -78,15 +90,14 @@ class AppointmentController {
     }
 
     @PutMapping("/appointments/{id}")
-    public ResponseEntity<Appointment> updateAppointment(@PathVariable("id") int id, @RequestBody Appointment appointment) {
+    public ResponseEntity<Appointment> updateAppointment(@PathVariable("id") Long id, @RequestBody Appointment appointment) {
         Optional<Appointment> appointmentData = repository.findById(id);
         Optional<AppointmentRegistration> appointmentRegistrationData = appointmentRegistrations.
-                findByDoctorAndPatient(appointment.getAppointmentRegistration().getDoctor().getLastName(),
-                        appointment.getAppointmentRegistration().getPatient().getLastName());
-        System.out.println("In updating a");
-        System.out.println("Doc: " + appointment.getAppointmentRegistration().getDoctor().getLastName());
-        System.out.println("Pat: " + appointment.getAppointmentRegistration().getPatient().getLastName());
-        System.out.println("Is present? " + appointmentRegistrationData.isPresent());
+                findByDoctorAndPatient(appointment.getAppointmentRegistration().getDoctor().getLastName(), appointment.getAppointmentRegistration().getPatient().getLastName());
+//        System.out.println("In updating a");
+//        System.out.println("Doc: " + appointmentRegistrationData.get().getDoctor().getLastName());
+//        System.out.println("Pat: " + appointmentRegistrationData.get().getPatient().getLastName());
+//        System.out.println("Is present? " + appointmentRegistrationData.isPresent());
         if (appointmentRegistrationData.isPresent()) {
             if (appointmentData.isPresent()) {
                 Appointment _appointment = appointmentData.get();
@@ -94,10 +105,11 @@ class AppointmentController {
                 _appointment.setDocStatement(appointment.getDocStatement());
                 _appointment.setRecipe(appointment.getRecipe());
                 _appointment.setRehabPlan(appointment.getRehabPlan());
-                _appointment.setService(appointment.getService());
+//                _appointment.setService(appointment.getService());
                 _appointment.setTreatPlan(appointment.getTreatPlan());
-                _appointment.setDoctor(appointmentRegistrationData.get().getDoctor());
-                _appointment.setPatient(appointmentRegistrationData.get().getPatient());
+//                _appointment.setFile(appointment.getFile());
+//                _appointment.setDoctor(appointmentRegistrationData.get().getDoctor());
+//                _appointment.setPatient(appointmentRegistrationData.get().getPatient());
                 _appointment.setAppointmentRegistration(appointmentRegistrationData.get());
                 return new ResponseEntity<>(repository.save(_appointment), HttpStatus.OK);
             } else {
@@ -109,7 +121,7 @@ class AppointmentController {
     }
 
     @DeleteMapping("/appointments/{id}")
-    public ResponseEntity<HttpStatus> deleteAppointment(@PathVariable("id") int id) {
+    public ResponseEntity<HttpStatus> deleteAppointment(@PathVariable("id") Long id) {
         try {
             repository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);

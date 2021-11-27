@@ -30,7 +30,7 @@ public class AppointmentRegistrationController {
     PatientRepository patients;
 
     @GetMapping("/appointmentRegistrations")
-    public ResponseEntity<List<AppointmentRegistration>> getAllAppointmentRegistrations(@RequestParam(required = false) Integer id) {
+    public ResponseEntity<List<AppointmentRegistration>> getAllAppointmentRegistrations(@RequestParam(required = false) Long id) {
         try {
             List<AppointmentRegistration> appointmentRegistrations = new ArrayList<>();
 
@@ -58,7 +58,7 @@ public class AppointmentRegistrationController {
     }
 
     @GetMapping("/appointmentRegistrations/{id}")
-    public ResponseEntity<AppointmentRegistration> getAppointmentRegistrationById(@PathVariable("id") int id) {
+    public ResponseEntity<AppointmentRegistration> getAppointmentRegistrationById(@PathVariable("id") Long id) {
         Optional<AppointmentRegistration> appointmentRegistrationData = repository.findById(id);
         return appointmentRegistrationData.map(appointmentRegistration ->
                 new ResponseEntity<>(appointmentRegistration, HttpStatus.OK)).orElseGet(() ->
@@ -73,7 +73,7 @@ public class AppointmentRegistrationController {
         if (doctor.isPresent() && patient.isPresent()) {
             try {
                 AppointmentRegistration _appointmentRegistration = repository
-                        .save(new AppointmentRegistration(appointmentRegistration.getStart(),
+                        .save(new AppointmentRegistration(appointmentRegistration.getService(), appointmentRegistration.getStart(),
                                 appointmentRegistration.getEnd(), appointmentRegistration.getAddress(), appointmentRegistration.getRoom(),
                                 patient.get(), doctor.get()));
                 return new ResponseEntity<>(_appointmentRegistration, HttpStatus.CREATED);
@@ -86,7 +86,7 @@ public class AppointmentRegistrationController {
     }
 
     @PutMapping("/appointmentRegistrations/{id}")
-    public ResponseEntity<AppointmentRegistration> updateAppointmentRegistration(@PathVariable("id") int id, @RequestBody AppointmentRegistration appointmentRegistration) {
+    public ResponseEntity<AppointmentRegistration> updateAppointmentRegistration(@PathVariable("id") Long id, @RequestBody AppointmentRegistration appointmentRegistration) {
         Optional<AppointmentRegistration> appointmentRegistrationData = repository.findById(id);
         Optional<Doctor> doctor = doctors.findDoctorByLastName(appointmentRegistration.getDoctor().getLastName());
         Optional<Patient> patient = patients.findPatientByLastName(appointmentRegistration.getPatient().getLastName());
@@ -99,6 +99,7 @@ public class AppointmentRegistrationController {
                 AppointmentRegistration _appointmentRegistration = appointmentRegistrationData.get();
                 _appointmentRegistration.setStart(appointmentRegistration.getStart());
                 _appointmentRegistration.setEnd(appointmentRegistration.getEnd());
+                _appointmentRegistration.setService(appointmentRegistration.getService());
                 _appointmentRegistration.setAddress(appointmentRegistration.getAddress());
                 _appointmentRegistration.setRoom(appointmentRegistration.getRoom());
                 _appointmentRegistration.setPatient(patient.get());
@@ -113,7 +114,7 @@ public class AppointmentRegistrationController {
     }
 
     @DeleteMapping("/appointmentRegistrations/{id}")
-    public ResponseEntity<HttpStatus> deleteAppointmentRegistration(@PathVariable("id") int id) {
+    public ResponseEntity<HttpStatus> deleteAppointmentRegistration(@PathVariable("id") Long id) {
         try {
             repository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
