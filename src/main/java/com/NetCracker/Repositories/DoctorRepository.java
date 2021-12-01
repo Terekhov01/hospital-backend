@@ -25,6 +25,9 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
         String getLastName();
         //TODO - add specialization
+
+        String getSpecialization();
+
     }
 
 

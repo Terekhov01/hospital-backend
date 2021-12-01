@@ -4,12 +4,20 @@ import com.NetCracker.Entities.Schedule.ScheduleElements.SchedulePatternInterval
 import com.NetCracker.Entities.Schedule.SchedulePattern;
 import com.NetCracker.Repositories.SchedulePatternIntervalRepository;
 import com.NetCracker.Repositories.SchedulePatternRepository;
+import com.google.gson.*;
+import com.google.gson.annotations.SerializedName;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.Optional;
+import java.lang.reflect.Type;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Month;
+import java.util.*;
 
+@Service
 public class SchedulePatternService {
     @Autowired
     SchedulePatternRepository schedulePatternRepository;
@@ -23,9 +31,9 @@ public class SchedulePatternService {
      * @param pattern value to store in database
      */
     @Transactional
-    public void add(SchedulePattern pattern) {
+    public void save(SchedulePattern pattern) {
         schedulePatternRepository.save(pattern);
-        schedulePatternIntervalRepository.saveAll(pattern.getStateSet());
+        addInterval(pattern.getStateSet());
     }
 
     /**
@@ -34,9 +42,9 @@ public class SchedulePatternService {
      * @param patterns values to store in database
      */
     @Transactional
-    public void add(Iterable<SchedulePattern> patterns) {
+    public void save(Iterable<SchedulePattern> patterns) {
         schedulePatternRepository.saveAll(patterns);
-        patterns.forEach(pattern -> schedulePatternIntervalRepository.saveAll(pattern.getStateSet()));
+        patterns.forEach(pattern -> addInterval(pattern.getStateSet()));
     }
 
     @Transactional
@@ -51,12 +59,13 @@ public class SchedulePatternService {
 
     @Transactional
     public void addInterval(Iterable<SchedulePatternInterval> intervals) {
-        schedulePatternIntervalRepository.saveAll(intervals);
+        intervals.forEach(this::addInterval);
     }
 
     @Transactional
     public void addInterval(SchedulePatternInterval interval) {
         schedulePatternIntervalRepository.save(interval);
+        interval.getSchedulePattern().getStateSet().add(interval);
     }
 
     @Transactional
@@ -72,5 +81,42 @@ public class SchedulePatternService {
     @Transactional
     public SchedulePattern getSchedulePattern(Long id) {
         return schedulePatternRepository.findById(id).orElse(null);
+    }
+
+    static class ScheduleDayPattern {
+        Integer dayNumber;
+
+        @SerializedName(value = "timesRounded")
+        List<LocalTime> intervalStart;
+    }
+
+    public SchedulePattern fromJson(String patternStr) {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+
+        gsonBuilder.registerTypeAdapter(LocalTime.class, new JsonDeserializer<LocalTime>() {
+                    @Override
+                    public LocalTime deserialize(JsonElement json, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+                        String timeStr = json.getAsString();
+                        String[] hourMinuteStrings = timeStr.split(":");
+                        int hour = Integer.parseInt(hourMinuteStrings[0]);
+                        int minute = Integer.parseInt(hourMinuteStrings[1]);
+                        return LocalTime.of(hour, minute);
+                    }
+                }
+        );
+
+        Gson gson = gsonBuilder.create();
+        ScheduleDayPattern[] scheduleDayPatterns = gson.fromJson(patternStr, ScheduleDayPattern[].class);
+
+        SchedulePattern schedulePattern = new SchedulePattern("Goose");
+
+        for (var scheduleDayPattern : scheduleDayPatterns) {
+            for (var interval : scheduleDayPattern.intervalStart) {
+                schedulePattern.getStateSet().add(new SchedulePatternInterval(scheduleDayPattern.dayNumber, LocalDateTime.of(2021, Month.NOVEMBER, 22, interval.getHour(), interval.getMinute()), schedulePattern));
+
+            }
+        }
+
+        return schedulePattern;
     }
 }

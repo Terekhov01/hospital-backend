@@ -8,18 +8,25 @@ import java.util.Objects;
 public class SchedulePatternIntervalId implements Serializable {
     private Long schedulePattern;
 
+    private Integer dayNumber;
+
     private LocalDateTime intervalStartTime;
 
     public SchedulePatternIntervalId() {
     }
 
-    public SchedulePatternIntervalId(Long schedulePattern, LocalDateTime intervalStartTime) {
+    public SchedulePatternIntervalId(Long schedulePattern, Integer dayNumber, LocalDateTime intervalStartTime) {
         this.schedulePattern = schedulePattern;
+        this.dayNumber = dayNumber;
         this.intervalStartTime = intervalStartTime;
     }
 
     public Long getSchedulePattern() {
         return schedulePattern;
+    }
+
+    public Integer getDayNumber() {
+        return dayNumber;
     }
 
     public LocalDateTime getIntervalStartTime() {
@@ -28,6 +35,10 @@ public class SchedulePatternIntervalId implements Serializable {
 
     public void setSchedulePattern(Long schedulePattern) {
         this.schedulePattern = schedulePattern;
+    }
+
+    public void setDayNumber(Integer dayNumber) {
+        this.dayNumber = dayNumber;
     }
 
     public void setIntervalStartTime(LocalDateTime intervalStartTime) {

@@ -46,7 +46,7 @@ public class ScheduleInterval {
     /**
      * For Hibernate only
      */
-//    @Deprecated
+    @Deprecated
 //    ScheduleInterval()
 //    {}
     public ScheduleInterval() {
@@ -76,10 +76,10 @@ public class ScheduleInterval {
     }
 
     public ScheduleInterval(DoctorSchedule schedule, LocalDate dayToApplyPatternFrom, SchedulePatternInterval patternInterval) {
-        this(schedule, dayToApplyPatternFrom.atStartOfDay().plus(
-                Duration.between(LocalDate.EPOCH.atStartOfDay(), patternInterval.getIntervalStartTime())));
+        this(schedule, dayToApplyPatternFrom.atStartOfDay().plusDays(patternInterval.getDayNumber()).plusHours(patternInterval.getIntervalStartTime().getHour()).plusMinutes(patternInterval.getIntervalStartTime().getMinute()));
         this.isAssigned = false;
     }
+
 
     public boolean isAssigned() {
         return isAssigned;
