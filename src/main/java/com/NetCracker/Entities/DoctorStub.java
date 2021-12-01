@@ -3,11 +3,12 @@ package com.NetCracker.Entities;
 import com.NetCracker.Entities.Schedule.DoctorSchedule;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 @Entity
 @Table(name = "doctor")
-public class Doctor
+public class DoctorStub
 {
     //TODO - design and implement doctor entity
 
@@ -18,18 +19,20 @@ public class Doctor
     @OneToOne(mappedBy = "relatedDoctor")
     DoctorSchedule schedule;
 
+    @NotNull
     String name;
 
+    @NotNull
     String specialization;
 
     //TODO - Implement constructor for this class. Remove @Deprecated if needed
     @Deprecated
-    public Doctor()
+    public DoctorStub()
     {
         schedule = null;
     }
 
-    public Doctor(String name)
+    public DoctorStub(String name)
     {
         schedule = null;
         this.name = name;
@@ -79,8 +82,8 @@ public class Doctor
     public boolean equals(Object o)
     {
         if (this == o) return true;
-        if (!(o instanceof Doctor)) return false;
-        Doctor doctor = (Doctor) o;
+        if (!(o instanceof DoctorStub)) return false;
+        DoctorStub doctor = (DoctorStub) o;
         return id.equals(doctor.id) && Objects.equals(schedule.getId(), doctor.schedule.getId());
     }
 

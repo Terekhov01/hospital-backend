@@ -1,13 +1,13 @@
 package com.NetCracker.Entities.Schedule;
 
-import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleInterval;
+import com.NetCracker.Entities.DoctorStub;
 import com.NetCracker.Entities.Schedule.ScheduleElements.SchedulePatternInterval;
+import com.google.gson.annotations.Expose;
 import org.hibernate.annotations.SortComparator;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.NavigableSet;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -26,6 +26,7 @@ public class SchedulePattern
     private Long id;
 
     @NotNull
+    @Column(unique = true)
     private String name;
 
     @NotNull
@@ -33,16 +34,40 @@ public class SchedulePattern
     @SortComparator(SchedulePatternInterval.SchedulePatternIntervalDateAscendComparator.class)
     private SortedSet<SchedulePatternInterval> stateSet;
 
-    public SchedulePattern(String name)
+    @NotNull
+    private Integer daysLength;
+
+    @NotNull
+    @OneToOne(cascade = CascadeType.REFRESH)
+    @JoinColumn(name = "doctor_id", referencedColumnName = "id")
+    @Expose(serialize = false, deserialize = false)
+    private DoctorStub relatedDoctor;
+
+    /**
+     * For Hibernate only
+     */
+    @Deprecated
+    public SchedulePattern()
+    {}
+
+    public SchedulePattern(DoctorStub relatedDoctor, String name)
     {
+        this.relatedDoctor = relatedDoctor;
         this.name = name;
+        this.daysLength = 0;
         stateSet = new TreeSet<SchedulePatternInterval>(SchedulePatternInterval.dateAscendComparator);
     }
 
-    public SchedulePattern(String name, NavigableSet<SchedulePatternInterval> stateSet)
+    public SchedulePattern(DoctorStub relatedDoctor, String name, Integer daysLength, NavigableSet<SchedulePatternInterval> stateSet)
     {
+        this.relatedDoctor = relatedDoctor;
         this.name = name;
         this.stateSet = stateSet;
+        this.daysLength = daysLength;
+        for (var state : this.stateSet)
+        {
+            state.setSchedulePattern(this);
+        }
     }
 
     public Long getId()
@@ -57,12 +82,12 @@ public class SchedulePattern
 
     public SortedSet<SchedulePatternInterval> getStateSet()
     {
-        /*if (!(stateSet instanceof TreeSet<SchedulePatternInterval>))
-        {
-            throw new IllegalStateException("stateSet does not contain a TreeSet!");
-        }*/
-
         return stateSet;
+    }
+
+    public Integer getDaysLength()
+    {
+        return daysLength;
     }
 
     /**
@@ -75,6 +100,9 @@ public class SchedulePattern
         this.id = id;
     }
 
+    /**
+     * This method is to be used by Hibernate only
+     */
     public void setStateSet(SortedSet<SchedulePatternInterval> stateSet)
     {
         this.stateSet = stateSet;
@@ -83,5 +111,14 @@ public class SchedulePattern
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    /**
+     * This method is to be used by Hibernate only
+     */
+    @Deprecated
+    public void setDaysLength(Integer daysLength)
+    {
+        this.daysLength = daysLength;
     }
 }

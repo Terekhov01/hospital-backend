@@ -1,6 +1,6 @@
 package com.NetCracker.Services;
 
-import com.NetCracker.Entities.Doctor;
+import com.NetCracker.Entities.DoctorStub;
 import com.NetCracker.Entities.Schedule.DoctorSchedule;
 import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleIntervalId;
 import com.NetCracker.Entities.Schedule.SchedulePattern;
@@ -11,6 +11,7 @@ import com.NetCracker.Repositories.ScheduleIntervalRepository;
 import com.NetCracker.Repositories.SchedulePatternRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,13 +48,13 @@ public class ScheduleService
         return doctorScheduleRepository.findByRelatedDoctor(doctorIds);
     }
 
-    public DoctorSchedule getDoctorSchedule(Doctor doctor) throws DataAccessException
+    public DoctorSchedule getDoctorSchedule(DoctorStub doctor) throws DataAccessException
     {
         //return doctor.getSchedule();
         return doctorScheduleRepository.findByRelatedDoctor(doctor.getId());
     }
 
-    public List<Doctor> getAllDoctors() throws DataAccessException
+    public List<DoctorStub> getAllDoctors() throws DataAccessException
     {
         return doctorRepository.findAll();
     }
@@ -97,14 +98,13 @@ public class ScheduleService
     }
 
     @Transactional
-    public void prolongScheduleByPattern(Doctor doctor, SchedulePattern pattern, LocalDate dayToApplyPatternFrom) throws DataAccessException
+    public void prolongScheduleByPattern(DoctorStub doctor, SchedulePattern pattern, LocalDate dayToApplyPatternFrom) throws DataAccessException
     {
         DoctorSchedule schedule = getDoctorSchedule(doctor);
 
         if (schedule == null)
         {
-            System.err.println("Doctor " + doctor.toString() + " has no schedule to prolong.");
-            return;
+            throw new DataRetrievalFailureException("No schedule for doctor with id " + doctor.getId() + " exists!");
         }
 
         SortedSet<ScheduleInterval> scheduleIntervalSet = schedule.getStateSet();
@@ -129,7 +129,7 @@ public class ScheduleService
      * or status of a doctor.
      */
     @Transactional
-    public ScheduleInterval getDoctorState(Doctor doctor, LocalDateTime time) throws DataAccessException
+    public ScheduleInterval getDoctorState(DoctorStub doctor, LocalDateTime time) throws DataAccessException
     {
         if (doctor.getSchedule() == null)
         {
@@ -137,6 +137,12 @@ public class ScheduleService
         }
 
         return scheduleIntervalRepository.findById(new ScheduleIntervalId(doctor.getSchedule().getId(), time)).orElse(null);
+    }
+
+    //TODO - change when doctor service is ready to use
+    DoctorStub getDoctorById(Long doctorId)
+    {
+        return doctorRepository.findById(doctorId).orElse(null);
     }
 
     /**

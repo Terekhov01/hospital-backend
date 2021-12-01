@@ -103,7 +103,13 @@ public class SchedulePatternInterval
         @Override
         public int compare(SchedulePatternInterval o1, SchedulePatternInterval o2)
         {
-            return o1.getIntervalStartTime().compareTo(o2.getIntervalStartTime());
+            int dayComparison = o1.dayNumber.compareTo(o2.dayNumber);
+            if (o1.dayNumber.compareTo(o2.dayNumber) == 0)
+            {
+                return o1.getIntervalStartTime().compareTo(o2.getIntervalStartTime());
+            }
+
+            return dayComparison;
         }
     }
 

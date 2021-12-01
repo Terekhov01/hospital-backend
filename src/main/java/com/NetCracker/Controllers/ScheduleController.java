@@ -1,7 +1,8 @@
 package com.NetCracker.Controllers;
 
-import com.NetCracker.Entities.Doctor;
+import com.NetCracker.Entities.DoctorStub;
 import com.NetCracker.Entities.Schedule.SchedulePattern;
+import com.NetCracker.Services.DoctorStubService;
 import com.NetCracker.Services.SchedulePatternService;
 import com.NetCracker.Services.ScheduleService;
 import com.NetCracker.Services.ScheduleViewService;
@@ -12,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolationException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -34,6 +35,9 @@ public class ScheduleController
 
     @Autowired
     private SchedulePatternService schedulePatternService;
+
+    @Autowired
+    private DoctorStubService doctorStubService;
 
     String prepareDateStringToParse(String dateStr)
     {
@@ -88,7 +92,7 @@ public class ScheduleController
         {
             try
             {
-                doctorIds = scheduleService.getAllDoctors().stream().map(Doctor::getId).collect(Collectors.toList());
+                doctorIds = scheduleService.getAllDoctors().stream().map(DoctorStub::getId).collect(Collectors.toList());
             }
             catch (DataAccessException e)
             {
@@ -170,7 +174,7 @@ public class ScheduleController
             try
             {
                 var debug = scheduleService.getAllDoctors();
-                doctorIds = scheduleService.getAllDoctors().stream().map(Doctor::getId).toList();
+                doctorIds = scheduleService.getAllDoctors().stream().map(DoctorStub::getId).toList();
             }
             catch (DataAccessException e)
             {
@@ -258,7 +262,7 @@ public class ScheduleController
     {
         if (doctorIds == null)
         {
-            doctorIds = scheduleService.getAllDoctors().stream().map(Doctor::getId).toList();
+            doctorIds = scheduleService.getAllDoctors().stream().map(DoctorStub::getId).toList();
         }
 
         String doctorsShortInformation = null;
@@ -273,26 +277,42 @@ public class ScheduleController
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        System.out.println(doctorsShortInformation);
-
         return new ResponseEntity<String>(doctorsShortInformation, HttpStatus.OK);
     }
 
-    @PostMapping("/schedule/add-pattern/")
+    @PostMapping("/schedule/add-pattern")
     @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<String> addSchedulePattern(@RequestBody Map<String,Object> responseBody)
     {
-        var bodyParameters = (Map<String, Object>) responseBody.get("params");
-        var updates = (List<Object>)bodyParameters.get("updates");
+        List<Object> updates;
+        try
+        {
+            var bodyParameters = (Map<String, Object>) responseBody.get("params");
+            updates = (List<Object>) bodyParameters.get("updates");
+        }
+        catch (ClassCastException e)
+        {
+            return new ResponseEntity<String>("Could not parse request body", HttpStatus.BAD_REQUEST);
+        }
+
         if (updates.size() != 1)
         {
             return new ResponseEntity<String>("Too many parameters!", HttpStatus.BAD_REQUEST);
         }
 
-        var parameter = (Map<String, String>)updates.get(0);
+        Map<String, String> parameter;
+        try
+        {
+            parameter = (Map<String, String>) updates.get(0);
+        }
+        catch (ClassCastException e)
+        {
+            return new ResponseEntity<String>("Could not parse request body", HttpStatus.BAD_REQUEST);
+        }
+
         if (!parameter.get("param").equals("schedulePattern"))
         {
-            return new ResponseEntity<String>("Invalid input data. Could not parse schedule pattern", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Invalid input data. Could not parse request body parameter", HttpStatus.BAD_REQUEST);
         }
         String schedulePattern = parameter.get("value");
 
@@ -306,16 +326,93 @@ public class ScheduleController
             return new ResponseEntity<String>("Invalid input data. Could not parse schedule pattern", HttpStatus.BAD_REQUEST);
         }
 
+        if (newSchedulePattern == null)
+        {
+            return new ResponseEntity<String>("Invalid input data. Could not find related doctor", HttpStatus.BAD_REQUEST);
+        }
+
         try
         {
             schedulePatternService.save(newSchedulePattern);
+        }
+        catch (ConstraintViolationException e)
+        {
+            return new ResponseEntity<String>("Could not save schedule pattern - name is not unique", HttpStatus.BAD_REQUEST);
         }
         catch(DataAccessException e)
         {
             return new ResponseEntity<String>("Could not save schedule pattern to database", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
 
-        return new ResponseEntity<String>("Saved", HttpStatus.OK);
+        return new ResponseEntity<String>("", HttpStatus.OK);
+    }
+
+    @GetMapping("/schedule/list-patterns")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<String> getSchedulePatternList()
+    {
+        String schedulePatternList;
+        try
+        {
+            schedulePatternList = scheduleViewService.getSchedulePatternList();
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Could not extract pattern names from database!", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<String>(schedulePatternList, HttpStatus.OK);
+    }
+
+    @PatchMapping("/schedule/prolong")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<String> prolongSchedule(@RequestBody Map<String, Object> requestBody)
+    {
+        String patternName;
+        String dateToApplyStr;
+        try
+        {
+            patternName = (String) requestBody.get("patternName");
+            dateToApplyStr = (String) requestBody.get("dateToApplyStr");
+        }
+        catch (ClassCastException | NullPointerException e)
+        {
+            return new ResponseEntity<String>("Invalid request - wrong parameters", HttpStatus.BAD_REQUEST);
+        }
+
+        LocalDate dateToApply = stringToLocalDate(dateToApplyStr);
+        if (dateToApply == null)
+        {
+            return new ResponseEntity<String>("Invalid request - dateToApply - could not parse temporal value", HttpStatus.BAD_REQUEST);
+        }
+
+        //TODO - get current doctor - finish when spring security done
+        DoctorStub doctor = doctorStubService.getDoctorById(1);
+        SchedulePattern requestedPattern;
+
+        try
+        {
+            requestedPattern = schedulePatternService.findPatternByName(patternName);
+        }
+        catch(DataAccessException e)
+        {
+            return new ResponseEntity<String>("Pattern with specified name does not exist", HttpStatus.BAD_REQUEST);
+        }
+
+        try
+        {
+            scheduleService.prolongScheduleByPattern(doctor, requestedPattern, dateToApply);
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Could not prolong schedule", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<String>("", HttpStatus.OK);
     }
 
     @GetMapping("/test")

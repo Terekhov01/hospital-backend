@@ -10,11 +10,11 @@ SELECT * FROM schedule_interval
 
 SELECT * FROM schedule_pattern
 
-SELECT * FROM schedule_pattern_interval WHERE schedule_pattern_id = 26 ORDER BY day_number, interval_start_time
-
-DELETE FROM schedule_pattern
+SELECT schedule_pattern.name, schedule_pattern_interval.* FROM schedule_pattern_interval JOIN schedule_pattern ON schedule_pattern_interval.schedule_pattern_id = schedule_pattern.id ORDER BY schedule_pattern.name, schedule_pattern_interval.day_number, schedule_pattern_interval.interval_start_time
 
 DELETE FROM schedule_pattern_interval
+
+DELETE FROM schedule_pattern
 
 SELECT * FROM doctor
 

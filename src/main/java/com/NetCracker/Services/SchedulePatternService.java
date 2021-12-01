@@ -1,5 +1,6 @@
 package com.NetCracker.Services;
 
+import com.NetCracker.Entities.DoctorStub;
 import com.NetCracker.Entities.Schedule.ScheduleElements.SchedulePatternInterval;
 import com.NetCracker.Entities.Schedule.SchedulePattern;
 import com.NetCracker.Repositories.SchedulePatternIntervalRepository;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Type;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -24,8 +24,11 @@ public class SchedulePatternService
     @Autowired
     SchedulePatternIntervalRepository schedulePatternIntervalRepository;
 
+    @Autowired
+    ScheduleService scheduleService;
+
     /**
-     * Saves pattern and all of it's intervals to database
+     * Saves pattern and all of it's intervals to database. Does not check if pattern has a unique name.
      * @param pattern value to store in database
      */
     @Transactional
@@ -33,17 +36,6 @@ public class SchedulePatternService
     {
         schedulePatternRepository.save(pattern);
         addInterval(pattern.getStateSet());
-    }
-
-    /**
-     * Saves patterns and all of their intervals to database
-     * @param patterns values to store in database
-     */
-    @Transactional
-    public void save(Iterable<SchedulePattern> patterns)
-    {
-        schedulePatternRepository.saveAll(patterns);
-        patterns.forEach(pattern -> addInterval(pattern.getStateSet()));
     }
 
     @Transactional
@@ -59,7 +51,7 @@ public class SchedulePatternService
     }
 
     @Transactional
-    public void  addInterval(Iterable<SchedulePatternInterval> intervals)
+    public void addInterval(Iterable<SchedulePatternInterval> intervals)
     {
         intervals.forEach(this::addInterval);
     }
@@ -89,6 +81,19 @@ public class SchedulePatternService
         return schedulePatternRepository.findById(id).orElse(null);
     }
 
+    @Transactional
+    public SchedulePattern findPatternByName(String patternName)
+    {
+        return schedulePatternRepository.findByName(patternName).orElse(null);
+    }
+
+    static class SchedulePatternRepresentation
+    {
+        String patternName;
+        Integer daysLength;
+        ScheduleDayPattern[] scheduleDailyPatterns;
+    }
+
     static class ScheduleDayPattern
     {
         Integer dayNumber;
@@ -115,18 +120,47 @@ public class SchedulePatternService
         );
 
         Gson gson = gsonBuilder.create();
-        ScheduleDayPattern[] scheduleDayPatterns = gson.fromJson(patternStr, ScheduleDayPattern[].class);
+        SchedulePatternRepresentation schedulePatternRepresentation = gson.fromJson(patternStr, SchedulePatternRepresentation.class);
 
-        SchedulePattern schedulePattern = new SchedulePattern("Goose");
+        DoctorStub relatedDoctor = scheduleService.getDoctorById(1L);
 
-        for (var scheduleDayPattern : scheduleDayPatterns)
+        if (relatedDoctor == null)
+        {
+            return null;
+        }
+
+        //SchedulePattern schedulePattern = new SchedulePattern(relatedDoctor, schedulePatternRepresentation.patternName);
+
+        NavigableSet<SchedulePatternInterval> schedulePatternIntervals = new TreeSet<SchedulePatternInterval>(SchedulePatternInterval.dateAscendComparator);
+
+        /*SchedulePattern schedulePattern = new SchedulePattern(relatedDoctor,
+                                                            schedulePatternRepresentation.patternName,
+                                                            schedulePatternRepresentation.daysLength);*/
+
+        for (var scheduleDayPattern : schedulePatternRepresentation.scheduleDailyPatterns)
         {
             for (var interval : scheduleDayPattern.intervalStart)
             {
-                schedulePattern.getStateSet().add(new SchedulePatternInterval(scheduleDayPattern.dayNumber, interval, schedulePattern));
+                schedulePatternIntervals.add(new SchedulePatternInterval(scheduleDayPattern.dayNumber, interval));
+                //schedulePattern.getStateSet().add(new SchedulePatternInterval(scheduleDayPattern.dayNumber, interval, schedulePattern));
             }
         }
 
-        return schedulePattern;
+        return new SchedulePattern(relatedDoctor,
+                                    schedulePatternRepresentation.patternName,
+                                    schedulePatternRepresentation.daysLength,
+                                    schedulePatternIntervals);
+    }
+
+    public List<SchedulePattern> getAllPatterns()
+    {
+        return schedulePatternRepository.findAll();
+    }
+
+    public List<SchedulePattern> getPatternsByDoctor()
+    {
+        //Get current doctor
+        long x = 1;
+        return schedulePatternRepository.findByRelatedDoctorId(x);
     }
 }

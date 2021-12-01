@@ -1,13 +1,13 @@
 package com.NetCracker.Repositories;
 
-import com.NetCracker.Entities.Doctor;
+import com.NetCracker.Entities.DoctorStub;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 
 @Repository
-public interface DoctorRepository extends JpaRepository<Doctor, Long>
+public interface DoctorRepository extends JpaRepository<DoctorStub, Long>
 {
     interface DoctorShortInformation
     {

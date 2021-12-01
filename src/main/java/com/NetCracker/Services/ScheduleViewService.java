@@ -2,6 +2,7 @@ package com.NetCracker.Services;
 
 import com.NetCracker.Entities.Schedule.DoctorSchedule;
 import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleInterval;
+import com.NetCracker.Entities.Schedule.SchedulePattern;
 import com.NetCracker.Repositories.DoctorRepository;
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
@@ -22,6 +23,9 @@ public class ScheduleViewService
 {
     @Autowired
     ScheduleService scheduleService;
+
+    @Autowired
+    SchedulePatternService schedulePatternService;
 
     static class DoctorScheduleTableDataDaily
     {
@@ -92,7 +96,7 @@ public class ScheduleViewService
                     continue;
                 }
 
-                if (interval.getIntervalStartTime().isAfter(dateEndRepresent.atStartOfDay()))
+                if (interval.getIntervalStartTime().isAfter(dateEndRepresent.plusDays(1).atStartOfDay()))
                 {
                     break;
                 }
@@ -117,6 +121,10 @@ public class ScheduleViewService
                     startOfDay = intervalTime;
                     endOfDay = intervalTime.plusMinutes(30);
                 }
+            }
+            if (startOfDay != null && endOfDay != null)
+            {
+                dailyInformation.add(new DoctorScheduleTableDataDaily(curDate, startOfDay.format(formatter), endOfDay.format(formatter)));
             }
         }
 
@@ -173,7 +181,8 @@ public class ScheduleViewService
         @Expose
         SortedSet<ScheduleInterval> intervalCollection;
 
-        public DoctorScheduleAssignmentCalendarData(Long id, String specializationName, String doctorName, SortedSet<ScheduleInterval> intervalSet)
+        public DoctorScheduleAssignmentCalendarData(Long id, String specializationName, String doctorName,
+                                                    SortedSet<ScheduleInterval> intervalSet)
         {
             this.id = id;
             this.specializationName = specializationName;
@@ -195,7 +204,8 @@ public class ScheduleViewService
      * @param getFreeTimeOnly signals whether to return moments when doctors already have appointments
      * @return string that contains information about time intervals when doctors work and if they already have appointments
      */
-    public String getScheduleAssignmentCalendarJson(List<Long> doctorIds, LocalDateTime startDateTime, LocalDateTime endDateTime, Boolean getFreeTimeOnly)
+    public String getScheduleAssignmentCalendarJson(List<Long> doctorIds, LocalDateTime startDateTime,
+                                                    LocalDateTime endDateTime, Boolean getFreeTimeOnly)
     {
         Set<DoctorSchedule> schedules = scheduleService.getDoctorSchedule(doctorIds);
 
@@ -204,7 +214,7 @@ public class ScheduleViewService
 
         //Required data - each doctor is matched with set of scheduleIntervals - time, when (s)he is working (not busy)
         Set<DoctorScheduleAssignmentCalendarData> doctorScheduleTableDataSet = schedules.stream().map(schedule ->
-                new DoctorScheduleAssignmentCalendarData(schedule.getRelatedDoctor().getId(), "ABC",
+            new DoctorScheduleAssignmentCalendarData(schedule.getRelatedDoctor().getId(), schedule.getRelatedDoctor().getSpecialization(),
                         schedule.getRelatedDoctor().getName(), schedule.getStateSet().subSet(intervalStart, intervalEnd)))
                 .collect(Collectors.toSet());
                 /*.collect(
@@ -270,5 +280,30 @@ public class ScheduleViewService
                 doctorShortInformationCollection.add(new DoctorShortInformation(persistedPair)));
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(doctorShortInformationCollection);
+    }
+
+    public String getSchedulePatternList()
+    {
+        List<SchedulePattern> schedulePatternList = schedulePatternService.getPatternsByDoctor();
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+
+        gsonBuilder.registerTypeAdapter(SchedulePattern.class, new JsonSerializer<SchedulePattern>()
+        {
+            @Override
+            public JsonElement serialize(SchedulePattern pattern, Type type, JsonSerializationContext jsonDeserializationContext) throws JsonParseException
+            {
+                JsonObject patternObject = new JsonObject();
+                patternObject.add("id", new JsonPrimitive(pattern.getId()));
+                patternObject.add("name", new JsonPrimitive(pattern.getName()));
+                patternObject.add("daysLength", new JsonPrimitive(pattern.getDaysLength()));
+
+                return patternObject;
+            }
+        });
+
+        Gson gson = gsonBuilder.create();
+
+        return gson.toJson(schedulePatternList);
     }
 }

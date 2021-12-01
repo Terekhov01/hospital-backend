@@ -52,9 +52,9 @@ public class ScheduleServiceIntegrationTest
     @Autowired
     private ScheduleService scheduleService;
 
-    Doctor doctor1;
-    Doctor doctor2;
-    SchedulePattern commonWorkingPattern;
+    DoctorStub doctor1;
+    DoctorStub doctor2;
+    SchedulePattern doctor1WorkingPattern;
     LocalDate commonTimeStart;
     LocalDate modernTimeStart;
     DoctorSchedule commonSchedule;
@@ -62,10 +62,10 @@ public class ScheduleServiceIntegrationTest
 
     ScheduleServiceIntegrationTest()
     {
-        doctor1 = new Doctor("Goose");
-        doctor2 = new Doctor("Gogha");
+        doctor1 = new DoctorStub("Goose");
+        doctor2 = new DoctorStub("Gogha");
         //TODO - refactor when doctor entity is ready to use
-        commonWorkingPattern = SchedulePatternFactory.createCommonWorkingPattern("Common working pattern", 14, LocalTime.of(8, 0), LocalTime.of(17, 0));
+        doctor1WorkingPattern = SchedulePatternFactory.createCommonWorkingPattern(doctor1, "Common working pattern", 14, LocalTime.of(8, 0), LocalTime.of(17, 0));
         commonTimeStart = LocalDate.of(1970, 1, 1);
         commonSchedule = new DoctorSchedule(doctor1);
         modernTimeStart = LocalDate.of(2000, 1, 1);
@@ -81,8 +81,8 @@ public class ScheduleServiceIntegrationTest
         scheduleService.save(commonSchedule);
         scheduleService.save(modernSchedule);
 
-        scheduleService.prolongScheduleByPattern(doctor1, commonWorkingPattern, commonTimeStart);
-        scheduleService.prolongScheduleByPattern(doctor2, commonWorkingPattern, modernTimeStart);
+        scheduleService.prolongScheduleByPattern(doctor1, doctor1WorkingPattern, commonTimeStart);
+        scheduleService.prolongScheduleByPattern(doctor2, doctor1WorkingPattern, modernTimeStart);
     }
 
     @Test

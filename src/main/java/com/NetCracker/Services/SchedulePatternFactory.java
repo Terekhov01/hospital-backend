@@ -1,5 +1,6 @@
 package com.NetCracker.Services;
 
+import com.NetCracker.Entities.DoctorStub;
 import com.NetCracker.Entities.Schedule.ScheduleElements.SchedulePatternInterval;
 import com.NetCracker.Entities.Schedule.SchedulePattern;
 import com.NetCracker.Utils.TimeIntervalUtils;
@@ -7,8 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.util.NavigableSet;
-import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 
 @Service
@@ -20,13 +19,13 @@ public class SchedulePatternFactory
      * @param workingDayEnd an hour
      * @return schedule pattern that has
      */
-    public static SchedulePattern createCommonWorkingPattern(String name, int daysAmount, LocalTime workingDayStart, LocalTime workingDayEnd)
+    public static SchedulePattern createCommonWorkingPattern(DoctorStub doctor, String name, int daysAmount, LocalTime workingDayStart, LocalTime workingDayEnd)
     {
         workingDayStart = TimeIntervalUtils.floorHalfHourInterval(workingDayStart);
         workingDayEnd = TimeIntervalUtils.ceilHalfHourInterval(workingDayEnd);
         NavigableSet<SchedulePatternInterval> scheduleIntervalSet = new TreeSet<>(SchedulePatternInterval.dateAscendComparator);
 
-        SchedulePattern pattern = new SchedulePattern(name);
+        SchedulePattern pattern = new SchedulePattern(doctor, name);
 
         for (int i = 0; i < daysAmount; i++)
         {
