@@ -51,7 +51,15 @@ public class DoctorController {
 
     @GetMapping("/doctors/lastname/{lastName}")
     public ResponseEntity<Doctor> getDoctorByLastName(@PathVariable("lastName") String lastName) {
+        System.out.println("In get method int Doctor");
+        System.out.println("Last name: " + lastName);
         Optional<Doctor> doctorData = repository.findDoctorByLastName(lastName);
+
+        if (doctorData.isPresent()) {
+            System.out.println("Found Doctor!");
+        } else {
+            System.out.println("Doctor Not Found!");
+        }
 
         return doctorData.map(doctor ->
                 new ResponseEntity<>(doctor, HttpStatus.OK)).orElseGet(() ->
@@ -62,7 +70,7 @@ public class DoctorController {
     public ResponseEntity<Doctor> createDoctor(@RequestBody Doctor doctor) {
         try {
             Doctor _doctor = repository
-                    .save(new Doctor(doctor.getLastName()));
+                    .save(new Doctor(doctor.getLastName(), doctor.getSpecialization(), doctor.getAddress(), doctor.getRoom()));
             return new ResponseEntity<>(_doctor, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -76,6 +84,9 @@ public class DoctorController {
         if (doctorData.isPresent()) {
             Doctor _doctor = doctorData.get();
             _doctor.setLastName(doctor.getLastName());
+            _doctor.setSpecialization(doctor.getSpecialization());
+            _doctor.setAddress(doctor.getAddress());
+            _doctor.setRoom(doctor.getRoom());
             return new ResponseEntity<>(repository.save(_doctor), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

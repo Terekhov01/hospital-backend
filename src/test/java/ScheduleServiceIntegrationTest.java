@@ -23,11 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.*;
-import java.time.Duration;
 
 /**
  * <br>DISCLAIMER<br/>
@@ -61,10 +58,10 @@ public class ScheduleServiceIntegrationTest {
     DoctorSchedule modernSchedule;
 
     ScheduleServiceIntegrationTest() {
-        doctor1 = new Doctor("Goose");
-        doctor2 = new Doctor("Gogha");
+        doctor1 = new Doctor("Goose", "Терапевт", "Адресс 123", " Кабинет 123");
+        doctor2 = new Doctor("Gogha", "Терапевт", "Адресс 123", " Кабинет 123");
         //TODO - refactor when doctor entity is ready to use
-        commonWorkingPattern = SchedulePatternFactory.createCommonWorkingPattern("Common working pattern", 14, LocalTime.of(8, 0), LocalTime.of(17, 0));
+        commonWorkingPattern = SchedulePatternFactory.createCommonWorkingPattern("Common working pattern", 14, LocalDateTime.of(2021, Month.NOVEMBER, 22, 8, 0), LocalDateTime.of(2021, Month.NOVEMBER, 22, 17, 0));
         commonTimeStart = LocalDate.of(1970, 1, 1);
         commonSchedule = new DoctorSchedule(doctor1);
         modernTimeStart = LocalDate.of(2000, 1, 1);

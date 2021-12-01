@@ -1,17 +1,17 @@
 package com.NetCracker.Controllers;
 
 import com.NetCracker.Entities.Doctor;
+import com.NetCracker.Entities.Schedule.SchedulePattern;
+import com.NetCracker.Services.SchedulePatternService;
 import com.NetCracker.Services.ScheduleService;
 import com.NetCracker.Services.ScheduleViewService;
+import com.google.gson.JsonParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,6 +20,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -29,6 +30,10 @@ public class ScheduleController {
 
     @Autowired
     private ScheduleViewService scheduleViewService;
+
+    @Autowired
+    private SchedulePatternService schedulePatternService;
+
 
     String prepareDateStringToParse(String dateStr) {
         if (dateStr.charAt(0) == ' ') {
@@ -62,8 +67,6 @@ public class ScheduleController {
                                                   @RequestParam(name = "dateBeginRepresent", required = false) String dateBeginRepresentStr,
                                                   @RequestParam(name = "dateEndRepresent", required = false) String dateEndRepresentStr
     ) {
-        System.out.println("in get method");
-        System.out.println("Begin date: " + dateEndRepresentStr != null ? dateEndRepresentStr : "null");
         List<Long> doctorIds = new ArrayList<>();
 
         LocalDate dateBeginRepresent = null;
@@ -119,6 +122,7 @@ public class ScheduleController {
         return new ResponseEntity<String>(jsonTable, HttpStatus.OK);
     }
 
+
     @GetMapping("/schedule/calendar")
     @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<String> getDataForCalendar(@RequestParam(name = "doctorIds", required = false) String doctorIdsStr,
@@ -135,7 +139,6 @@ public class ScheduleController {
         if (doctorIdsStr == null) {
             try {
                 var debug = scheduleService.getAllDoctors();
-//                doctorIds = scheduleService.getAllDoctors().stream().map(Doctor::getId).toList();
                 doctorIds = scheduleService.getAllDoctors().stream().map(Doctor::getId).collect(Collectors.toList());
             } catch (DataAccessException e) {
                 //TODO - log errors
@@ -193,16 +196,17 @@ public class ScheduleController {
         }
 
         //TODO - delete in prod
+        System.out.println("jsonCalendar: ");
         System.out.println(jsonCalendar);
 
         return new ResponseEntity<String>(jsonCalendar, HttpStatus.OK);
     }
 
+
     @GetMapping("/schedule/calendar/getDoctorNames")
     @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<String> getDoctorNames(@RequestParam(name = "doctorIds", required = false) List<Long> doctorIds) {
         if (doctorIds == null) {
-//            doctorIds = scheduleService.getAllDoctors().stream().map(Doctor::getId).toList();
             doctorIds = scheduleService.getAllDoctors().stream().map(Doctor::getId).collect(Collectors.toList());
         }
 
@@ -219,6 +223,44 @@ public class ScheduleController {
 
         return new ResponseEntity<String>(doctorsShortInformation, HttpStatus.OK);
     }
+
+
+    @PostMapping("/schedule/add-pattern/")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<String> addSchedulePattern(@RequestBody Map<String, Object> responseBody) {
+        System.out.println("In post method 1");
+        var bodyParameters = (Map<String, Object>) responseBody.get("params");
+        var updates = (List<Object>) bodyParameters.get("updates");
+        if (updates.size() != 1) {
+            System.out.println("Update size != 1, Too many parameters!");
+            return new ResponseEntity<String>("Too many parameters!", HttpStatus.BAD_REQUEST);
+        }
+        System.out.println("In post method 2");
+        var parameter = (Map<String, String>) updates.get(0);
+        if (!parameter.get("param").equals("schedulePattern")) {
+            System.out.println("Parameter != schedule pattern, Invalid input data. Could not parse schedule pattern!");
+            return new ResponseEntity<String>("Invalid input data. Could not parse schedule pattern", HttpStatus.BAD_REQUEST);
+        }
+        String schedulePattern = parameter.get("value");
+        System.out.println("In post method 3");
+        SchedulePattern newSchedulePattern;
+        try {
+            newSchedulePattern = schedulePatternService.fromJson(schedulePattern);
+        } catch (JsonParseException e) {
+            System.out.println("JsonParseException, Invalid input data. Could not parse schedule pattern!");
+            return new ResponseEntity<String>("Invalid input data. Could not parse schedule pattern", HttpStatus.BAD_REQUEST);
+        }
+        System.out.println("In post method 4");
+        try {
+            schedulePatternService.save(newSchedulePattern);
+        } catch (DataAccessException e) {
+            System.out.println("DataAccessException, Could not save schedule pattern to database!");
+            return new ResponseEntity<String>("Could not save schedule pattern to database", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        System.out.println("In post method 5");
+        return new ResponseEntity<String>("Saved", HttpStatus.OK);
+    }
+
 
     @GetMapping("/test")
     @CrossOrigin(origins = "http://localhost:4200")

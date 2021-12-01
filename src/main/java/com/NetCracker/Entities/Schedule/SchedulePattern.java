@@ -55,22 +55,10 @@ public class SchedulePattern {
     }
 
     public SortedSet<SchedulePatternInterval> getStateSet() {
-
-//        if (!(stateSet instanceof TreeSet<SchedulePatternInterval>))
-//        {
-//            throw new IllegalStateException("stateSet does not contain a TreeSet!");
-//        }
-
-        if (!(stateSet instanceof TreeSet)) {
+        /*if (!(stateSet instanceof TreeSet<SchedulePatternInterval>))
+        {
             throw new IllegalStateException("stateSet does not contain a TreeSet!");
-        } else {
-            TreeSet treeSet = (TreeSet) stateSet;
-            for (Object e : treeSet) {
-                if (!(e instanceof SchedulePatternInterval)) {
-                    throw new IllegalStateException("stateSet does not contain a TreeSet!");
-                }
-            }
-        }
+        }*/
 
         return stateSet;
     }
@@ -92,4 +80,5 @@ public class SchedulePattern {
     public void setName(String name) {
         this.name = name;
     }
+
 }

@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface AppointmentRepo extends JpaRepository<Appointment, Long> {
-    //    @Query("select a from Appointment a where a.appointmentRegistration.doctor.lastName = 'ФроловВВ' order by a.id asc")
+//        @Query("select a from Appointment a where a.appointmentRegistration.doctor.lastName = 'Фролов В.В.' order by a.id asc")
     @Query("select a from Appointment a order by a.id asc")
     List<Appointment> findAllByOrderByIdAsc();
 

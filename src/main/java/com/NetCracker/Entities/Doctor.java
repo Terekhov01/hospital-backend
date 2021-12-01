@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 @Entity
@@ -22,6 +23,18 @@ public class Doctor extends User {
     @JsonBackReference
     DoctorSchedule schedule;
 
+    @Column(name = "SPECIALIZATION")
+    @NotNull
+    private String specialization;
+
+    @Column(name = "ADDRESS")
+    @NotNull
+    private String address;
+
+    @Column(name = "ROOM")
+    @NotNull
+    private String room;
+
     public DoctorSchedule getSchedule() {
         return schedule;
     }
@@ -34,8 +47,11 @@ public class Doctor extends User {
         super();
     }
 
-    public Doctor(String lastName) {
+    public Doctor(String lastName, String specialization, String address, String room) {
         super(lastName);
+        this.address = address;
+        this.specialization = specialization;
+        this.room = room;
     }
 
     public Long getId() {
@@ -54,23 +70,51 @@ public class Doctor extends User {
         super.setLastName(lastName);
     }
 
+    public String getSpecialization() {
+        return specialization;
+    }
+
+    public void setSpecialization(String specialization) {
+        this.specialization = specialization;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getRoom() {
+        return room;
+    }
+
+    public void setRoom(String room) {
+        this.room = room;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Doctor)) return false;
         Doctor doctor = (Doctor) o;
-        return getId() == doctor.getId();
+        return getId().equals(doctor.getId()) && Objects.equals(getSchedule(), doctor.getSchedule()) && getSpecialization().equals(doctor.getSpecialization()) && getAddress().equals(doctor.getAddress()) && getRoom().equals(doctor.getRoom());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), super.getLastName());
+        return Objects.hash(getId(), getSchedule(), getSpecialization(), getAddress(), getRoom());
     }
 
     @Override
     public String toString() {
         return "Doctor{" +
                 "id=" + id +
+                ", schedule=" + schedule +
+                ", specialization='" + specialization + '\'' +
+                ", address='" + address + '\'' +
+                ", room='" + room + '\'' +
                 '}';
     }
 }

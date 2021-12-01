@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AppointmentRegistrationRepo extends JpaRepository<AppointmentRegistration, Long> {
-    //        @Query("select a from AppointmentRegistration a where a.doctor.lastName = 'ФроловВВ' order by a.id asc")
+//            @Query("select a from AppointmentRegistration a where a.doctor.lastName = 'Фролов В.В.' order by a.id asc")
     @Query("select a from AppointmentRegistration a order by a.id asc")
     public List<AppointmentRegistration> findAllByOrderByIdAsc();
 

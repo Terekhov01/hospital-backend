@@ -66,8 +66,9 @@ public class ScheduleViewService {
 
         public DoctorScheduleTableData(DoctorSchedule schedule, LocalDate dateBeginRepresent, LocalDate dateEndRepresent) {
             this.id = schedule.getRelatedDoctor().getId();
-            this.specializationName = "Goose";
-            //this.specialization = schedule.getRelatedDoctor().getSpecialization().toString();
+//            this.specializationName = "Goose";
+            this.specializationName = schedule.getRelatedDoctor().getSpecialization();
+            System.out.println("DoctorScheduleTableData constructor specialization: " + this.specializationName);
             this.doctorName = schedule.getRelatedDoctor().getLastName();
             this.dailyInformation = new TreeSet<DoctorScheduleTableDataDaily>(DoctorScheduleTableDataDaily.dateAscendComparator);
             var setIterator = schedule.getStateSet().iterator();
@@ -188,6 +189,7 @@ public class ScheduleViewService {
         public DoctorScheduleAssignmentCalendarData(Long id, String specializationName, String doctorName, SortedSet<ScheduleInterval> intervalSet) {
             this.id = id;
             this.specializationName = specializationName;
+            System.out.println("DoctorScheduleAssignmentCalendarData specialization: " + this.specializationName);
             this.doctorName = doctorName;
             this.intervalCollection = intervalSet;
         }
@@ -215,7 +217,7 @@ public class ScheduleViewService {
         Set<DoctorScheduleAssignmentCalendarData> doctorScheduleTableDataSet = new HashSet<>();
         for (DoctorSchedule schedule : schedules) {
             Long docId = (long) schedule.getRelatedDoctor().getId();
-            DoctorScheduleAssignmentCalendarData abc = new DoctorScheduleAssignmentCalendarData(docId, "ABC",
+            DoctorScheduleAssignmentCalendarData abc = new DoctorScheduleAssignmentCalendarData(docId, schedule.getRelatedDoctor().getSpecialization(),
                     schedule.getRelatedDoctor().getLastName(), schedule.getStateSet().subSet(intervalStart, intervalEnd));
             doctorScheduleTableDataSet.add(abc);
         }
@@ -263,7 +265,8 @@ public class ScheduleViewService {
         DoctorShortInformation(DoctorRepository.@NotNull DoctorShortInformation persistedPair) {
             this.id = persistedPair.getId();
             this.doctorName = persistedPair.getLastName();
-            this.specializationName = "ABC";
+            this.specializationName = persistedPair.getSpecialization();
+            System.out.println("DoctorShortInformation specialization: " + this.specializationName);
         }
     }
 
