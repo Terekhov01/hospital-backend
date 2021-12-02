@@ -14,8 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -62,12 +61,30 @@ public class ScheduleController
         }
     }
 
-    LocalDate stringToLocalDate(String str)
+    LocalDateTime stringToDateTime(String str)
     {
         DateTimeFormatter ISOFormatter = DateTimeFormatter.ISO_ZONED_DATE_TIME;
         try
         {
-            return LocalDateTime.parse(prepareDateStringToParse(str), ISOFormatter).toLocalDate();
+            return ZonedDateTime.parse(prepareDateStringToParse(str), ISOFormatter).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
+        }
+        catch (DateTimeParseException e)
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Input - 2021-12-27T21:00:00.000Z, output - 2021-12-27T21:00 (if system time is Moscow)
+     * @param str - ISO representation of date
+     * @return
+     */
+    LocalDateTime stringToLocalDateTime(String str)
+    {
+        DateTimeFormatter ISOFormatter = DateTimeFormatter.ISO_ZONED_DATE_TIME;
+        try
+        {
+            return LocalDateTime.parse(prepareDateStringToParse(str), ISOFormatter);
         }
         catch (DateTimeParseException e)
         {
@@ -79,13 +96,12 @@ public class ScheduleController
     @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<String> getDataForTable(@RequestParam(name = "doctorIds", required = false) String doctorIdsStr,
                                                   @RequestParam(name = "dateBeginRepresent", required = false) String dateBeginRepresentStr,
-                                                  @RequestParam(name = "dateEndRepresent", required = false) String dateEndRepresentStr
-    )
+                                                  @RequestParam(name = "dateEndRepresent", required = false) String dateEndRepresentStr)
     {
         List<Long> doctorIds = new ArrayList<>();
 
-        LocalDate dateBeginRepresent = null;
-        LocalDate dateEndRepresent = null;
+        LocalDateTime dateBeginRepresent = null;
+        LocalDateTime dateEndRepresent = null;
 
         //If no array provided return all doctors' info
         if (doctorIdsStr == null)
@@ -114,11 +130,11 @@ public class ScheduleController
         //If no startDateTime provided use all available data by default
         if (dateBeginRepresentStr == null)
         {
-            dateBeginRepresent = LocalDate.MIN;
+            dateBeginRepresent = LocalDateTime.MIN;
         }
         else
         {
-            dateBeginRepresent = stringToLocalDate(dateBeginRepresentStr);
+            dateBeginRepresent = stringToLocalDateTime(dateBeginRepresentStr);
             if (dateBeginRepresent == null)
             {
                 return new ResponseEntity<String>("Invalid request - dateBeginRepresent - could not parse temporal value", HttpStatus.BAD_REQUEST);
@@ -128,11 +144,11 @@ public class ScheduleController
         //If no endDateTime provided use all available data by default
         if (dateEndRepresentStr == null)
         {
-            dateEndRepresent = LocalDate.MAX;
+            dateEndRepresent = LocalDateTime.MAX;
         }
         else
         {
-            dateEndRepresent = stringToLocalDate(dateEndRepresentStr);
+            dateEndRepresent = stringToLocalDateTime(dateEndRepresentStr);
             if (dateEndRepresent == null)
             {
                 return new ResponseEntity<String>("Invalid request - dateEndRepresent - could not parse temporal value", HttpStatus.BAD_REQUEST);
@@ -142,7 +158,7 @@ public class ScheduleController
         String jsonTable = "";
         try
         {
-            jsonTable = scheduleViewService.getScheduleTableJson(doctorIds, dateBeginRepresent, dateEndRepresent);
+            jsonTable = scheduleViewService.getScheduleTableJson(doctorIds, dateBeginRepresent, dateEndRepresent.plusDays(1));
         }
         catch (DataAccessException | IllegalStateException e)
         {
@@ -157,15 +173,15 @@ public class ScheduleController
 
     @GetMapping("/schedule/calendar")
     @CrossOrigin(origins = "http://localhost:4200")
-    public ResponseEntity<String> getDataForCalendar( @RequestParam(name = "doctorIds", required = false) String doctorIdsStr,
-                                                      @RequestParam(name = "startDate", required = false) String startDateStr,
-                                                      @RequestParam(name = "endDate", required = false) String endDateStr,
-                                                      @RequestParam(name = "getFreeTimeOnly", required = false) Boolean getFreeTimeOnly)
+    public ResponseEntity<String> getAvailableAppointmentsTime(@RequestParam(name = "doctorIds", required = false) String doctorIdsStr,
+                                                               @RequestParam(name = "startDate", required = false) String startDateStr,
+                                                               @RequestParam(name = "endDate", required = false) String endDateStr,
+                                                               @RequestParam(name = "getFreeTimeOnly", required = false) Boolean getFreeTimeOnly)
     {
         List<Long> doctorIds = new ArrayList<>();
 
-        LocalDate startDate = null;
-        LocalDate endDate = null;
+        LocalDateTime startDate = null;
+        LocalDateTime endDate = null;
 
         System.out.println("/schedule");
         //If no array provided return all doctors' info
@@ -196,11 +212,11 @@ public class ScheduleController
         //If no startDateTime provided use all available data by default
         if (startDateStr == null)
         {
-            startDate = LocalDate.MIN;
+            startDate = LocalDateTime.MIN;
         }
         else
         {
-            startDate = stringToLocalDate(startDateStr);
+            startDate = stringToLocalDateTime(startDateStr);
             if (startDate == null)
             {
                 return new ResponseEntity<String>("Invalid request - startDate - could not parse temporal value", HttpStatus.BAD_REQUEST);
@@ -214,7 +230,7 @@ public class ScheduleController
         }
         else
         {
-            endDate = stringToLocalDate(endDateStr);
+            endDate = stringToLocalDateTime(endDateStr);
             if (endDate == null)
             {
                 return new ResponseEntity<String>("Invalid request - startDate - could not parse temporal value", HttpStatus.BAD_REQUEST);
@@ -236,7 +252,7 @@ public class ScheduleController
 
         try
         {
-            jsonCalendar = scheduleViewService.getScheduleAssignmentCalendarJson(doctorIds, startDate.atStartOfDay(), endDate.atStartOfDay(), getFreeTimeOnly);
+            jsonCalendar = scheduleViewService.getScheduleAssignmentCalendarJson(doctorIds, startDate, endDate, getFreeTimeOnly);
         }
         catch (DataAccessException | IllegalStateException e)
         {
@@ -368,7 +384,7 @@ public class ScheduleController
         return new ResponseEntity<String>(schedulePatternList, HttpStatus.OK);
     }
 
-    @PatchMapping("/schedule/prolong")
+    @PatchMapping("/schedule/apply-pattern")
     @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<String> prolongSchedule(@RequestBody Map<String, Object> requestBody)
     {
@@ -384,7 +400,7 @@ public class ScheduleController
             return new ResponseEntity<String>("Invalid request - wrong parameters", HttpStatus.BAD_REQUEST);
         }
 
-        LocalDate dateToApply = stringToLocalDate(dateToApplyStr);
+        LocalDateTime dateToApply = stringToDateTime(dateToApplyStr);
         if (dateToApply == null)
         {
             return new ResponseEntity<String>("Invalid request - dateToApply - could not parse temporal value", HttpStatus.BAD_REQUEST);
@@ -405,7 +421,7 @@ public class ScheduleController
 
         try
         {
-            scheduleService.prolongScheduleByPattern(doctor, requestedPattern, dateToApply);
+            scheduleService.applyPatternToSchedule(doctor, requestedPattern, dateToApply.toLocalDate());
         }
         catch (DataAccessException e)
         {

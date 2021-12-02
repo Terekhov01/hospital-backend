@@ -11,9 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Type;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -73,7 +71,7 @@ public class ScheduleViewService
         @Expose
         SortedSet<DoctorScheduleTableDataDaily> dailyInformation;
 
-        public DoctorScheduleTableData(DoctorSchedule schedule, LocalDate dateBeginRepresent, LocalDate dateEndRepresent)
+        public DoctorScheduleTableData(DoctorSchedule schedule, LocalDateTime dateBeginRepresent, LocalDateTime dateEndRepresent)
         {
             this.id = schedule.getRelatedDoctor().getId();
             this.specializationName = "Goose";
@@ -91,12 +89,12 @@ public class ScheduleViewService
             {
                 var interval = setIterator.next();
 
-                if (interval.getIntervalStartTime().isBefore(dateBeginRepresent.atStartOfDay()))
+                if (interval.getIntervalStartTime().isBefore(dateBeginRepresent))
                 {
                     continue;
                 }
 
-                if (interval.getIntervalStartTime().isAfter(dateEndRepresent.plusDays(1).atStartOfDay()))
+                if (interval.getIntervalStartTime().isAfter(dateEndRepresent))
                 {
                     break;
                 }
@@ -140,7 +138,7 @@ public class ScheduleViewService
      * @return Json string that contains requested data in such format that it can be parsed by Angular.
      * Returned data is presented in material table.
      */
-    public String getScheduleTableJson(List<Long> doctorIds, LocalDate dateBeginRepresent, LocalDate dateEndRepresent)
+    public String getScheduleTableJson(List<Long> doctorIds, LocalDateTime dateBeginRepresent, LocalDateTime dateEndRepresent)
     {
         Set<DoctorSchedule> schedules = scheduleService.getDoctorSchedule(doctorIds);
 
@@ -246,8 +244,8 @@ public class ScheduleViewService
             @Override
             public JsonElement serialize(LocalDateTime localDateTime, Type type, JsonSerializationContext jsonDeserializationContext) throws JsonParseException
             {
-                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
-                return new JsonPrimitive(dateTimeFormatter.format(localDateTime));
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+                return new JsonPrimitive(dateTimeFormatter.format(localDateTime.atOffset(ZoneOffset.UTC)));
             }
         });
 

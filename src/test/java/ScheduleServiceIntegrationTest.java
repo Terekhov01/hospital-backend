@@ -81,8 +81,8 @@ public class ScheduleServiceIntegrationTest
         scheduleService.save(commonSchedule);
         scheduleService.save(modernSchedule);
 
-        scheduleService.prolongScheduleByPattern(doctor1, doctor1WorkingPattern, commonTimeStart);
-        scheduleService.prolongScheduleByPattern(doctor2, doctor1WorkingPattern, modernTimeStart);
+        scheduleService.applyPatternToSchedule(doctor1, doctor1WorkingPattern, commonTimeStart);
+        scheduleService.applyPatternToSchedule(doctor2, doctor1WorkingPattern, modernTimeStart);
     }
 
     @Test

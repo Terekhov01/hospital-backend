@@ -98,7 +98,7 @@ public class ScheduleService
     }
 
     @Transactional
-    public void prolongScheduleByPattern(DoctorStub doctor, SchedulePattern pattern, LocalDate dayToApplyPatternFrom) throws DataAccessException
+    public void applyPatternToSchedule(DoctorStub doctor, SchedulePattern pattern, LocalDate dayToApplyPatternFrom) throws DataAccessException
     {
         DoctorSchedule schedule = getDoctorSchedule(doctor);
 
@@ -109,15 +109,23 @@ public class ScheduleService
 
         SortedSet<ScheduleInterval> scheduleIntervalSet = schedule.getStateSet();
 
+        final LocalDate dayToApplyPatternTo = dayToApplyPatternFrom.plusDays(pattern.getDaysLength());
+
+        scheduleIntervalSet.stream().filter(interval -> (interval.getIntervalStartTime().toLocalDate().isAfter(dayToApplyPatternFrom)
+                || interval.getIntervalStartTime().toLocalDate().isEqual(dayToApplyPatternFrom))
+                && interval.getIntervalStartTime().toLocalDate().isBefore(dayToApplyPatternTo)).forEach(interval -> scheduleIntervalRepository.delete(interval));
+
+        scheduleIntervalSet.removeIf(interval ->
+                (interval.getIntervalStartTime().toLocalDate().isAfter(dayToApplyPatternFrom)
+                        || interval.getIntervalStartTime().toLocalDate().isEqual(dayToApplyPatternFrom))
+                        && interval.getIntervalStartTime().toLocalDate().isBefore(dayToApplyPatternTo));
+
         pattern.getStateSet().forEach(patternInterval ->
                 scheduleIntervalSet.add(new ScheduleInterval(schedule, dayToApplyPatternFrom, patternInterval))
                 );
 
         scheduleIntervalRepository.saveAll(scheduleIntervalSet);
         schedule.setStateSet(scheduleIntervalSet);
-        /*scheduleIntervalSet.first().setAssigned(true);
-        var t = getDoctorState(schedule.getRelatedDoctor(), scheduleIntervalSet.first().getIntervalStartTime());
-        System.err.println("A");*/
     }
 
     /**
