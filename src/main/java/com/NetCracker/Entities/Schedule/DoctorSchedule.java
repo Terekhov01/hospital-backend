@@ -1,6 +1,6 @@
 package com.NetCracker.Entities.Schedule;
 
-import com.NetCracker.Entities.Doctor;
+import com.NetCracker.Entities.DoctorStub;
 import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleInterval;
 import com.google.gson.annotations.Expose;
 import org.hibernate.annotations.SortComparator;
@@ -32,7 +32,7 @@ public class DoctorSchedule
     @OneToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "doctor_id", referencedColumnName = "id")
     @Expose(serialize = false, deserialize = false)
-    private Doctor relatedDoctor;
+    private DoctorStub relatedDoctor;
 
     /**
      * For Hibernate only
@@ -41,13 +41,13 @@ public class DoctorSchedule
     public DoctorSchedule()
     {}
 
-    public DoctorSchedule(Doctor relatedDoctor)
+    public DoctorSchedule(DoctorStub relatedDoctor)
     {
         this.relatedDoctor = relatedDoctor;
         stateSet = new TreeSet<ScheduleInterval>(ScheduleInterval.dateAscendComparator);
     }
 
-    public DoctorSchedule(Doctor relatedDoctor, TreeSet<ScheduleInterval> stateSet)
+    public DoctorSchedule(DoctorStub relatedDoctor, TreeSet<ScheduleInterval> stateSet)
     {
         this(relatedDoctor);
         this.stateSet = stateSet;
@@ -63,7 +63,7 @@ public class DoctorSchedule
         return stateSet;
     }
 
-    public Doctor getRelatedDoctor()
+    public DoctorStub getRelatedDoctor()
     {
         return relatedDoctor;
     }
@@ -83,7 +83,7 @@ public class DoctorSchedule
         this.stateSet = stateSet;
     }
 
-    public void setRelatedDoctor(Doctor doctor)
+    public void setRelatedDoctor(DoctorStub doctor)
     {
         relatedDoctor = doctor;
     }

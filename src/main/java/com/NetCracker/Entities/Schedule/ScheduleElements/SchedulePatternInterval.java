@@ -4,7 +4,7 @@ import com.NetCracker.Entities.Schedule.SchedulePattern;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -18,11 +18,16 @@ public class SchedulePatternInterval
     @JoinColumn(name = "schedule_pattern_id", referencedColumnName = "id")
     private SchedulePattern schedulePattern;
 
+    @NotNull
+    @Column(name = "day_number")
+    @Id
+    private Integer dayNumber;
+
     //This field stores the 30-minute interval that field state refers to.
     @NotNull
     @Column(name = "interval_start_time")
     @Id
-    protected LocalDateTime intervalStartTime;
+    private LocalTime intervalStartTime;
 
     /**
      * This constructor is for Hibernate only. Don't use it!
@@ -35,15 +40,16 @@ public class SchedulePatternInterval
     /**
      * Consider using other constructor if you want to persist (save to DB) a variable
      */
-    public SchedulePatternInterval(LocalDateTime intervalStartTime)
+    public SchedulePatternInterval(Integer dayNumber, LocalTime intervalStartTime)
     {
+        this.dayNumber = dayNumber;
         this.intervalStartTime = intervalStartTime.withSecond(0);
         this.intervalStartTime = this.intervalStartTime.withNano(0);
     }
 
-    public SchedulePatternInterval(LocalDateTime intervalStartTime, SchedulePattern pattern)
+    public SchedulePatternInterval(Integer dayNumber, LocalTime intervalStartTime, SchedulePattern pattern)
     {
-        this(intervalStartTime);
+        this(dayNumber, intervalStartTime);
         this.schedulePattern = pattern;
     }
 
@@ -52,7 +58,12 @@ public class SchedulePatternInterval
         return schedulePattern;
     }
 
-    public LocalDateTime getIntervalStartTime()
+    public Integer getDayNumber()
+    {
+        return dayNumber;
+    }
+
+    public LocalTime getIntervalStartTime()
     {
         return intervalStartTime;
     }
@@ -62,7 +73,12 @@ public class SchedulePatternInterval
         this.schedulePattern = schedulePattern;
     }
 
-    public void setIntervalStartTime(LocalDateTime intervalStartTime)
+    public void setDayNumber(Integer dayNumber)
+    {
+        this.dayNumber = dayNumber;
+    }
+
+    public void setIntervalStartTime(LocalTime intervalStartTime)
     {
         this.intervalStartTime = intervalStartTime;
     }
@@ -87,14 +103,26 @@ public class SchedulePatternInterval
         @Override
         public int compare(SchedulePatternInterval o1, SchedulePatternInterval o2)
         {
-            return o1.getIntervalStartTime().compareTo(o2.getIntervalStartTime());
+            int dayComparison = o1.dayNumber.compareTo(o2.dayNumber);
+            if (o1.dayNumber.compareTo(o2.dayNumber) == 0)
+            {
+                return o1.getIntervalStartTime().compareTo(o2.getIntervalStartTime());
+            }
+
+            return dayComparison;
         }
     }
 
     public static final Comparator<SchedulePatternInterval> dateAscendComparator = new Comparator<SchedulePatternInterval>() {
         @Override
         public int compare(SchedulePatternInterval o1, SchedulePatternInterval o2) {
-            return o1.getIntervalStartTime().compareTo(o2.getIntervalStartTime());
+            int dayComparison = o1.dayNumber.compareTo(o2.dayNumber);
+            if (o1.dayNumber.compareTo(o2.dayNumber) == 0)
+            {
+                return o1.getIntervalStartTime().compareTo(o2.getIntervalStartTime());
+            }
+
+            return dayComparison;
         }
     };
 }
