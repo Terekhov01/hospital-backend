@@ -1,4 +1,4 @@
-package com.NetCracker.Entities;
+/*package com.NetCracker.Entities;
 
 import org.hibernate.annotations.Type;
 
@@ -20,12 +20,12 @@ public class Appointment {
     private AppointmentRegistration appointmentRegistration;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "PATIENT", referencedColumnName = "PATIENT_ID")
+    @JoinColumn(name = "PATIENT", referencedColumnName = "id")
     private Patient patient;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DOCTOR", referencedColumnName = "DOCTOR_ID")
-    private Doctor doctor;
+    @JoinColumn(name = "DOCTOR", referencedColumnName = "id")
+    private DoctorStub doctor;
 
     @Lob
     @Type(type = "org.hibernate.type.TextType")
@@ -55,7 +55,7 @@ public class Appointment {
     }
 
     public Appointment(int id, AppointmentRegistration appointmentRegistration,
-                       Patient patient, Doctor doctor, String description,
+                       Patient patient, DoctorStub doctor, String description,
                        String service, String recipe, String treatPlan,
                        String rehabPlan, String docStatement) {
         this.id = id;
@@ -86,11 +86,11 @@ public class Appointment {
         this.patient = patient;
     }
 
-    public Doctor getDoctor() {
+    public DoctorStub getDoctor() {
         return doctor;
     }
 
-    public void setDoctor(Doctor doctor) {
+    public void setDoctor(DoctorStub doctor) {
         this.doctor = doctor;
     }
 
@@ -185,4 +185,4 @@ public class Appointment {
                 getDescription(), getService(), getRecipe(), getTreatPlan(), getRehabPlan(), getDocStatement());
     }
 
-}
+}*/

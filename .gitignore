@@ -1,9 +1,15 @@
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**
+!**/src/test/**
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
+.idea/httpRequests
+*.iws
+*.iml
+*.ipr
 out/*
 target/*
-.idea/httpRequests
 src/main/webapp/doctorScheduleUI/*

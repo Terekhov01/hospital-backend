@@ -1,4 +1,4 @@
-package com.NetCracker.Entities;
+/*package com.NetCracker.Entities;
 
 
 import javax.persistence.*;
@@ -95,3 +95,4 @@ public class MedCard {
         this.appointments = appointments;
     }
 }
+*/

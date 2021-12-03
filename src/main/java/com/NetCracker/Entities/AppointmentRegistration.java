@@ -1,4 +1,4 @@
-package com.NetCracker.Entities;
+/*package com.NetCracker.Entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -35,19 +35,19 @@ public class AppointmentRegistration {
     private String room;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "PATIENT", referencedColumnName = "PATIENT_ID")
+    @JoinColumn(name = "PATIENT", referencedColumnName = "id")
     private Patient patient;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DOCTOR", referencedColumnName = "DOCTOR_ID")
-    private Doctor doctor;
+    @JoinColumn(name = "DOCTOR", referencedColumnName = "id")
+    private DoctorStub doctor;
 
     public AppointmentRegistration() {
     }
 
     public AppointmentRegistration(LocalDateTime start, LocalDateTime end,
                                    String address, String room, Patient patient,
-                                   Doctor doctor) {
+                                   DoctorStub doctor) {
         this.start = start;
         this.end = end;
         this.address = address;
@@ -104,11 +104,11 @@ public class AppointmentRegistration {
         this.patient = patient;
     }
 
-    public Doctor getDoctor() {
+    public DoctorStub getDoctor() {
         return doctor;
     }
 
-    public void setDoctor(Doctor doctor) {
+    public void setDoctor(DoctorStub doctor) {
         this.doctor = doctor;
     }
 
@@ -143,3 +143,4 @@ public class AppointmentRegistration {
                 '}';
     }
 }
+*/

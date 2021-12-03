@@ -6,7 +6,6 @@ import com.NetCracker.Entities.Schedule.SchedulePattern;
 import com.NetCracker.Repositories.DoctorRepository;
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -261,7 +260,7 @@ public class ScheduleViewService
         String doctorName;
         String specializationName;
 
-        DoctorShortInformation(DoctorRepository.@NotNull DoctorShortInformation persistedShortInformation)
+        DoctorShortInformation(DoctorRepository.DoctorShortInformation persistedShortInformation)
         {
             this.id = persistedShortInformation.getId();
             this.doctorName = persistedShortInformation.getName();
