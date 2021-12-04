@@ -33,11 +33,10 @@ import com.NetCracker.Entities.User;
 import com.NetCracker.Payload.Request.LoginRequest;
 import com.NetCracker.Payload.Request.SignupRequest;
 import com.NetCracker.Repositories.RoleRepository;
-import com.NetCracker.Repositories.UserRepository;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
-@RestController
+@CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("/api/auth")
+@RestController
 public class AuthController {
 	@Autowired
 	AuthenticationManager authenticationManager;

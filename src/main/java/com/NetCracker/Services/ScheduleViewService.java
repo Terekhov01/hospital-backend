@@ -21,9 +21,6 @@ public class ScheduleViewService
     @Autowired
     ScheduleService scheduleService;
 
-    @Autowired
-    SchedulePatternService schedulePatternService;
-
     static class DoctorScheduleTableDataDaily
     {
         @Expose
@@ -277,30 +274,5 @@ public class ScheduleViewService
                 doctorShortInformationCollection.add(new DoctorShortInformation(persistedPair)));
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(doctorShortInformationCollection);
-    }
-
-    public String getSchedulePatternList()
-    {
-        List<SchedulePattern> schedulePatternList = schedulePatternService.getPatternsByDoctor();
-
-        GsonBuilder gsonBuilder = new GsonBuilder();
-
-        gsonBuilder.registerTypeAdapter(SchedulePattern.class, new JsonSerializer<SchedulePattern>()
-        {
-            @Override
-            public JsonElement serialize(SchedulePattern pattern, Type type, JsonSerializationContext jsonDeserializationContext) throws JsonParseException
-            {
-                JsonObject patternObject = new JsonObject();
-                patternObject.add("id", new JsonPrimitive(pattern.getId()));
-                patternObject.add("name", new JsonPrimitive(pattern.getName()));
-                patternObject.add("daysLength", new JsonPrimitive(pattern.getDaysLength()));
-
-                return patternObject;
-            }
-        });
-
-        Gson gson = gsonBuilder.create();
-
-        return gson.toJson(schedulePatternList);
     }
 }
