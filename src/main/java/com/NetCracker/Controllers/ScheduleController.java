@@ -27,9 +27,87 @@ public class ScheduleController
     @Autowired
     private ScheduleViewService scheduleViewService;
 
+    @PreAuthorize("permitAll()")
+    @GetMapping("/table")
+    public ResponseEntity<String> getDataForTable(@RequestParam(name = "doctorIds", required = false) String doctorIdsStr,
+                                                  @RequestParam(name = "dateBeginRepresent", required = false) String dateBeginRepresentStr,
+                                                  @RequestParam(name = "dateEndRepresent", required = false) String dateEndRepresentStr)
+    {
+        List<Long> doctorIds = new ArrayList<>();
+
+        LocalDateTime dateBeginRepresent = null;
+        LocalDateTime dateEndRepresent = null;
+
+        //If no array provided return all doctors' info
+        if (doctorIdsStr == null)
+        {
+            try
+            {
+                doctorIds = scheduleService.getAllDoctors().stream().map(DoctorStub::getId).collect(Collectors.toList());
+            }
+            catch (DataAccessException e)
+            {
+                //TODO - log errors
+                return new ResponseEntity<String>(
+                        "Server could not retrieve information from database (all doctor Ids)",
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+        else
+        {
+            doctorIds = StringUtils.stringToLongList(doctorIdsStr);
+            if (doctorIds == null)
+            {
+                return new ResponseEntity<String>("Invalid request - doctorIds is a malformed string representation", HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        //If no startDateTime provided use all available data by default
+        if (dateBeginRepresentStr == null)
+        {
+            dateBeginRepresent = LocalDateTime.MIN;
+        }
+        else
+        {
+            dateBeginRepresent = StringUtils.stringToLocalDateTime(dateBeginRepresentStr);
+            if (dateBeginRepresent == null)
+            {
+                return new ResponseEntity<String>("Invalid request - dateBeginRepresent - could not parse temporal value", HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        //If no endDateTime provided use all available data by default
+        if (dateEndRepresentStr == null)
+        {
+            dateEndRepresent = LocalDateTime.MAX;
+        }
+        else
+        {
+            dateEndRepresent = StringUtils.stringToLocalDateTime(dateEndRepresentStr);
+            if (dateEndRepresent == null)
+            {
+                return new ResponseEntity<String>("Invalid request - dateEndRepresent - could not parse temporal value", HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        String jsonTable = "";
+        try
+        {
+            jsonTable = scheduleViewService.getScheduleTableJson(doctorIds, dateBeginRepresent, dateEndRepresent.plusDays(1));
+        }
+        catch (DataAccessException | IllegalStateException e)
+        {
+            return new ResponseEntity<String>("Server could not retrieve information from database or serialize it", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        //TODO - delete in prod
+        System.out.println(jsonTable);
+
+        return new ResponseEntity<String>(jsonTable, HttpStatus.OK);
+    }
+
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/calendar")
-    @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<String> getAvailableAppointmentsTime(@RequestParam(name = "doctorIds", required = false) String doctorIdsStr,
                                                                @RequestParam(name = "startDate", required = false) String startDateStr,
                                                                @RequestParam(name = "endDate", required = false) String endDateStr,
@@ -126,10 +204,9 @@ public class ScheduleController
 
         return new ResponseEntity<String>(jsonCalendar, HttpStatus.OK);
     }
-
+    
     @PreAuthorize("permitAll()")
-    @GetMapping("/calendar/getDoctorNames")
-    @CrossOrigin(origins = "http://localhost:4200")
+    @GetMapping("/getDoctorNames")
     public ResponseEntity<String> getDoctorsShortInfo(@RequestParam(name = "doctorIds", required = false) List<Long> doctorIds)
     {
         if (doctorIds == null)
