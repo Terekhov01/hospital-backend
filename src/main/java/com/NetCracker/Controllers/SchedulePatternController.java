@@ -2,6 +2,7 @@ package com.NetCracker.Controllers;
 
 import com.NetCracker.Entities.DoctorStub;
 import com.NetCracker.Entities.Schedule.SchedulePattern;
+import com.NetCracker.Security.jwt.JwtUtils;
 import com.NetCracker.Services.DoctorStubService;
 import com.NetCracker.Services.SchedulePatternService;
 import com.NetCracker.Services.SchedulePatternViewService;
@@ -16,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -39,12 +41,12 @@ public class SchedulePatternController
 
     @PreAuthorize("hasRole('ROLE_DOCTOR')")
     @GetMapping("/list-patterns")
-    public ResponseEntity<String> getSchedulePatternList()
+    public ResponseEntity<String> getSchedulePatternList(Principal principal)
     {
         String schedulePatternList;
         try
         {
-            schedulePatternList = schedulePatternViewService.getSchedulePatternList();
+            schedulePatternList = schedulePatternViewService.getSchedulePatternList(principal.getName());
         }
         catch (DataAccessException e)
         {

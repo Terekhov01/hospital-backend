@@ -1,10 +1,13 @@
 package com.NetCracker.Services;
 
 
+import com.NetCracker.Entities.ERole;
+import com.NetCracker.Entities.Role;
 import com.NetCracker.Entities.User;
 import com.NetCracker.Repositories.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -39,5 +42,10 @@ public class UserService {
     public void deleteById(Long id){
         log.info("IN UserServive delete{}", id);
         userRepository.deleteById(id);
+    }
+
+    public List<User> getAllUsersOfRole(ERole role) throws DataAccessException
+    {
+        return userRepository.findByRole(role);
     }
 }

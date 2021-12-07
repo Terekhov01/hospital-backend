@@ -1,6 +1,5 @@
 package com.NetCracker.Controllers;
 
-import com.NetCracker.Entities.DoctorStub;
 import com.NetCracker.Services.ScheduleService;
 import com.NetCracker.Services.ScheduleViewService;
 import com.NetCracker.Utils.StringUtils;
@@ -43,7 +42,7 @@ public class ScheduleController
         {
             try
             {
-                doctorIds = scheduleService.getAllDoctors().stream().map(DoctorStub::getId).collect(Collectors.toList());
+                doctorIds = scheduleService.getAllDoctorSchedules().stream().map(doctorSchedule -> doctorSchedule.getRelatedDoctor().getId()).collect(Collectors.toList());
             }
             catch (DataAccessException e)
             {
@@ -90,6 +89,12 @@ public class ScheduleController
             }
         }
 
+        //Protection from ddos attacks - the bigger date range is the longer it takes for server to process query
+        if (dateBeginRepresent.plusDays(31).isBefore(dateEndRepresent))
+        {
+            dateEndRepresent = dateBeginRepresent.plusDays(31);
+        }
+
         String jsonTable = "";
         try
         {
@@ -122,8 +127,8 @@ public class ScheduleController
         {
             try
             {
-                var debug = scheduleService.getAllDoctors();
-                doctorIds = scheduleService.getAllDoctors().stream().map(DoctorStub::getId).toList();
+                //var debug = userService.getAllUsersOfRole(ERole.ROLE_DOCTOR);
+                doctorIds = scheduleService.getAllDoctorSchedules().stream().map(doctorSchedule -> doctorSchedule.getRelatedDoctor().getId()).toList();
             }
             catch (DataAccessException e)
             {
@@ -175,6 +180,12 @@ public class ScheduleController
             }
         }
 
+        //Protection from ddos attacks - the bigger date range is the longer it takes for server to process query
+        if (startDate.plusDays(31).isBefore(endDate))
+        {
+            endDate = startDate.plusDays(31);
+        }
+
         //If no specifier provided show when doctors do their jobs
         if (getFreeTimeOnly == null)
         {
@@ -204,14 +215,14 @@ public class ScheduleController
 
         return new ResponseEntity<String>(jsonCalendar, HttpStatus.OK);
     }
-    
+
     @PreAuthorize("permitAll()")
     @GetMapping("/getDoctorNames")
     public ResponseEntity<String> getDoctorsShortInfo(@RequestParam(name = "doctorIds", required = false) List<Long> doctorIds)
     {
         if (doctorIds == null)
         {
-            doctorIds = scheduleService.getAllDoctors().stream().map(DoctorStub::getId).toList();
+            doctorIds = scheduleService.getAllDoctorSchedules().stream().map(doctorSchedule -> doctorSchedule.getRelatedDoctor().getId()).toList();
         }
 
         String doctorsShortInformation = null;

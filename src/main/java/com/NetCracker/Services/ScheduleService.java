@@ -1,14 +1,13 @@
 package com.NetCracker.Services;
 
 import com.NetCracker.Entities.DoctorStub;
+import com.NetCracker.Entities.ERole;
+import com.NetCracker.Entities.Role;
 import com.NetCracker.Entities.Schedule.DoctorSchedule;
 import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleIntervalId;
 import com.NetCracker.Entities.Schedule.SchedulePattern;
 import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleInterval;
-import com.NetCracker.Repositories.DoctorRepository;
-import com.NetCracker.Repositories.DoctorScheduleRepository;
-import com.NetCracker.Repositories.ScheduleIntervalRepository;
-import com.NetCracker.Repositories.SchedulePatternRepository;
+import com.NetCracker.Repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataRetrievalFailureException;
@@ -52,11 +51,6 @@ public class ScheduleService
     {
         //return doctor.getSchedule();
         return doctorScheduleRepository.findByRelatedDoctor(doctor.getId());
-    }
-
-    public List<DoctorStub> getAllDoctors() throws DataAccessException
-    {
-        return doctorRepository.findAll();
     }
 
     public List<DoctorSchedule> getAllDoctorSchedules() throws DataAccessException

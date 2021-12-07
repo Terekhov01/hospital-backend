@@ -17,9 +17,9 @@ public class SchedulePatternViewService
     @Autowired
     SchedulePatternService schedulePatternService;
 
-    public String getSchedulePatternList()
+    public String getSchedulePatternList(String doctorName)
     {
-        List<SchedulePattern> schedulePatternList = schedulePatternService.getPatternsByDoctor();
+        List<SchedulePattern> schedulePatternList = schedulePatternService.getPatternsByDoctor(doctorName);
 
         GsonBuilder gsonBuilder = new GsonBuilder();
 

@@ -129,20 +129,13 @@ public class SchedulePatternService
             return null;
         }
 
-        //SchedulePattern schedulePattern = new SchedulePattern(relatedDoctor, schedulePatternRepresentation.patternName);
-
         NavigableSet<SchedulePatternInterval> schedulePatternIntervals = new TreeSet<SchedulePatternInterval>(SchedulePatternInterval.dateAscendComparator);
-
-        /*SchedulePattern schedulePattern = new SchedulePattern(relatedDoctor,
-                                                            schedulePatternRepresentation.patternName,
-                                                            schedulePatternRepresentation.daysLength);*/
 
         for (var scheduleDayPattern : schedulePatternRepresentation.scheduleDailyPatterns)
         {
             for (var interval : scheduleDayPattern.intervalStart)
             {
                 schedulePatternIntervals.add(new SchedulePatternInterval(scheduleDayPattern.dayNumber, interval));
-                //schedulePattern.getStateSet().add(new SchedulePatternInterval(scheduleDayPattern.dayNumber, interval, schedulePattern));
             }
         }
 
@@ -157,7 +150,7 @@ public class SchedulePatternService
         return schedulePatternRepository.findAll();
     }
 
-    public List<SchedulePattern> getPatternsByDoctor()
+    public List<SchedulePattern> getPatternsByDoctor(String doctorName)
     {
         //Get current doctor
         long x = 1;
