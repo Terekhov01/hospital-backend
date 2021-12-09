@@ -1,7 +1,7 @@
-package com.NetCracker.Controllers;
+package com.NetCracker.Controllers.Schedule;
 
-import com.NetCracker.Services.ScheduleService;
-import com.NetCracker.Services.ScheduleViewService;
+import com.NetCracker.Services.Schedule.ScheduleService;
+import com.NetCracker.Services.Schedule.ScheduleViewService;
 import com.NetCracker.Utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;

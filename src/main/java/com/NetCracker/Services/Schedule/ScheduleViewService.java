@@ -1,9 +1,9 @@
-package com.NetCracker.Services;
+package com.NetCracker.Services.Schedule;
 
+import com.NetCracker.Entities.Doctor.Specialist;
 import com.NetCracker.Entities.Schedule.DoctorSchedule;
 import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleInterval;
-import com.NetCracker.Entities.Schedule.SchedulePattern;
-import com.NetCracker.Repositories.DoctorRepository;
+import com.NetCracker.Repositories.Doctor.DoctorUserRepository;
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +62,10 @@ public class ScheduleViewService
         String specializationName;
 
         @Expose
-        String doctorName;
+        String firstName;
+
+        @Expose
+        String lastName;
 
         @Expose
         SortedSet<DoctorScheduleTableDataDaily> dailyInformation;
@@ -72,7 +75,8 @@ public class ScheduleViewService
             this.id = schedule.getRelatedDoctor().getId();
             this.specializationName = "Goose";
             //this.specialization = schedule.getRelatedDoctor().getSpecialization().toString();
-            this.doctorName = schedule.getRelatedDoctor().getName();
+            this.firstName = schedule.getRelatedDoctor().getFirstName();
+            this.lastName = schedule.getRelatedDoctor().getLastName();
             this.dailyInformation = new TreeSet<DoctorScheduleTableDataDaily>(DoctorScheduleTableDataDaily.dateAscendComparator);
             var setIterator = schedule.getStateSet().iterator();
 
@@ -159,7 +163,6 @@ public class ScheduleViewService
         return gson.toJson(doctorScheduleTableDataSet);
     }
 
-
     static class DoctorScheduleAssignmentCalendarData
     {
         //TODO - refactor name and specialization when doctor entity will release
@@ -167,20 +170,24 @@ public class ScheduleViewService
         Long id;
 
         @Expose
-        String specializationName;
+        List<String> specializationNames;
 
         @Expose
-        String doctorName;
+        String firstName;
+
+        @Expose
+        String lastName;
 
         @Expose
         SortedSet<ScheduleInterval> intervalCollection;
 
-        public DoctorScheduleAssignmentCalendarData(Long id, String specializationName, String doctorName,
+        public DoctorScheduleAssignmentCalendarData(Long id, List<String> specializationNames, String firstName, String lastName,
                                                     SortedSet<ScheduleInterval> intervalSet)
         {
             this.id = id;
-            this.specializationName = specializationName;
-            this.doctorName = doctorName;
+            this.specializationNames = specializationNames;
+            this.firstName = firstName;
+            this.lastName = lastName;
             this.intervalCollection = intervalSet;
         }
 
@@ -208,15 +215,12 @@ public class ScheduleViewService
 
         //Required data - each doctor is matched with set of scheduleIntervals - time, when (s)he is working (not busy)
         Set<DoctorScheduleAssignmentCalendarData> doctorScheduleTableDataSet = schedules.stream().map(schedule ->
-            new DoctorScheduleAssignmentCalendarData(schedule.getRelatedDoctor().getId(), schedule.getRelatedDoctor().getSpecialization(),
-                        schedule.getRelatedDoctor().getName(), schedule.getStateSet().subSet(intervalStart, intervalEnd)))
+            new DoctorScheduleAssignmentCalendarData(schedule.getRelatedDoctor().getId(),
+                    schedule.getRelatedDoctor().getSpecialist().stream().map(Specialist::getSpecialization).toList(),
+                    schedule.getRelatedDoctor().getFirstName(),
+                    schedule.getRelatedDoctor().getLastName(),
+                    schedule.getStateSet().subSet(intervalStart, intervalEnd)))
                 .collect(Collectors.toSet());
-                /*.collect(
-                Collectors.toSet(
-                        schedule -> new DoctorData(schedule.getRelatedDoctor().getId(), "ABC",
-                                    schedule.getRelatedDoctor().getName(), schedule.getStateSet().subSet(intervalStart, intervalEnd))
-                )
-        );*/
 
         if (getFreeTimeOnly)
         {
@@ -254,14 +258,18 @@ public class ScheduleViewService
     static class DoctorShortInformation
     {
         Long id;
-        String doctorName;
-        String specializationName;
+        String firstName;
+        String lastName;
+        Set<String> specializationNames;
 
-        DoctorShortInformation(DoctorRepository.DoctorShortInformation persistedShortInformation)
+        DoctorShortInformation(DoctorUserRepository.DoctorShortInformation persistedShortInformation)
         {
             this.id = persistedShortInformation.getId();
-            this.doctorName = persistedShortInformation.getName();
-            this.specializationName = persistedShortInformation.getSpecialization();
+            this.firstName = persistedShortInformation.getFirstName();
+            this.lastName = persistedShortInformation.getLastName();
+            this.specializationNames = persistedShortInformation.getSpecialist().stream()
+                                                        .map(Specialist::getSpecialization)
+                                                        .collect(Collectors.toSet());
         }
     }
 

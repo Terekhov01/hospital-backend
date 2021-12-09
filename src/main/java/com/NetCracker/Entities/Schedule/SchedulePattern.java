@@ -1,6 +1,6 @@
 package com.NetCracker.Entities.Schedule;
 
-import com.NetCracker.Entities.DoctorStub;
+import com.NetCracker.Entities.Doctor.Doctor;
 import com.NetCracker.Entities.Schedule.ScheduleElements.SchedulePatternInterval;
 import com.google.gson.annotations.Expose;
 import org.hibernate.annotations.SortComparator;
@@ -41,7 +41,7 @@ public class SchedulePattern
     @OneToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "doctor_id", referencedColumnName = "id")
     @Expose(serialize = false, deserialize = false)
-    private DoctorStub relatedDoctor;
+    private Doctor relatedDoctor;
 
     /**
      * For Hibernate only
@@ -50,7 +50,7 @@ public class SchedulePattern
     public SchedulePattern()
     {}
 
-    public SchedulePattern(DoctorStub relatedDoctor, String name)
+    public SchedulePattern(Doctor relatedDoctor, String name)
     {
         this.relatedDoctor = relatedDoctor;
         this.name = name;
@@ -58,7 +58,7 @@ public class SchedulePattern
         stateSet = new TreeSet<SchedulePatternInterval>(SchedulePatternInterval.dateAscendComparator);
     }
 
-    public SchedulePattern(DoctorStub relatedDoctor, String name, Integer daysLength, NavigableSet<SchedulePatternInterval> stateSet)
+    public SchedulePattern(Doctor relatedDoctor, String name, Integer daysLength, NavigableSet<SchedulePatternInterval> stateSet)
     {
         this.relatedDoctor = relatedDoctor;
         this.name = name;

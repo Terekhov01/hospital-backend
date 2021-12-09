@@ -1,10 +1,11 @@
-package com.NetCracker.Services;
+package com.NetCracker.Services.Schedule;
 
-import com.NetCracker.Entities.DoctorStub;
+import com.NetCracker.Entities.Doctor.Doctor;
 import com.NetCracker.Entities.Schedule.ScheduleElements.SchedulePatternInterval;
 import com.NetCracker.Entities.Schedule.SchedulePattern;
-import com.NetCracker.Repositories.SchedulePatternIntervalRepository;
-import com.NetCracker.Repositories.SchedulePatternRepository;
+import com.NetCracker.Repositories.Schedule.SchedulePatternIntervalRepository;
+import com.NetCracker.Repositories.Schedule.SchedulePatternRepository;
+import com.NetCracker.Services.Doctor.DoctorUserService;
 import com.google.gson.*;
 import com.google.gson.annotations.SerializedName;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class SchedulePatternService
 
     @Autowired
     ScheduleService scheduleService;
+
+    @Autowired
+    DoctorUserService doctorUserService;
 
     /**
      * Saves pattern and all of it's intervals to database. Does not check if pattern has a unique name.
@@ -102,7 +106,7 @@ public class SchedulePatternService
         List<LocalTime> intervalStart;
     }
 
-    public SchedulePattern fromJson(String patternStr)
+    public SchedulePattern fromJson(String patternStr, String doctorName)
     {
         GsonBuilder gsonBuilder = new GsonBuilder();
 
@@ -122,7 +126,8 @@ public class SchedulePatternService
         Gson gson = gsonBuilder.create();
         SchedulePatternRepresentation schedulePatternRepresentation = gson.fromJson(patternStr, SchedulePatternRepresentation.class);
 
-        DoctorStub relatedDoctor = scheduleService.getDoctorById(1L);
+        //TODO - change doctor
+        Doctor relatedDoctor = doctorUserService.findById(1L);
 
         if (relatedDoctor == null)
         {
@@ -150,10 +155,8 @@ public class SchedulePatternService
         return schedulePatternRepository.findAll();
     }
 
-    public List<SchedulePattern> getPatternsByDoctor(String doctorName)
+    public List<SchedulePattern> getPatternsByDoctor(Long doctorId)
     {
-        //Get current doctor
-        long x = 1;
-        return schedulePatternRepository.findByRelatedDoctorId(x);
+        return schedulePatternRepository.findByRelatedDoctorId(doctorId);
     }
 }

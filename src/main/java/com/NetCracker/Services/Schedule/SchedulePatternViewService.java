@@ -1,4 +1,4 @@
-package com.NetCracker.Services;
+package com.NetCracker.Services.Schedule;
 
 import com.NetCracker.Entities.Schedule.SchedulePattern;
 import com.google.gson.*;
@@ -17,9 +17,9 @@ public class SchedulePatternViewService
     @Autowired
     SchedulePatternService schedulePatternService;
 
-    public String getSchedulePatternList(String doctorName)
+    public String getSchedulePatternList(Long doctorId)
     {
-        List<SchedulePattern> schedulePatternList = schedulePatternService.getPatternsByDoctor(doctorName);
+        List<SchedulePattern> schedulePatternList = schedulePatternService.getPatternsByDoctor(doctorId);
 
         GsonBuilder gsonBuilder = new GsonBuilder();
 

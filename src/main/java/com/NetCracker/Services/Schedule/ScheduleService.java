@@ -1,13 +1,14 @@
-package com.NetCracker.Services;
+package com.NetCracker.Services.Schedule;
 
-import com.NetCracker.Entities.DoctorStub;
-import com.NetCracker.Entities.ERole;
-import com.NetCracker.Entities.Role;
+import com.NetCracker.Entities.Doctor.Doctor;
 import com.NetCracker.Entities.Schedule.DoctorSchedule;
 import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleIntervalId;
 import com.NetCracker.Entities.Schedule.SchedulePattern;
 import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleInterval;
-import com.NetCracker.Repositories.*;
+import com.NetCracker.Repositories.Doctor.DoctorUserRepository;
+import com.NetCracker.Repositories.Schedule.DoctorScheduleRepository;
+import com.NetCracker.Repositories.Schedule.ScheduleIntervalRepository;
+import com.NetCracker.Repositories.Schedule.SchedulePatternRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataRetrievalFailureException;
@@ -27,7 +28,7 @@ import java.util.*;
 public class ScheduleService
 {
     @Autowired
-    private DoctorRepository doctorRepository;
+    private DoctorUserRepository doctorRepository;
 
     @Autowired
     private DoctorScheduleRepository doctorScheduleRepository;
@@ -47,7 +48,7 @@ public class ScheduleService
         return doctorScheduleRepository.findByRelatedDoctor(doctorIds);
     }
 
-    public DoctorSchedule getDoctorSchedule(DoctorStub doctor) throws DataAccessException
+    public DoctorSchedule getDoctorSchedule(Doctor doctor) throws DataAccessException
     {
         //return doctor.getSchedule();
         return doctorScheduleRepository.findByRelatedDoctor(doctor.getId());
@@ -92,7 +93,7 @@ public class ScheduleService
     }
 
     @Transactional
-    public void applyPatternToSchedule(DoctorStub doctor, SchedulePattern pattern, LocalDate dayToApplyPatternFrom) throws DataAccessException
+    public void applyPatternToSchedule(Doctor doctor, SchedulePattern pattern, LocalDate dayToApplyPatternFrom) throws DataAccessException
     {
         DoctorSchedule schedule = getDoctorSchedule(doctor);
 
@@ -131,7 +132,7 @@ public class ScheduleService
      * or status of a doctor.
      */
     @Transactional
-    public ScheduleInterval getDoctorState(DoctorStub doctor, LocalDateTime time) throws DataAccessException
+    public ScheduleInterval getDoctorState(Doctor doctor, LocalDateTime time) throws DataAccessException
     {
         if (doctor.getSchedule() == null)
         {
@@ -142,7 +143,7 @@ public class ScheduleService
     }
 
     //TODO - change when doctor service is ready to use
-    DoctorStub getDoctorById(Long doctorId)
+    Doctor getDoctorById(Long doctorId)
     {
         return doctorRepository.findById(doctorId).orElse(null);
     }
@@ -153,8 +154,8 @@ public class ScheduleService
      * @throws DataAccessException if retrieving information failed
      */
     @Transactional
-    public Collection<DoctorRepository.DoctorShortInformation> getDoctorShortInformation(List<Long> doctorIds) throws DataAccessException
+    public Collection<DoctorUserRepository.DoctorShortInformation> getDoctorShortInformation(List<Long> doctorIds) throws DataAccessException
     {
-        return doctorRepository.findByIdInOrderBySpecializationAscNameAsc(doctorIds);
+        return doctorRepository.findByIdInOrderByLastNameAscFirstNameAsc(doctorIds);
     }
 }

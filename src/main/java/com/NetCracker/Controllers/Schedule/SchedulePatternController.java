@@ -1,19 +1,21 @@
-package com.NetCracker.Controllers;
+package com.NetCracker.Controllers.Schedule;
 
-import com.NetCracker.Entities.DoctorStub;
+import com.NetCracker.Entities.Doctor.Doctor;
 import com.NetCracker.Entities.Schedule.SchedulePattern;
-import com.NetCracker.Security.jwt.JwtUtils;
-import com.NetCracker.Services.DoctorStubService;
-import com.NetCracker.Services.SchedulePatternService;
-import com.NetCracker.Services.SchedulePatternViewService;
-import com.NetCracker.Services.ScheduleService;
+import com.NetCracker.Services.Doctor.DoctorUserService;
+import com.NetCracker.Services.Schedule.SchedulePatternService;
+import com.NetCracker.Services.Schedule.SchedulePatternViewService;
+import com.NetCracker.Services.Schedule.ScheduleService;
+import com.NetCracker.Services.UserDetailsImpl;
 import com.NetCracker.Utils.StringUtils;
 import com.google.gson.JsonParseException;
+import org.apache.tomcat.util.http.parser.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
@@ -37,16 +39,16 @@ public class SchedulePatternController
     private SchedulePatternViewService schedulePatternViewService;
 
     @Autowired
-    private DoctorStubService doctorStubService;
+    private DoctorUserService doctorUserService;
 
     @PreAuthorize("hasRole('ROLE_DOCTOR')")
     @GetMapping("/list-patterns")
-    public ResponseEntity<String> getSchedulePatternList(Principal principal)
+    public ResponseEntity<String> getSchedulePatternList(Authentication authentication)
     {
         String schedulePatternList;
         try
         {
-            schedulePatternList = schedulePatternViewService.getSchedulePatternList(principal.getName());
+            schedulePatternList = schedulePatternViewService.getSchedulePatternList(((UserDetailsImpl)authentication.getPrincipal()).getId());
         }
         catch (DataAccessException e)
         {
@@ -58,7 +60,7 @@ public class SchedulePatternController
 
     @PreAuthorize("hasRole('ROLE_DOCTOR')")
     @PostMapping("/add-pattern")
-    public ResponseEntity<String> addSchedulePattern(@RequestBody Map<String,Object> responseBody)
+    public ResponseEntity<String> addSchedulePattern(@RequestBody Map<String, Object> responseBody, Principal principal)
     {
         List<Object> updates;
         try
@@ -95,7 +97,7 @@ public class SchedulePatternController
         SchedulePattern newSchedulePattern;
         try
         {
-            newSchedulePattern = schedulePatternService.fromJson(schedulePattern);
+            newSchedulePattern = schedulePatternService.fromJson(schedulePattern, principal.getName());
         }
         catch (JsonParseException e)
         {
@@ -129,7 +131,7 @@ public class SchedulePatternController
 
     @PreAuthorize("hasRole('ROLE_DOCTOR')")
     @PatchMapping("/apply-pattern")
-    public ResponseEntity<String> prolongSchedule(@RequestBody Map<String, Object> requestBody)
+    public ResponseEntity<String> prolongSchedule(@RequestBody Map<String, Object> requestBody, Principal principal)
     {
         String patternName;
         String dateToApplyStr;
@@ -150,7 +152,7 @@ public class SchedulePatternController
         }
 
         //TODO - get current doctor - finish when spring security done
-        DoctorStub doctor = doctorStubService.getDoctorById(1);
+        Doctor doctor = doctorUserService.findById(1L);
         SchedulePattern requestedPattern;
 
         try

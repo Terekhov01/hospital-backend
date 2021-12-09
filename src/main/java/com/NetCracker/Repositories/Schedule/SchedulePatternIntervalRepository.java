@@ -1,4 +1,4 @@
-package com.NetCracker.Repositories;
+package com.NetCracker.Repositories.Schedule;
 
 import com.NetCracker.Entities.Schedule.ScheduleElements.SchedulePatternInterval;
 import com.NetCracker.Entities.Schedule.ScheduleElements.SchedulePatternIntervalId;

@@ -1,4 +1,4 @@
-package com.NetCracker.Repositories;
+/*package com.NetCracker.Repositories.Schedule;
 
 import com.NetCracker.Entities.DoctorStub;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,4 +19,4 @@ public interface DoctorRepository extends JpaRepository<DoctorStub, Long>
 
     //findByIdInOrderBySpecializationAscNameAsc
     Collection<DoctorShortInformation> findByIdInOrderBySpecializationAscNameAsc(Collection<Long> doctorIds);
-}
+}*/

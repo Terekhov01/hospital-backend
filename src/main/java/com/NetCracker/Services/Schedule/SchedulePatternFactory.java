@@ -1,6 +1,6 @@
-package com.NetCracker.Services;
+package com.NetCracker.Services.Schedule;
 
-import com.NetCracker.Entities.DoctorStub;
+import com.NetCracker.Entities.Doctor.Doctor;
 import com.NetCracker.Entities.Schedule.ScheduleElements.SchedulePatternInterval;
 import com.NetCracker.Entities.Schedule.SchedulePattern;
 import com.NetCracker.Utils.TimeIntervalUtils;
@@ -19,7 +19,7 @@ public class SchedulePatternFactory
      * @param workingDayEnd an hour
      * @return schedule pattern that has
      */
-    public static SchedulePattern createCommonWorkingPattern(DoctorStub doctor, String name, int daysAmount, LocalTime workingDayStart, LocalTime workingDayEnd)
+    public static SchedulePattern createCommonWorkingPattern(Doctor doctor, String name, int daysAmount, LocalTime workingDayStart, LocalTime workingDayEnd)
     {
         workingDayStart = TimeIntervalUtils.floorHalfHourInterval(workingDayStart);
         workingDayEnd = TimeIntervalUtils.ceilHalfHourInterval(workingDayEnd);

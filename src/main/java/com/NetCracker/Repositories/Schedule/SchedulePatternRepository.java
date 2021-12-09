@@ -1,4 +1,4 @@
-package com.NetCracker.Repositories;
+package com.NetCracker.Repositories.Schedule;
 
 import com.NetCracker.Entities.Schedule.SchedulePattern;
 import org.springframework.data.jpa.repository.JpaRepository;
