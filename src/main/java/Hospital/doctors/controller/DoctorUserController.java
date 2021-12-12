@@ -67,7 +67,12 @@ public class DoctorUserController {
         doctorUser.setEducation(doctorDetails.getEducation());
         doctorUser.setRoom(doctorDetails.getRoom());
         doctorUser.setSpecialist(doctorDetails.getSpecialist());
+
+        doctorUser.setFirstname(doctorDetails.getFirstname());
+        doctorUser.setLastname(doctorDetails.getLastname());
         final Doctor updatedEmployee = doctorUserRepository.save(doctorUser);
+
+        //-----------
         return ResponseEntity.ok(updatedEmployee);
     }
 }

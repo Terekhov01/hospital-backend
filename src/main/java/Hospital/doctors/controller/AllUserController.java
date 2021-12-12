@@ -24,6 +24,11 @@ public class AllUserController {
 
     @GetMapping
     public List<DoctorRatingProjection> findByRoleLike(String role) {
+        // сюда внести исправления
+//        if(doctorRatingRepository.getRating().isEmpty())
+//        {
+//            doctorRatingRepository.getRating().;
+//        }
      return doctorRatingRepository.getRating();
     }
 }

@@ -40,6 +40,10 @@ public class DoctorUserServiceImpl implements DoctorUserService {
             doctorUser.setRoom(optionalRoom.get());
             doctorUser.setEducation(user.getEducation());
             doctorUser.setDateOfEmployment(new Date());
+
+            doctorUser.setFirstname(user.getFirstname());
+            doctorUser.setLastname(user.getLastname());
+            //-----
             return doctorUserRepository.save(doctorUser);
         }
         return null;
