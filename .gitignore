@@ -13,3 +13,4 @@
 out/*
 target/*
 src/main/webapp/doctorScheduleUI/*
+src/main/resources/application.properties
