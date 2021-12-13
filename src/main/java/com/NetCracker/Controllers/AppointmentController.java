@@ -60,7 +60,7 @@ class AppointmentController {
         Optional<AppointmentRegistration> appointmentRegistration =
                 appointmentRegistrations.findByDoctorAndPatient(
                         appointment.getAppointmentRegistration().getDoctor().getLastName(),
-                        appointment.getAppointmentRegistration().getPatient().getLastName());
+                        appointment.getAppointmentRegistration().getPatient().getUser().getLastName());
 //                        appointment.getDoctor().getLastName(),
 //                        appointment.getPatient().getLastName());
 //        System.out.println("Here1");
@@ -93,7 +93,7 @@ class AppointmentController {
     public ResponseEntity<Appointment> updateAppointment(@PathVariable("id") Long id, @RequestBody Appointment appointment) {
         Optional<Appointment> appointmentData = repository.findById(id);
         Optional<AppointmentRegistration> appointmentRegistrationData = appointmentRegistrations.
-                findByDoctorAndPatient(appointment.getAppointmentRegistration().getDoctor().getLastName(), appointment.getAppointmentRegistration().getPatient().getLastName());
+                findByDoctorAndPatient(appointment.getAppointmentRegistration().getDoctor().getLastName(), appointment.getAppointmentRegistration().getPatient().getUser().getLastName());
 //        System.out.println("In updating a");
 //        System.out.println("Doc: " + appointmentRegistrationData.get().getDoctor().getLastName());
 //        System.out.println("Pat: " + appointmentRegistrationData.get().getPatient().getLastName());

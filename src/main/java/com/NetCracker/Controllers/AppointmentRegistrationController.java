@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.NetCracker.Entities.AppointmentRegistration;
-import com.NetCracker.Entities.Doctor;
+import com.NetCracker.Entities.Doctor.Doctor;
 import com.NetCracker.Entities.Patient;
 import com.NetCracker.Exceptions.AppointmentRegistrationNotFoundException;
 import com.NetCracker.Repositories.AppointmentRegistrationRepo;
@@ -69,7 +69,7 @@ public class AppointmentRegistrationController {
     public ResponseEntity<AppointmentRegistration> createAppointmentRegistration(@RequestBody AppointmentRegistration appointmentRegistration) {
 
         Optional<Doctor> doctor = doctors.findDoctorByLastName(appointmentRegistration.getDoctor().getLastName());
-        Optional<Patient> patient = patients.findPatientByLastName(appointmentRegistration.getPatient().getLastName());
+        Optional<Patient> patient = patients.findPatientByLastName(appointmentRegistration.getPatient().getUser().getLastName());
         if (doctor.isPresent() && patient.isPresent()) {
             try {
                 AppointmentRegistration _appointmentRegistration = repository
@@ -89,10 +89,10 @@ public class AppointmentRegistrationController {
     public ResponseEntity<AppointmentRegistration> updateAppointmentRegistration(@PathVariable("id") Long id, @RequestBody AppointmentRegistration appointmentRegistration) {
         Optional<AppointmentRegistration> appointmentRegistrationData = repository.findById(id);
         Optional<Doctor> doctor = doctors.findDoctorByLastName(appointmentRegistration.getDoctor().getLastName());
-        Optional<Patient> patient = patients.findPatientByLastName(appointmentRegistration.getPatient().getLastName());
+        Optional<Patient> patient = patients.findPatientByLastName(appointmentRegistration.getPatient().getUser().getLastName());
         System.out.println("In updating ar");
         System.out.println("Doc: " + appointmentRegistration.getDoctor().getLastName());
-        System.out.println("Pat: " + appointmentRegistration.getPatient().getLastName());
+        System.out.println("Pat: " + appointmentRegistration.getPatient().getUser().getLastName());
         System.out.println("Is present? " + appointmentRegistrationData.isPresent());
         if (doctor.isPresent() && patient.isPresent()) {
             if (appointmentRegistrationData.isPresent()) {

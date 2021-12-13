@@ -15,6 +15,7 @@ import com.NetCracker.Repositories.PatientRepository;
 import com.NetCracker.Security.jwt.JwtUtils;
 import com.NetCracker.Services.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -37,6 +38,7 @@ import com.NetCracker.Repositories.RoleRepository;
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("/api/auth")
 @RestController
+@ComponentScan("com.NetCracker.Security")
 public class AuthController {
 	@Autowired
 	AuthenticationManager authenticationManager;

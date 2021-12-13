@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="Hospital" uuid="1948a1b2-e86b-4c9e-a5e5-392b307a166e">
+    <data-source source="LOCAL" name="georgo_testcracker@postgresql-georgo.alwaysdata.net" uuid="ffb13963-e4e0-4fc7-a8c0-4327f0f10757">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://myapp-db.cmu7v0sy1fkb.eu-central-1.rds.amazonaws.com:5432/HospitalDB</jdbc-url>
+      <jdbc-url>jdbc:postgresql://postgresql-georgo.alwaysdata.net:5432/georgo_testcracker</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

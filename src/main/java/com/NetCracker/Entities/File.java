@@ -22,7 +22,7 @@ public class File {
 //    private Appointment appointment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "PATIENT", referencedColumnName = "PATIENT_ID")
+    @JoinColumn(name = "PATIENT", referencedColumnName = "user_id")
     @JsonBackReference
     private Patient patient;
 

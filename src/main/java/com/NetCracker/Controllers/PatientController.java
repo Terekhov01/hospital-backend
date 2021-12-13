@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.NetCracker.Entities.Doctor;
+import com.NetCracker.Entities.Doctor.Doctor;
 import com.NetCracker.Entities.Patient;
 import com.NetCracker.Exceptions.PatientNotFoundException;
 import com.NetCracker.Repositories.PatientRepository;
@@ -63,7 +63,7 @@ public class PatientController {
     public ResponseEntity<Patient> createPatient(@RequestBody Patient patient) {
         try {
             Patient _patient = repository
-                    .save(new Patient(patient.getLastName()));
+                    .save(new Patient(patient.getUser(), patient.getPassport(), patient.getPolys(), patient.getFiles()));
             return new ResponseEntity<>(_patient, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -76,7 +76,10 @@ public class PatientController {
 
         if (patientData.isPresent()) {
             Patient _patient = patientData.get();
-            _patient.setLastName(patient.getLastName());
+            _patient.setUser(patient.getUser());
+            _patient.setPassport(patient.getPassport());
+            _patient.setPolys(patient.getPolys());
+            _patient.setFiles(patient.getFiles());
             return new ResponseEntity<>(repository.save(_patient), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

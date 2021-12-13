@@ -1,15 +1,17 @@
 package com.NetCracker.Repositories;
 
 import com.NetCracker.Entities.AppointmentRegistration;
-import com.NetCracker.Entities.Doctor;
+import com.NetCracker.Entities.Doctor.Doctor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     @Query("select a from Doctor a order by a.id asc")
     List<Doctor> findAllByOrderByIdAsc();
@@ -31,6 +33,6 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     }
 
 
-    Collection<DoctorShortInformation> findByIdIn(Collection<Long> id);
+//    Collection<DoctorShortInformation> findByIdIn(Collection<Long> id);
 
 }

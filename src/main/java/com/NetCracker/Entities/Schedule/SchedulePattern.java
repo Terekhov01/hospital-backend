@@ -50,6 +50,16 @@ public class SchedulePattern
     public SchedulePattern()
     {}
 
+    public SchedulePattern(String name) {
+        this.name = name;
+        stateSet = new TreeSet<SchedulePatternInterval>(SchedulePatternInterval.dateAscendComparator);
+    }
+
+    public SchedulePattern(String name, NavigableSet<SchedulePatternInterval> stateSet) {
+        this.name = name;
+        this.stateSet = stateSet;
+    }
+
     public SchedulePattern(Doctor relatedDoctor, String name)
     {
         this.relatedDoctor = relatedDoctor;

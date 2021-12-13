@@ -49,6 +49,17 @@ public class Doctor {
     private String firstName;
     private String lastName;
 
+    public Doctor(Date dateOfEmployment, String education, Room room, Set<Specialist> specialist, DoctorSchedule schedule, String firstName, String lastName, List<DoctorRating> ratings) {
+        this.dateOfEmployment = dateOfEmployment;
+        this.education = education;
+        this.room = room;
+        this.specialist = specialist;
+        this.schedule = schedule;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.ratings = ratings;
+    }
+
     @JsonIgnore
     @ToString.Exclude
     @OneToMany(mappedBy = "doctor",cascade = CascadeType.ALL)

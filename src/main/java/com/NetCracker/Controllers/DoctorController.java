@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.NetCracker.Entities.Doctor;
+//import com.NetCracker.Entities.Doctor;
+import com.NetCracker.Entities.Doctor.Doctor;
 import com.NetCracker.Exceptions.DoctorNotFoundException;
 import com.NetCracker.Repositories.DoctorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +71,7 @@ public class DoctorController {
     public ResponseEntity<Doctor> createDoctor(@RequestBody Doctor doctor) {
         try {
             Doctor _doctor = repository
-                    .save(new Doctor(doctor.getLastName(), doctor.getSpecialization(), doctor.getAddress(), doctor.getRoom()));
+                    .save(new Doctor(doctor.getDateOfEmployment(), doctor.getEducation(), doctor.getRoom(), doctor.getSpecialist(), doctor.getSchedule(), doctor.getFirstName(), doctor.getLastName(), doctor.getRatings()));
             return new ResponseEntity<>(_doctor, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -83,10 +84,14 @@ public class DoctorController {
 
         if (doctorData.isPresent()) {
             Doctor _doctor = doctorData.get();
+            _doctor.setDateOfEmployment(doctor.getDateOfEmployment());
+            _doctor.setEducation(doctor.getEducation());
+            _doctor.setSpecialist(doctor.getSpecialist());
+            _doctor.setSchedule(doctor.getSchedule());
+            _doctor.setFirstName(doctor.getFirstName());
             _doctor.setLastName(doctor.getLastName());
-            _doctor.setSpecialization(doctor.getSpecialization());
-            _doctor.setAddress(doctor.getAddress());
             _doctor.setRoom(doctor.getRoom());
+            _doctor.setRatings(doctor.getRatings());
             return new ResponseEntity<>(repository.save(_doctor), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

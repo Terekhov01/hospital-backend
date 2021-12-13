@@ -46,7 +46,7 @@ public class ScheduleInterval
      * For Hibernate only
      */
     @Deprecated
-    ScheduleInterval()
+    public ScheduleInterval()
     {}
 
     /**
