@@ -1,4 +1,4 @@
-/*package com.NetCracker.Entities;
+package com.NetCracker.Entities;
 
 import org.hibernate.annotations.Type;
 
@@ -12,28 +12,37 @@ public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "APPOINTMENT_ID", unique = true, nullable = false)
-    private int id;
+    private Long id;
 
     @OneToOne
     @JoinColumn(name = "APPOINTMENT_REGISTRATION",
             referencedColumnName = "APPOINTMENT_REGISTRATION_ID")
     private AppointmentRegistration appointmentRegistration;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "PATIENT", referencedColumnName = "id")
-    private Patient patient;
+//    @OneToOne
+//    @JoinColumn(name = "FILE", referencedColumnName = "FILE_ID")
+//    private File file;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DOCTOR", referencedColumnName = "id")
-    private DoctorStub doctor;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "PATIENT", referencedColumnName = "PATIENT_ID")
+//    private Patient patient;
+//
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "DOCTOR", referencedColumnName = "DOCTOR_ID")
+//    private Doctor doctor;
+
+//    @Column(name = "FILE", columnDefinition="BLOB")
+//    @Lob
+//    @Type(type = "org.hibernate.type.BlobType")
+//    private byte[] file;
 
     @Lob
     @Type(type = "org.hibernate.type.TextType")
     @Column(name = "DESCRIPTION")
     private String description;
 
-    @Column(name = "SERVICE")
-    private String service;
+//    @Column(name = "SERVICE")
+//    private String service;
 
     @Column(name = "RECIPE")
     private String recipe;
@@ -54,45 +63,60 @@ public class Appointment {
     public Appointment() {
     }
 
-    public Appointment(int id, AppointmentRegistration appointmentRegistration,
-                       Patient patient, DoctorStub doctor, String description,
-                       String service, String recipe, String treatPlan,
-                       String rehabPlan, String docStatement) {
+    public Appointment(Long id, AppointmentRegistration appointmentRegistration,
+//                       Patient patient, Doctor doctor,
+                       String description,
+//                       File file,
+//                       String service,
+                       String recipe, String treatPlan,
+                       String rehabPlan, String docStatement) {//,
+//                       byte[] file) {
         this.id = id;
         this.appointmentRegistration = appointmentRegistration;
-        this.patient = patient;
-        this.doctor = doctor;
+//        this.file = file;
+//        this.patient = patient;
+//        this.doctor = doctor;
         this.description = description;
-        this.service = service;
+//        this.service = service;
         this.recipe = recipe;
         this.treatPlan = treatPlan;
         this.rehabPlan = rehabPlan;
         this.docStatement = docStatement;
+//        this.file = new byte[file.length];
+//        System.arraycopy(file, 0, this.file, 0, file.length);
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Patient getPatient() {
-        return patient;
-    }
+//    public File getFile() {
+//        return file;
+//    }
+//
+//    public void setFile(File file) {
+//        this.file = file;
+//    }
 
-    public void setPatient(Patient patient) {
-        this.patient = patient;
-    }
-
-    public DoctorStub getDoctor() {
-        return doctor;
-    }
-
-    public void setDoctor(DoctorStub doctor) {
-        this.doctor = doctor;
-    }
+    //    public Patient getPatient() {
+//        return patient;
+//    }
+//
+//    public void setPatient(Patient patient) {
+//        this.patient = patient;
+//    }
+//
+//    public Doctor getDoctor() {
+//        return doctor;
+//    }
+//
+//    public void setDoctor(Doctor doctor) {
+//        this.doctor = doctor;
+//    }
 
     public String getDescription() {
         return description;
@@ -102,13 +126,13 @@ public class Appointment {
         this.description = description;
     }
 
-    public String getService() {
-        return service;
-    }
+//    public String getService() {
+//        return service;
+//    }
 
-    public void setService(String service) {
-        this.service = service;
-    }
+//    public void setService(String service) {
+//        this.service = service;
+//    }
 
     public String getRecipe() {
         return recipe;
@@ -150,15 +174,27 @@ public class Appointment {
         this.appointmentRegistration = appointmentRegistration;
     }
 
+//    public byte[] getFile() {
+//        if (this.file == null) {
+//            this.file = new byte[1];
+//        }
+//        return file;
+//    }
+//
+//    public void setFile(byte[] file) {
+//        this.file = new byte[file.length];
+//        System.arraycopy(file, 0, this.file, 0, file.length);
+//    }
+
     @Override
     public String toString() {
         return "Appointment{" +
                 "id=" + id +
                 ", appointmentRegistration=" + appointmentRegistration +
-                ", patient=" + patient +
-                ", doctor=" + doctor +
+//                ", patient=" + patient +
+//                ", doctor=" + doctor +
                 ", description='" + description + '\'' +
-                ", service='" + service + '\'' +
+//                ", service='" + service + '\'' +
                 ", recipe='" + recipe + '\'' +
                 ", treatPlan='" + treatPlan + '\'' +
                 ", rehabPlan='" + rehabPlan + '\'' +
@@ -172,17 +208,23 @@ public class Appointment {
         if (!(o instanceof Appointment)) return false;
         Appointment that = (Appointment) o;
         return getId() == that.getId() && appointmentRegistration.equals(that.appointmentRegistration) &&
-                getPatient().equals(that.getPatient()) && getDoctor().equals(that.getDoctor()) &&
-                Objects.equals(getDescription(), that.getDescription()) && Objects.equals(getService(),
-                that.getService()) && Objects.equals(getRecipe(), that.getRecipe()) &&
+//                getPatient().equals(that.getPatient()) && getDoctor().equals(that.getDoctor()) &&
+                Objects.equals(getDescription(), that.getDescription()) &&
+//                Objects.equals(getService(), that.getService()) &&
+                Objects.equals(getRecipe(), that.getRecipe()) &&
+//                Objects.equals(getFile(), that.getFile()) &&
+//                Objects.equals(getFile(), that.getFile()) &&
                 Objects.equals(getTreatPlan(), that.getTreatPlan()) && Objects.equals(getRehabPlan(),
                 that.getRehabPlan()) && Objects.equals(getDocStatement(), that.getDocStatement());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), appointmentRegistration, getPatient(), getDoctor(),
-                getDescription(), getService(), getRecipe(), getTreatPlan(), getRehabPlan(), getDocStatement());
+        return Objects.hash(getId(), appointmentRegistration,
+//                getPatient(), getDoctor(),
+                getDescription(),
+//                getService(),
+                getRecipe(), getTreatPlan(), getRehabPlan(), getDocStatement());
     }
 
-}*/
+}
