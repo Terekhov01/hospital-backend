@@ -19,11 +19,8 @@ import java.time.*;
 import java.util.*;
 
 /**
- * This is a class that represents schedule of all doctors.
- * It is used to manipulate schedules.
- * This class is a singleton.
+ * Methods that help to interact with doctor schedule entity are implemented here
  */
-
 @Service
 public class ScheduleService
 {

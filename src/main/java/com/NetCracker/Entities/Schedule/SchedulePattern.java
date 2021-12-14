@@ -16,7 +16,7 @@ import java.util.TreeSet;
  * All the time is divided by 30-minute intervals. Doctor may either work or not during this small period.
  */
 @Entity
-@Table(name = "schedule_pattern")
+@Table(name = "schedule_pattern", uniqueConstraints={@UniqueConstraint(columnNames = {"name" , "doctor_id"})})
 public class SchedulePattern
 {
     @Id
@@ -26,7 +26,6 @@ public class SchedulePattern
     private Long id;
 
     @NotNull
-    @Column(unique = true)
     private String name;
 
     @NotNull
@@ -90,6 +89,11 @@ public class SchedulePattern
         return daysLength;
     }
 
+    public Doctor getRelatedDoctor()
+    {
+        return relatedDoctor;
+    }
+
     /**
      * This method is to be used by Hibernate only
      * @param id is not updated in database
@@ -111,6 +115,11 @@ public class SchedulePattern
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    public void setRelatedDoctor(Doctor relatedDoctor)
+    {
+        this.relatedDoctor = relatedDoctor;
     }
 
     /**

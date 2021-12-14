@@ -67,13 +67,19 @@ public class DoctorUserServiceImpl implements DoctorUserService {
     }
 
     @Override
-    @Transactional
-    public Doctor update(Doctor user) {
-        Optional<Room> optionalRoom = roomRepository.findByNum(user.getRoom().getNum());
-        List<Specialist> optionalSpec = specialistRepository.findBySpecializationIn(user.getSpecialist().stream().map(x->x.getSpecialization()).collect(Collectors.toList()));
+    public Doctor findByRelatedUserId(Long userId)
+    {
+        return doctorUserRepository.findByUser_id(userId).orElse(null);
+    }
 
-        Doctor byId = doctorUserRepository.findById(user.getId()).get();
-        BeanUtils.copyProperties(user,byId,"id","dateOfEmployment");
+    @Override
+    @Transactional
+    public Doctor update(Doctor doctor) {
+        Optional<Room> optionalRoom = roomRepository.findByNum(doctor.getRoom().getNum());
+        List<Specialist> optionalSpec = specialistRepository.findBySpecializationIn(doctor.getSpecialist().stream().map(x->x.getSpecialization()).collect(Collectors.toList()));
+
+        Doctor byId = doctorUserRepository.findById(doctor.getId()).get();
+        BeanUtils.copyProperties(doctor,byId,"id","dateOfEmployment");
 
         optionalRoom.ifPresent(x-> byId.setRoom(x));
         byId.getSpecialist().clear();

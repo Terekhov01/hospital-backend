@@ -48,7 +48,7 @@ public class ScheduleController
             {
                 //TODO - log errors
                 return new ResponseEntity<String>(
-                        "Server could not retrieve information from database (all doctor Ids)",
+                        "Сервер не смог загрузить информацию обо всех докторах из базы данных",
                         HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
@@ -57,7 +57,7 @@ public class ScheduleController
             doctorIds = StringUtils.stringToLongList(doctorIdsStr);
             if (doctorIds == null)
             {
-                return new ResponseEntity<String>("Invalid request - doctorIds is a malformed string representation", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - идентификаторы докторов получены в неверном формате", HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -71,7 +71,7 @@ public class ScheduleController
             dateBeginRepresent = StringUtils.stringToLocalDateTime(dateBeginRepresentStr);
             if (dateBeginRepresent == null)
             {
-                return new ResponseEntity<String>("Invalid request - dateBeginRepresent - could not parse temporal value", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - не получилось распознать начальную дату", HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -85,7 +85,12 @@ public class ScheduleController
             dateEndRepresent = StringUtils.stringToLocalDateTime(dateEndRepresentStr);
             if (dateEndRepresent == null)
             {
-                return new ResponseEntity<String>("Invalid request - dateEndRepresent - could not parse temporal value", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - не получилось распознать конечную дату", HttpStatus.BAD_REQUEST);
+            }
+
+            if (dateEndRepresent.isBefore(dateBeginRepresent))
+            {
+                return new ResponseEntity<String>("Некорректный запрос - начальная дата оказалась позже конечной", HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -102,7 +107,7 @@ public class ScheduleController
         }
         catch (DataAccessException | IllegalStateException e)
         {
-            return new ResponseEntity<String>("Server could not retrieve information from database or serialize it", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("Сервер не смог получить информацию из базы данных или обработать её", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         //TODO - delete in prod
@@ -134,7 +139,7 @@ public class ScheduleController
             {
                 //TODO - log errors
                 return new ResponseEntity<String>(
-                        "Server could not retrieve information from database - IDs of all doctors",
+                        "Сервер не смог загрузить информацию обо всех докторах из базы данных",
                         HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
@@ -143,7 +148,7 @@ public class ScheduleController
             doctorIds = StringUtils.stringToLongList(doctorIdsStr);
             if (doctorIds == null)
             {
-                return new ResponseEntity<String>("Invalid request - doctorIds is a malformed string representation", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - идентификаторы докторов получены в неверном формате", HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -157,7 +162,7 @@ public class ScheduleController
             startDate = StringUtils.stringToLocalDateTime(startDateStr);
             if (startDate == null)
             {
-                return new ResponseEntity<String>("Invalid request - startDate - could not parse temporal value", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - не получилось распознать начальную дату", HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -171,12 +176,12 @@ public class ScheduleController
             endDate = StringUtils.stringToLocalDateTime(endDateStr);
             if (endDate == null)
             {
-                return new ResponseEntity<String>("Invalid request - startDate - could not parse temporal value", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - не получилось распознать конечную дату", HttpStatus.BAD_REQUEST);
             }
 
             if (endDate.isBefore(startDate))
             {
-                return new ResponseEntity<String>("Invalid request - endDate is before startDate", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - начальная дата оказалась позже конечной", HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -202,16 +207,13 @@ public class ScheduleController
         {
             //TODO - log errors
             return new ResponseEntity<String>(
-                    "Server could not retrieve information from database or serialize it - getting data for calendar",
+                    "Срвер не смог получить информацию о возможных датах для посещения из базы данных или обработать её",
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
         catch (Throwable e)
         {
             return new ResponseEntity<String>("Unknown error - retry later", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        //TODO - delete in prod
-        System.out.println(jsonCalendar);
 
         return new ResponseEntity<String>(jsonCalendar, HttpStatus.OK);
     }
@@ -228,12 +230,12 @@ public class ScheduleController
         String doctorsShortInformation = null;
         try
         {
-            doctorsShortInformation = scheduleViewService.getDoctorsShortInformation(doctorIds);
+            doctorsShortInformation = scheduleViewService.getDoctorsShortInformationJson(doctorIds);
         }
         catch (DataAccessException e)
         {
             return new ResponseEntity<String>(
-                    "Server could not retrieve information from database - getting doctor name and id",
+                    "Сервер не смог получить сокращенную информацию о докторах из базы данных",
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
 

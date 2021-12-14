@@ -15,5 +15,6 @@ public interface SchedulePatternRepository extends JpaRepository<SchedulePattern
     @Query("FROM SchedulePattern WHERE relatedDoctor.id = :id")//as pattern JOIN Doctor as doctor ON pattern.doctor_id = doctor.id WHERE doctor.id = :id")
     List<SchedulePattern> findByRelatedDoctorId(@Param("id") Long doctor_id);
 
-    Optional<SchedulePattern> findByName(String name);
+    @Query("FROM SchedulePattern WHERE relatedDoctor.id = :id AND name = :name")
+    Optional<SchedulePattern> findByNameAndRelatedDoctor(@Param("name") String name, @Param("id") Long doctor_id);
 }

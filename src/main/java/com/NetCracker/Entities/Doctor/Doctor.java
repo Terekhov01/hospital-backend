@@ -1,6 +1,7 @@
 package com.NetCracker.Entities.Doctor;
 
 import com.NetCracker.Entities.Schedule.DoctorSchedule;
+import com.NetCracker.Entities.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.Hibernate;
@@ -16,11 +17,16 @@ import java.util.*;
 //@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "doctor")
-public class Doctor {
-
+public class Doctor
+{
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JsonIgnore
+    private User user;
 
     @Temporal(TemporalType.DATE)
     private Date dateOfEmployment;
@@ -45,9 +51,6 @@ public class Doctor {
     @ToString.Exclude
     @OneToOne(mappedBy = "relatedDoctor")
     DoctorSchedule schedule;
-
-    private String firstName;
-    private String lastName;
 
     @JsonIgnore
     @ToString.Exclude

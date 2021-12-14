@@ -9,17 +9,19 @@ import com.NetCracker.Services.Schedule.ScheduleService;
 import com.NetCracker.Services.UserDetailsImpl;
 import com.NetCracker.Utils.StringUtils;
 import com.google.gson.JsonParseException;
-import org.apache.tomcat.util.http.parser.Authorization;
+import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
-import java.security.Principal;
+import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -41,27 +43,115 @@ public class SchedulePatternController
     @Autowired
     private DoctorUserService doctorUserService;
 
+    Doctor getRequestingDoctor(Authentication authentication) throws NotFoundException, DataAccessException, ClassCastException
+    {
+        UserDetailsImpl userDetails = null;
+        Doctor authenticatedDoctor = null;
+
+        userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        authenticatedDoctor = doctorUserService.findByRelatedUserId(userDetails.getId());
+
+        if (authenticatedDoctor == null)
+        {
+            throw new NotFoundException("Doctor '" + userDetails.getUsername() + "' not found");
+        }
+        return authenticatedDoctor;
+    }
+
     @PreAuthorize("hasRole('ROLE_DOCTOR')")
     @GetMapping("/list-patterns")
     public ResponseEntity<String> getSchedulePatternList(Authentication authentication)
     {
         String schedulePatternList;
+
+        Doctor authenticatedDoctor = null;
         try
         {
-            schedulePatternList = schedulePatternViewService.getSchedulePatternList(((UserDetailsImpl)authentication.getPrincipal()).getId());
+            authenticatedDoctor = getRequestingDoctor(authentication);
+        }
+        catch (ClassCastException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена.", HttpStatus.UNAUTHORIZED);
         }
         catch (DataAccessException e)
         {
-            return new ResponseEntity<String>("Could not extract pattern names from database!", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("Аутентификация не пройдена. Ошибка сервера связаться с БД.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        catch (NotFoundException e)
+        {
+            return new ResponseEntity<String>("Не найден доктор с Вашей регистрационной информацией. Ошибка сервера.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        try
+        {
+            schedulePatternList = schedulePatternViewService.getSchedulePatternList(authenticatedDoctor.getId());
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Не получилось загрузить имена шаблонов из базы данных.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<String>(schedulePatternList, HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ROLE_DOCTOR')")
-    @PostMapping("/add-pattern")
-    public ResponseEntity<String> addSchedulePattern(@RequestBody Map<String, Object> responseBody, Principal principal)
+    @GetMapping("/view-pattern")
+    public ResponseEntity<String> viewSchedulePattern(@RequestParam(name = "patternName", required = true) String patternName, Authentication authentication)
     {
+        Doctor authenticatedDoctor = null;
+        try
+        {
+            authenticatedDoctor = getRequestingDoctor(authentication);
+        }
+        catch (ClassCastException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена.", HttpStatus.UNAUTHORIZED);
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена. Ошибка сервера связаться с БД.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        catch (NotFoundException e)
+        {
+            return new ResponseEntity<String>("Не найден доктор с Вашей регистрационной информацией. Ошибка сервера.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        String patternJson = null;
+
+        try
+        {
+            patternJson = schedulePatternViewService.toJson(patternName, authenticatedDoctor.getId());
+        }
+        catch (AccessDeniedException e)
+        {
+            return new ResponseEntity<String>("Шаблон не найден. Убедитесь, что он существует.", HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<String>(patternJson, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ROLE_DOCTOR')")
+    @PostMapping("/add-pattern")
+    public ResponseEntity<String> addSchedulePattern(@RequestBody Map<String, Object> responseBody, Authentication authentication)
+    {
+        Doctor authenticatedDoctor = null;
+        try
+        {
+            authenticatedDoctor = getRequestingDoctor(authentication);
+        }
+        catch (ClassCastException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена.", HttpStatus.UNAUTHORIZED);
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена. Ошибка сервера связаться с БД.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        catch (NotFoundException e)
+        {
+            return new ResponseEntity<String>("Не найден доктор с Вашей регистрационной информацией. Ошибка сервера.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
         List<Object> updates;
         try
         {
@@ -70,12 +160,12 @@ public class SchedulePatternController
         }
         catch (ClassCastException e)
         {
-            return new ResponseEntity<String>("Could not parse request body", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Тело запроса содержит некорректную информацию.", HttpStatus.BAD_REQUEST);
         }
 
         if (updates.size() != 1)
         {
-            return new ResponseEntity<String>("Too many parameters!", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Слишком много параметров в запросе.", HttpStatus.BAD_REQUEST);
         }
 
         Map<String, String> parameter;
@@ -85,28 +175,31 @@ public class SchedulePatternController
         }
         catch (ClassCastException e)
         {
-            return new ResponseEntity<String>("Could not parse request body", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Не получилось обработать тело запроса.", HttpStatus.BAD_REQUEST);
         }
 
         if (!parameter.get("param").equals("schedulePattern"))
         {
-            return new ResponseEntity<String>("Invalid input data. Could not parse request body parameter", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Не получилось обработать тело запроса.", HttpStatus.BAD_REQUEST);
         }
         String schedulePattern = parameter.get("value");
 
         SchedulePattern newSchedulePattern;
         try
         {
-            newSchedulePattern = schedulePatternService.fromJson(schedulePattern, principal.getName());
+            newSchedulePattern = schedulePatternViewService.fromJson(schedulePattern, authenticatedDoctor.getId());
+        }
+        catch (InvalidParameterException e)
+        {
+            return new ResponseEntity<String>("Имя шаблона не может быть пустой строкой.", HttpStatus.BAD_REQUEST);
+        }
+        catch(ChangeSetPersister.NotFoundException e)
+        {
+            return new ResponseEntity<String>("Не удалось найти авторизованного доктора.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         catch (JsonParseException e)
         {
-            return new ResponseEntity<String>("Invalid input data. Could not parse schedule pattern", HttpStatus.BAD_REQUEST);
-        }
-
-        if (newSchedulePattern == null)
-        {
-            return new ResponseEntity<String>("Invalid input data. Could not find related doctor", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Не получилось обработать тело запроса. Не удалось создать шаблон.", HttpStatus.BAD_REQUEST);
         }
 
         try
@@ -115,11 +208,11 @@ public class SchedulePatternController
         }
         catch (ConstraintViolationException e)
         {
-            return new ResponseEntity<String>("Could not save schedule pattern - name is not unique", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Не удалось сохранить шаблон. Запись с таким именем уже существует.", HttpStatus.BAD_REQUEST);
         }
         catch(DataAccessException e)
         {
-            return new ResponseEntity<String>("Could not save schedule pattern to database", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("Не удалось сохранить шаблон. Ошибка при взаимодействии с базой данных.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         catch(Exception e)
         {
@@ -131,8 +224,26 @@ public class SchedulePatternController
 
     @PreAuthorize("hasRole('ROLE_DOCTOR')")
     @PatchMapping("/apply-pattern")
-    public ResponseEntity<String> prolongSchedule(@RequestBody Map<String, Object> requestBody, Principal principal)
+    public ResponseEntity<String> prolongSchedule(@RequestBody Map<String, Object> requestBody, Authentication authentication)
     {
+        Doctor authenticatedDoctor = null;
+        try
+        {
+            authenticatedDoctor = getRequestingDoctor(authentication);
+        }
+        catch (ClassCastException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена.", HttpStatus.UNAUTHORIZED);
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена. Ошибка сервера связаться с БД.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        catch (NotFoundException e)
+        {
+            return new ResponseEntity<String>("Не найден доктор с Вашей регистрационной информацией. Ошибка сервера.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
         String patternName;
         String dateToApplyStr;
         try
@@ -142,35 +253,32 @@ public class SchedulePatternController
         }
         catch (ClassCastException | NullPointerException e)
         {
-            return new ResponseEntity<String>("Invalid request - wrong parameters", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Некорректный запрос. Не удалось обработать параметры.", HttpStatus.BAD_REQUEST);
         }
 
         LocalDateTime dateToApply = StringUtils.stringToDateTime(dateToApplyStr);
         if (dateToApply == null)
         {
-            return new ResponseEntity<String>("Invalid request - dateToApply - could not parse temporal value", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Некорректный запрос - не получилось распознать дату применения шаблона.", HttpStatus.BAD_REQUEST);
         }
-
-        //TODO - get current doctor - finish when spring security done
-        Doctor doctor = doctorUserService.findById(1L);
         SchedulePattern requestedPattern;
 
         try
         {
-            requestedPattern = schedulePatternService.findPatternByName(patternName);
+            requestedPattern = schedulePatternService.findPatternByNameAndRelatedDoctor(patternName, authenticatedDoctor.getId());
         }
         catch(DataAccessException e)
         {
-            return new ResponseEntity<String>("Pattern with specified name does not exist", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Шаблон с указанным назваением несуществует или недоступен.", HttpStatus.BAD_REQUEST);
         }
 
         try
         {
-            scheduleService.applyPatternToSchedule(doctor, requestedPattern, dateToApply.toLocalDate());
+            scheduleService.applyPatternToSchedule(authenticatedDoctor, requestedPattern, dateToApply.toLocalDate());
         }
         catch (DataAccessException e)
         {
-            return new ResponseEntity<String>("Could not prolong schedule", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("Не удалоссь продлить расписание. Ошибка связи с базой данных.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<String>("", HttpStatus.OK);

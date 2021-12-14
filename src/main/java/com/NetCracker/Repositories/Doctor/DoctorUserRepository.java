@@ -2,7 +2,9 @@ package com.NetCracker.Repositories.Doctor;
 
 import com.NetCracker.Entities.Doctor.Doctor;
 import com.NetCracker.Entities.Doctor.Specialist;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,6 +19,8 @@ public interface DoctorUserRepository extends Repository<Doctor, Integer> {
 
     Optional<Doctor> findById(Long id);
 
+    Optional<Doctor> findByUser_id(Long id);
+
     Doctor save(Doctor user);
 
     interface DoctorShortInformation
@@ -25,9 +29,9 @@ public interface DoctorUserRepository extends Repository<Doctor, Integer> {
         String getFirstName();
         String getLastName();
         Set<Specialist> getSpecialist();
-        //TODO - add specialization
     }
 
     //findByIdInOrderBySpecializationAscNameAsc
-    Collection<DoctorShortInformation> findByIdInOrderByLastNameAscFirstNameAsc(Collection<Long> doctorIds);
+    @Query("FROM Doctor WHERE id IN :id ORDER BY user.lastName ASC, user.firstName ASC")
+    Collection<DoctorShortInformation> findByIdInOrderByLastNameAscFirstNameAsc(@Param("id") Collection<Long> doctorIds);
 }

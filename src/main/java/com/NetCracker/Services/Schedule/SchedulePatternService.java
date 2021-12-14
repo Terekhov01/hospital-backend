@@ -1,21 +1,21 @@
 package com.NetCracker.Services.Schedule;
 
-import com.NetCracker.Entities.Doctor.Doctor;
 import com.NetCracker.Entities.Schedule.ScheduleElements.SchedulePatternInterval;
 import com.NetCracker.Entities.Schedule.SchedulePattern;
 import com.NetCracker.Repositories.Schedule.SchedulePatternIntervalRepository;
 import com.NetCracker.Repositories.Schedule.SchedulePatternRepository;
 import com.NetCracker.Services.Doctor.DoctorUserService;
-import com.google.gson.*;
 import com.google.gson.annotations.SerializedName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Type;
 import java.time.LocalTime;
 import java.util.*;
 
+/**
+ * Methods that help to interact with schedule pattern entity are implemented here
+ */
 @Service
 public class SchedulePatternService
 {
@@ -86,68 +86,9 @@ public class SchedulePatternService
     }
 
     @Transactional
-    public SchedulePattern findPatternByName(String patternName)
+    public SchedulePattern findPatternByNameAndRelatedDoctor(String patternName, Long doctorId)
     {
-        return schedulePatternRepository.findByName(patternName).orElse(null);
-    }
-
-    static class SchedulePatternRepresentation
-    {
-        String patternName;
-        Integer daysLength;
-        ScheduleDayPattern[] scheduleDailyPatterns;
-    }
-
-    static class ScheduleDayPattern
-    {
-        Integer dayNumber;
-
-        @SerializedName(value = "timesRounded")
-        List<LocalTime> intervalStart;
-    }
-
-    public SchedulePattern fromJson(String patternStr, String doctorName)
-    {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-
-        gsonBuilder.registerTypeAdapter(LocalTime.class, new JsonDeserializer<LocalTime>() {
-                @Override
-                public LocalTime deserialize(JsonElement json, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException
-                {
-                    String timeStr = json.getAsString();
-                    String[] hourMinuteStrings = timeStr.split(":");
-                    int hour = Integer.parseInt(hourMinuteStrings[0]);
-                    int minute = Integer.parseInt(hourMinuteStrings[1]);
-                    return LocalTime.of(hour, minute);
-                }
-            }
-        );
-
-        Gson gson = gsonBuilder.create();
-        SchedulePatternRepresentation schedulePatternRepresentation = gson.fromJson(patternStr, SchedulePatternRepresentation.class);
-
-        //TODO - change doctor
-        Doctor relatedDoctor = doctorUserService.findById(1L);
-
-        if (relatedDoctor == null)
-        {
-            return null;
-        }
-
-        NavigableSet<SchedulePatternInterval> schedulePatternIntervals = new TreeSet<SchedulePatternInterval>(SchedulePatternInterval.dateAscendComparator);
-
-        for (var scheduleDayPattern : schedulePatternRepresentation.scheduleDailyPatterns)
-        {
-            for (var interval : scheduleDayPattern.intervalStart)
-            {
-                schedulePatternIntervals.add(new SchedulePatternInterval(scheduleDayPattern.dayNumber, interval));
-            }
-        }
-
-        return new SchedulePattern(relatedDoctor,
-                                    schedulePatternRepresentation.patternName,
-                                    schedulePatternRepresentation.daysLength,
-                                    schedulePatternIntervals);
+        return schedulePatternRepository.findByNameAndRelatedDoctor(patternName, doctorId).orElse(null);
     }
 
     public List<SchedulePattern> getAllPatterns()

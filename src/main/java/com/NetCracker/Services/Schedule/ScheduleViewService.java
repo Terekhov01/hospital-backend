@@ -15,6 +15,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Service contains methods that correspond to doctor schedule entity.
+ * They are used to transferring data to/from (angular) client.
+ */
 @Service
 public class ScheduleViewService
 {
@@ -75,8 +79,8 @@ public class ScheduleViewService
             this.id = schedule.getRelatedDoctor().getId();
             this.specializationName = "Goose";
             //this.specialization = schedule.getRelatedDoctor().getSpecialization().toString();
-            this.firstName = schedule.getRelatedDoctor().getFirstName();
-            this.lastName = schedule.getRelatedDoctor().getLastName();
+            this.firstName = "";//schedule.getRelatedDoctor().getUser().getFirstName();
+            this.lastName = "";//schedule.getRelatedDoctor().getUser().getLastName();
             this.dailyInformation = new TreeSet<DoctorScheduleTableDataDaily>(DoctorScheduleTableDataDaily.dateAscendComparator);
             var setIterator = schedule.getStateSet().iterator();
 
@@ -217,8 +221,8 @@ public class ScheduleViewService
         Set<DoctorScheduleAssignmentCalendarData> doctorScheduleTableDataSet = schedules.stream().map(schedule ->
             new DoctorScheduleAssignmentCalendarData(schedule.getRelatedDoctor().getId(),
                     schedule.getRelatedDoctor().getSpecialist().stream().map(Specialist::getSpecialization).toList(),
-                    schedule.getRelatedDoctor().getFirstName(),
-                    schedule.getRelatedDoctor().getLastName(),
+                    schedule.getRelatedDoctor().getUser().getFirstName(),
+                    schedule.getRelatedDoctor().getUser().getLastName(),
                     schedule.getStateSet().subSet(intervalStart, intervalEnd)))
                 .collect(Collectors.toSet());
 
@@ -273,7 +277,7 @@ public class ScheduleViewService
         }
     }
 
-    public String getDoctorsShortInformation(List<Long> doctorIds)
+    public String getDoctorsShortInformationJson(List<Long> doctorIds)
     {
         //TODO - switch to related service, delete function.
         var persistedDoctorShortInformationCollection = scheduleService.getDoctorShortInformation(doctorIds);

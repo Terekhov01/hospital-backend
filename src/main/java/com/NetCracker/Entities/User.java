@@ -24,9 +24,6 @@ public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-	@PrimaryKeyJoinColumn
-	private Patient patient;
 
 	@Column(name = "first_name")
 	private String firstName;
@@ -42,7 +39,7 @@ public class User {
 
 	@NotBlank
 	@Size(max = 20)
-	private String username;
+	private String userName;
 
 	@NotBlank
 	@Size(max = 50)
@@ -62,14 +59,19 @@ public class User {
 	public User() {
 	}
 
-	public User(String firstName, String lastName, String patronymic, String phone,String username, String email, String password) {
+	public User(String firstName, String lastName, String patronymic, String phone,String userName, String email, String password) {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.patronymic = patronymic;
 		this.phone = phone;
-		this.username = username;
+		this.userName = userName;
 		this.email = email;
 		this.password = password;
+	}
+
+	public User(User user)
+	{
+		this(user.firstName, user.lastName, user.patronymic, user.phone, user.userName, user.email, user.password);
 	}
 
 	public Long getId() {
@@ -81,11 +83,11 @@ public class User {
 	}
 
 	public String getUsername() {
-		return username;
+		return userName;
 	}
 
 	public void setUsername(String username) {
-		this.username = username;
+		this.userName = username;
 	}
 
 	public String getEmail() {
