@@ -1,16 +1,12 @@
-import com.NetCracker.Entities.*;
-import com.NetCracker.Entities.Doctor.Doctor;
-import com.NetCracker.Entities.Schedule.DoctorSchedule;
-import com.NetCracker.Entities.Schedule.SchedulePattern;
-import com.NetCracker.Entities.Schedule.ScheduleElements.ScheduleInterval;
+import com.NetCracker.entities.doctor.Doctor;
+import com.NetCracker.entities.schedule.DoctorSchedule;
+import com.NetCracker.entities.schedule.SchedulePattern;
 import com.NetCracker.Main;
-import com.NetCracker.Repositories.DoctorRepository;
+import com.NetCracker.repositories.doctor.DoctorRepository;
 //import com.NetCracker.Repositories.DoctorScheduleRepository;
 //import com.NetCracker.Services.SchedulePatternFactory;
 //import com.NetCracker.Services.ScheduleService;
 
-import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -19,13 +15,10 @@ import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInA
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.*;
-import java.util.*;
 
 /**
  * <br>DISCLAIMER<br/>
