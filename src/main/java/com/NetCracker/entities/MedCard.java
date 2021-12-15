@@ -1,5 +1,8 @@
-/*package com.NetCracker.Entities;
+package com.NetCracker.entities;
 
+
+import com.NetCracker.entities.appointment.Appointment;
+import com.NetCracker.entities.patient.Patient;
 
 import javax.persistence.*;
 import java.util.Arrays;
@@ -43,17 +46,11 @@ public class MedCard {
         Arrays.asList(appointments).forEach(this.appointments::remove);
     }
 
-//    public void deleteAppointment(Appointment appointment){
-//        appointments.remove(appointment);
-//    }
 
     public void addAppointments(Appointment... appointments){
         this.appointments.addAll(Arrays.asList(appointments));
     }
 
-//    public void addAppointment(Appointment appointment){
-//        appointments.add(appointment);
-//    }
 
     public Integer getId() {
         return id;
@@ -95,4 +92,3 @@ public class MedCard {
         this.appointments = appointments;
     }
 }
-*/
