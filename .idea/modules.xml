@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/user-portal.iml" filepath="$PROJECT_DIR$/user-portal.iml" />
+      <module fileurl="file://$PROJECT_DIR$/HospitalApplication.iml" filepath="$PROJECT_DIR$/HospitalApplication.iml" />
+      <module fileurl="file://$PROJECT_DIR$/spring-boot-server.iml" filepath="$PROJECT_DIR$/spring-boot-server.iml" />
     </modules>
   </component>
 </project>

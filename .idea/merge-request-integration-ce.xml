@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="MergeRequestIntegrationProjectLevel">
+    <Item id="gitlab:Default" providerId="gitlab" url="https://gitlab.com" login="" projectId="30013571" version="v4" info="" ignoreSSLCertificateErrors="0" repository="$PROJECT_DIR$" savedFilters="{&quot;state&quot;:&quot;opened&quot;,&quot;search&quot;:&quot;&quot;,&quot;authorId&quot;:&quot;&quot;,&quot;assigneeId&quot;:&quot;&quot;,&quot;approverIds&quot;:[&quot;&quot;],&quot;ordering&quot;:&quot;newest&quot;}" />
+  </component>
+</project>

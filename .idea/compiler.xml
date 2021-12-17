@@ -7,16 +7,21 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="user-portal" />
+        <module name="spring-boot-server" />
+        <module name="HospitalApplication" />
+        <module name="hospital-applcation-project" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="user-portal" target="1.8" />
+      <module name="hospital-applcation-project" target="17" />
+      <module name="HospitalApplication" target="17" />
+      <module name="spring-boot-server" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="user-portal" options="-parameters" />
+      <module name="HospitalApplication" options="-parameters" />
+      <module name="spring-boot-server" options="-parameters" />
     </option>
   </component>
 </project>
