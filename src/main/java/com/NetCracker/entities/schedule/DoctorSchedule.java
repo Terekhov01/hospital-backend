@@ -2,6 +2,7 @@ package com.NetCracker.entities.schedule;
 
 import com.NetCracker.entities.doctor.Doctor;
 import com.NetCracker.entities.schedule.scheduleElements.ScheduleInterval;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.google.gson.annotations.Expose;
 import org.hibernate.annotations.SortComparator;
 
@@ -26,12 +27,14 @@ public class DoctorSchedule
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "doctorSchedule")
     @SortComparator(ScheduleInterval.ScheduleIntervalDateAscendComparator.class)
     @Expose
+    @JsonManagedReference
     private SortedSet<ScheduleInterval> stateSet;
 
     @NotNull
     @OneToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "doctor_id", referencedColumnName = "id")
     @Expose(serialize = false, deserialize = false)
+    @JsonManagedReference
     private Doctor relatedDoctor;
 
     /**

@@ -1,6 +1,7 @@
 package com.NetCracker.entities.schedule.scheduleElements;
 
 import com.NetCracker.entities.schedule.DoctorSchedule;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.google.gson.annotations.Expose;
 
 import javax.persistence.*;
@@ -28,6 +29,7 @@ public class ScheduleInterval
     @ManyToOne
     @JoinColumn(name = "doctor_schedule_id", referencedColumnName = "id")
     @Expose(serialize = false, deserialize = false)
+    @JsonBackReference
     private DoctorSchedule doctorSchedule;
 
     //This field stores the 30-minute interval that field state refers to.
