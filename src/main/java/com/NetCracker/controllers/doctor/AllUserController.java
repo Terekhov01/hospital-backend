@@ -1,15 +1,22 @@
 package com.NetCracker.controllers.doctor;
 
-import com.NetCracker.domain.DTO.DoctorRatingProjection;
+import com.NetCracker.domain.projection.DoctorRatingProjection;
+import com.NetCracker.entities.doctor.Doctor;
+import com.NetCracker.entities.user.ERole;
+import com.NetCracker.entities.user.User;
 import com.NetCracker.repositories.AllUserRepository;
 import com.NetCracker.repositories.doctor.DoctorRatingRepository;
+import com.NetCracker.repositories.doctor.DoctorRepository;
 import com.NetCracker.services.AllUserService;
+import com.NetCracker.services.user.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @AllArgsConstructor
-@CrossOrigin(origins = "*", maxAge = 3600)
+//@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RestController
 //@CrossOrigin(origins = "http://localhost:4200")
 //@RequestMapping({"/api"})
@@ -20,8 +27,23 @@ public class AllUserController {
     private final AllUserRepository allUserRepository;
     private final DoctorRatingRepository doctorRatingRepository;
 
+    private final DoctorRepository doctorRepository;
+    private final UserService userService;
+
+    @PreAuthorize("permitAll()")
     @GetMapping
-    public List<DoctorRatingProjection> findByRoleLike(String role) {
+    public List<DoctorRatingProjection> findByRoleLike(Long id) {
+        // сюда внести исправления
+
+
+//        if(){
+//
+//
+//        }
+
+
+
+//        System.out.println(role);
      return doctorRatingRepository.getRating();
     }
 }

@@ -14,8 +14,9 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByUserName(String username);
 
-//	@Query("FROM User WHERE :role IN roles")
-	@Query("select u from User u where :role in (select t.roles from User t)")
+//	@Query("FROM User user WHERE :role IN user.roles")
+//	@Query("select All from User user WHERE :role in user.roles.name")
+	@Query("FROM User user WHERE :role IN (user.roles)")
 	List<User> findByRole(@Param("role") ERole role);
 
 	Boolean existsByUserName(String username);

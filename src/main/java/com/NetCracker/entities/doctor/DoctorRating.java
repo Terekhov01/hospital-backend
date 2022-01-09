@@ -30,7 +30,7 @@ public class DoctorRating {
     private Doctor doctor;
 
     @Column
-    private Integer rate;
+    private Integer rating;
 
     @Column
     private String feedback;
