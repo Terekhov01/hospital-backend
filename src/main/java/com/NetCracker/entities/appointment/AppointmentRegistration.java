@@ -40,10 +40,12 @@ public class AppointmentRegistration {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient", referencedColumnName = "user_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Patient patient;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor", referencedColumnName = "id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Doctor doctor;
 
     public AppointmentRegistration() {

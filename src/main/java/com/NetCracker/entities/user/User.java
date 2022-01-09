@@ -1,6 +1,9 @@
 package com.NetCracker.entities.user;
 
 import com.NetCracker.entities.patient.Patient;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -27,6 +30,8 @@ public class User {
 	private Long id;
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 	@PrimaryKeyJoinColumn
+	@JsonBackReference
+//	@JsonIgnore
 	private Patient patient;
 
 	@Column(name = "first_name")

@@ -2,6 +2,7 @@ package com.NetCracker.entities.doctor;
 
 import com.NetCracker.entities.schedule.DoctorSchedule;
 import com.NetCracker.entities.user.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.Hibernate;
@@ -25,7 +26,7 @@ public class Doctor
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @JsonIgnore
+//    @JsonIgnore
     private User user;
 
     @Temporal(TemporalType.DATE)
@@ -45,12 +46,19 @@ public class Doctor
             inverseJoinColumns = @JoinColumn(name = "specialist_id"),
             foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
 //    @ManyToMany(mappedBy = "doctors")
+    @JsonIgnore
     @ToString.Exclude
     private Set<Specialist> specialist = new HashSet<>();
 
     @ToString.Exclude
     @OneToOne(mappedBy = "relatedDoctor")
+    @JsonBackReference
     DoctorSchedule schedule;
+
+    @JsonIgnore
+    @ToString.Exclude
+    @OneToMany(mappedBy = "doctor",cascade = CascadeType.ALL)
+    private List<DoctorRating> ratings;
 
     public Doctor(Date dateOfEmployment, String education, Room room, Set<Specialist> specialist, DoctorSchedule schedule, String firstName, String lastName, List<DoctorRating> ratings) {
         this.dateOfEmployment = dateOfEmployment;
@@ -63,10 +71,18 @@ public class Doctor
         this.ratings = ratings;
     }
 
-    @JsonIgnore
-    @ToString.Exclude
-    @OneToMany(mappedBy = "doctor",cascade = CascadeType.ALL)
-    private List<DoctorRating> ratings;
+    public Doctor(Date dateOfEmployment, String education, Room room, Set<Specialist> specialist, DoctorSchedule schedule, String firstName, String lastName, List<DoctorRating> ratings, User user, Long id) {
+        this.dateOfEmployment = dateOfEmployment;
+        this.education = education;
+        this.room = room;
+        this.specialist = specialist;
+        this.schedule = schedule;
+        this.user = user;
+        this.user.setFirstName(firstName);
+        this.user.setLastName(lastName);
+        this.ratings = ratings;
+        this.id = id;
+    }
 
     @Override
     public boolean equals(Object o) {
