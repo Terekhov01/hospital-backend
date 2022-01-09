@@ -1,9 +1,11 @@
-package com.NetCracker.domain.DTO;
+package com.NetCracker.domain.projection;
+
+import java.math.BigDecimal;
 
 public interface DoctorRatingProjection {
 
     Integer getId();
     String getFirstName();
     String getLastName();
-    Double getRating();
+    BigDecimal getRating();
 }

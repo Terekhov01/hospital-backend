@@ -22,8 +22,14 @@ public class Doctor
     @Id
     //@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+// внесены изменения
+    @OneToOne(cascade = CascadeType.ALL)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @JoinTable(name = "user_passport",
+//            joinColumns = @JoinColumn(name="user_id"),
+//            inverseJoinColumns = @JoinColumn(name="passport_id")
+//    )
 
-    @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     @JsonIgnore
     private User user;
@@ -52,14 +58,16 @@ public class Doctor
     @OneToOne(mappedBy = "relatedDoctor")
     DoctorSchedule schedule;
 
-    public Doctor(Date dateOfEmployment, String education, Room room, Set<Specialist> specialist, DoctorSchedule schedule, String firstName, String lastName, List<DoctorRating> ratings) {
+    public Doctor(User user,Date dateOfEmployment, String education, Room room, Set<Specialist> specialist, DoctorSchedule schedule, String firstName, String lastName, List<DoctorRating> ratings) {
         this.dateOfEmployment = dateOfEmployment;
         this.education = education;
         this.room = room;
         this.specialist = specialist;
         this.schedule = schedule;
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
+        //внесено дополнение мною
+        this.user = user;
+//        user.setFirstName(firstName);
+//        user.setLastName(lastName);
         this.ratings = ratings;
     }
 

@@ -21,18 +21,27 @@ public class DoctorRatingServiceImpl {
     private final DoctorRepository doctorRepository;
     private final AllUserRepository userRepository;
 
+    //@PreAuthorize("permitAll()")
     public DoctorRating createRating(RequestRatingDto requestRatingDto){
         Optional<UserStub> optionalUser = userRepository.findById(requestRatingDto.getUserId());
         Optional<Doctor> optionalDoctor = doctorRepository.findById(requestRatingDto.getDoctorId());
+
+        // mb steel work
+        //Need check
+
 //        Optional<User> optional1User = userRepository.findById(requestRatingDto.getDoctorId());
 
-        if (optionalDoctor.isPresent() && optionalUser.isPresent()
+//        if (optionalDoctor.isPresent() && optionalUser.isPresent()
+//                && requestRatingDto.getRating()>=1 && requestRatingDto.getRating()<=5) {
+//        }
+
+        if (optionalDoctor.isPresent()
                 && requestRatingDto.getRating()>=1 && requestRatingDto.getRating()<=5){
 
             DoctorRating doctorRating= new DoctorRating();
             doctorRating.setDoctor(optionalDoctor.get());
-            doctorRating.setUser(optionalUser.get());
-            doctorRating.setRate(requestRatingDto.getRating());
+//            doctorRating.setUser(optionalUser.get());
+            doctorRating.setRating(requestRatingDto.getRating());
             doctorRating.setFeedback(requestRatingDto.getFeedback());
 
             return doctorRatingRepository.save(doctorRating);
