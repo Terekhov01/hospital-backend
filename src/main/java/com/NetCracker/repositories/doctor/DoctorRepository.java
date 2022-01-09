@@ -39,5 +39,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     List<Doctor> findByIdInOrderByLastNameAscFirstNameAsc(@Param("id") Collection<Long> doctorIds);
 
 //    Collection<DoctorShortInformation> findByIdIn(Collection<Long> id);
+@Query("select a from Doctor a")
+List<Doctor> fixedFindAll();
 
 }

@@ -76,6 +76,35 @@ public class Doctor
     @OneToMany(mappedBy = "doctor",cascade = CascadeType.ALL)
     private List<DoctorRating> ratings;
 
+    public Doctor(Date dateOfEmployment, String education, Room room, Set<Specialist> specialist, DoctorSchedule schedule, String firstName, String lastName, List<DoctorRating> ratings) {
+        this.dateOfEmployment = dateOfEmployment;
+        this.education = education;
+        this.room = room;
+        this.specialist = specialist;
+        this.schedule = schedule;
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        this.ratings = ratings;
+    }
+
+    public Doctor(Date dateOfEmployment, String education, Room room, Set<Specialist> specialist, DoctorSchedule schedule, String firstName, String lastName, List<DoctorRating> ratings, User user, Long id) {
+
+            this.dateOfEmployment = dateOfEmployment;
+            this.education = education;
+            this.room = room;
+            this.specialist = specialist;
+            this.schedule = schedule;
+            //внесено дополнение мною
+            this.user = user;
+            this.user.setFirstName(firstName);
+            this.user.setLastName(lastName);
+//        user.setFirstName(firstName);
+//        user.setLastName(lastName);
+            this.ratings = ratings;
+            this.id = id;
+
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
