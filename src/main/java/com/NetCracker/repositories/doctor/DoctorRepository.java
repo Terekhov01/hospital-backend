@@ -35,8 +35,11 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     Doctor save(Doctor user);
 
     //findByIdInOrderBySpecializationAscNameAsc
-    @Query("FROM Doctor doctor WHERE id IN :id ORDER BY doctor.user.lastName ASC, doctor.user.firstName ASC")
+    @Query(nativeQuery = false, value = "FROM Doctor doctor WHERE id IN :id ORDER BY doctor.user.lastName ASC, doctor.user.firstName ASC")
     List<Doctor> findByIdInOrderByLastNameAscFirstNameAsc(@Param("id") Collection<Long> doctorIds);
+
+    @Query("FROM Doctor doctor INNER JOIN doctor.specialist specialist INNER JOIN doctor.user user WHERE specialist.specialization = :specializationName ORDER BY user.lastName")
+    List<Doctor> findBySpecializationName(@Param("specializationName") String specializationName);
 
 //    Collection<DoctorShortInformation> findByIdIn(Collection<Long> id);
 

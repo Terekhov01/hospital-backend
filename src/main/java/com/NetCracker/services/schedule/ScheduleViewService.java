@@ -4,7 +4,6 @@ import com.NetCracker.entities.doctor.Doctor;
 import com.NetCracker.entities.doctor.Specialist;
 import com.NetCracker.entities.schedule.DoctorSchedule;
 import com.NetCracker.entities.schedule.scheduleElements.ScheduleInterval;
-import com.NetCracker.repositories.doctor.DoctorRepository;
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +27,10 @@ public class ScheduleViewService
 
     static class DoctorScheduleTableDataDaily
     {
-        @Expose
         LocalDate date;
 
-        @Expose
         String startOfDay;
 
-        @Expose
         String endOfDay;
 
         public DoctorScheduleTableDataDaily(LocalDate date, String startOfDay, String endOfDay)
@@ -59,29 +55,26 @@ public class ScheduleViewService
 
     static class DoctorScheduleTableData
     {
-        //TODO - refactor name and specialization when doctor entity will release
-        @Expose
         Long id;
 
-        @Expose
-        String specializationName;
+        List<String> specializationNames;
 
-        @Expose
         String firstName;
 
-        @Expose
         String lastName;
 
-        @Expose
+        String middleName;
+
         SortedSet<DoctorScheduleTableDataDaily> dailyInformation;
 
         public DoctorScheduleTableData(DoctorSchedule schedule, LocalDateTime dateBeginRepresent, LocalDateTime dateEndRepresent)
         {
             this.id = schedule.getRelatedDoctor().getId();
-            this.specializationName = "Goose";
-            //this.specialization = schedule.getRelatedDoctor().getSpecialization().toString();
-            this.firstName = "";//schedule.getRelatedDoctor().getUser().getFirstName();
-            this.lastName = "";//schedule.getRelatedDoctor().getUser().getLastName();
+            //this.specializationNames = "Goose";
+            this.specializationNames = schedule.getRelatedDoctor().getSpecialist().stream().map(Specialist::getSpecialization).collect(Collectors.toList());
+            this.firstName = schedule.getRelatedDoctor().getUser().getFirstName();
+            this.lastName = schedule.getRelatedDoctor().getUser().getLastName();
+            this.middleName = schedule.getRelatedDoctor().getUser().getPatronymic();
             this.dailyInformation = new TreeSet<DoctorScheduleTableDataDaily>(DoctorScheduleTableDataDaily.dateAscendComparator);
             var setIterator = schedule.getStateSet().iterator();
 
@@ -163,7 +156,7 @@ public class ScheduleViewService
             }
         });
 
-        Gson gson = gsonBuilder.excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
+        Gson gson = gsonBuilder.create();
 
         return gson.toJson(doctorScheduleTableDataSet);
     }
@@ -184,15 +177,19 @@ public class ScheduleViewService
         String lastName;
 
         @Expose
+        String middleName;
+
+        @Expose
         SortedSet<ScheduleInterval> intervalCollection;
 
         public DoctorScheduleAssignmentCalendarData(Long id, List<String> specializationNames, String firstName, String lastName,
-                                                    SortedSet<ScheduleInterval> intervalSet)
+                                                    String middleName, SortedSet<ScheduleInterval> intervalSet)
         {
             this.id = id;
             this.specializationNames = specializationNames;
             this.firstName = firstName;
             this.lastName = lastName;
+            this.middleName = middleName;
             this.intervalCollection = intervalSet;
         }
 
@@ -224,6 +221,7 @@ public class ScheduleViewService
                     schedule.getRelatedDoctor().getSpecialist().stream().map(Specialist::getSpecialization).toList(),
                     schedule.getRelatedDoctor().getUser().getFirstName(),
                     schedule.getRelatedDoctor().getUser().getLastName(),
+                    schedule.getRelatedDoctor().getUser().getPatronymic(),
                     schedule.getStateSet().subSet(intervalStart, intervalEnd)))
                 .collect(Collectors.toSet());
 

@@ -19,11 +19,12 @@ public class Specialist {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @Column(unique = true)
     private String specialization;
+
     @JsonIgnore
-
     @ManyToMany(mappedBy = "specialist", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
-
     @ToString.Exclude
     private Set<Doctor> doctors;
 

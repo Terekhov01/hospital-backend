@@ -6,12 +6,14 @@ import com.NetCracker.entities.doctor.Room;
 import com.NetCracker.entities.doctor.Specialist;
 import com.NetCracker.repositories.doctor.DoctorRepository;
 import com.NetCracker.repositories.RoomRepository;
-import com.NetCracker.repositories.SpecialistRepository;
+import com.NetCracker.repositories.doctor.SpecialistRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -70,6 +72,20 @@ public class DoctorUserServiceImpl implements DoctorUserService {
     public Doctor findByRelatedUserId(Long userId)
     {
         return doctorRepository.findByUser_id(userId).orElse(null);
+    }
+
+    @Override
+    public List<DoctorShortInfo> findShortInfoBySpecializationName(String specializationName) throws DataAccessException
+    {
+        var doctors = doctorRepository.findBySpecializationName(specializationName);
+
+        var retVal = new ArrayList<DoctorShortInfo>();
+        for (var doctor : doctors)
+        {
+            retVal.add(new DoctorShortInfo(doctor.getId(), doctor.getUser().getFirstName(), doctor.getUser().getLastName(), doctor.getUser().getPatronymic()));
+        }
+
+        return retVal;
     }
 
     @Override

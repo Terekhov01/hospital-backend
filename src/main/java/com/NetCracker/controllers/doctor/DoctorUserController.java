@@ -6,9 +6,14 @@ import com.NetCracker.entities.doctor.Doctor;
 import com.NetCracker.controllers.exception.ResourceNotFoundException;
 import com.NetCracker.repositories.doctor.DoctorRepository;
 import com.NetCracker.services.doctor.DoctorUserService;
+import com.NetCracker.services.doctor.DoctorUserServiceImpl;
+import com.google.gson.Gson;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,5 +74,26 @@ public class DoctorUserController {
         doctorUser.setSpecialist(doctorDetails.getSpecialist());
         final Doctor updatedEmployee = doctorUserRepository.save(doctorUser);
         return ResponseEntity.ok(updatedEmployee);
+    }
+
+    @PreAuthorize("permitAll()")
+    @GetMapping("find-by/specialization")
+    public ResponseEntity<String> getDoctorBySpecialization(@RequestParam(value = "specialization") String specializationName)
+    {
+        List<DoctorUserService.DoctorShortInfo> doctorShortInfos;
+        try
+        {
+            doctorShortInfos = doctorUserService.findShortInfoBySpecializationName(specializationName);
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Server could not connect to database", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        Gson gson = new Gson();
+
+        String doctorShortInfosStr = gson.toJson(doctorShortInfos);
+
+        return new ResponseEntity<String>(doctorShortInfosStr, HttpStatus.OK);
     }
 }
