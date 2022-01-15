@@ -22,8 +22,14 @@ public class Doctor
     @Id
     //@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+// внесены изменения
+    @OneToOne(cascade = CascadeType.ALL)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @JoinTable(name = "user_passport",
+//            joinColumns = @JoinColumn(name="user_id"),
+//            inverseJoinColumns = @JoinColumn(name="passport_id")
+//    )
 
-    @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     @JsonIgnore
     private User user;
@@ -52,6 +58,24 @@ public class Doctor
     @OneToOne(mappedBy = "relatedDoctor")
     DoctorSchedule schedule;
 
+    public Doctor(User user,Date dateOfEmployment, String education, Room room, Set<Specialist> specialist, DoctorSchedule schedule, String firstName, String lastName, List<DoctorRating> ratings) {
+        this.dateOfEmployment = dateOfEmployment;
+        this.education = education;
+        this.room = room;
+        this.specialist = specialist;
+        this.schedule = schedule;
+        //внесено дополнение мною
+        this.user = user;
+//        user.setFirstName(firstName);
+//        user.setLastName(lastName);
+        this.ratings = ratings;
+    }
+
+    @JsonIgnore
+    @ToString.Exclude
+    @OneToMany(mappedBy = "doctor",cascade = CascadeType.ALL)
+    private List<DoctorRating> ratings;
+
     public Doctor(Date dateOfEmployment, String education, Room room, Set<Specialist> specialist, DoctorSchedule schedule, String firstName, String lastName, List<DoctorRating> ratings) {
         this.dateOfEmployment = dateOfEmployment;
         this.education = education;
@@ -63,10 +87,23 @@ public class Doctor
         this.ratings = ratings;
     }
 
-    @JsonIgnore
-    @ToString.Exclude
-    @OneToMany(mappedBy = "doctor",cascade = CascadeType.ALL)
-    private List<DoctorRating> ratings;
+    public Doctor(Date dateOfEmployment, String education, Room room, Set<Specialist> specialist, DoctorSchedule schedule, String firstName, String lastName, List<DoctorRating> ratings, User user, Long id) {
+
+            this.dateOfEmployment = dateOfEmployment;
+            this.education = education;
+            this.room = room;
+            this.specialist = specialist;
+            this.schedule = schedule;
+            //внесено дополнение мною
+            this.user = user;
+            this.user.setFirstName(firstName);
+            this.user.setLastName(lastName);
+//        user.setFirstName(firstName);
+//        user.setLastName(lastName);
+            this.ratings = ratings;
+            this.id = id;
+
+    }
 
     @Override
     public boolean equals(Object o) {

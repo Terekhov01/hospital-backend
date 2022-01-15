@@ -1,5 +1,6 @@
 package com.NetCracker.repositories.doctor;
 
+import com.NetCracker.domain.projection.DoctorNamesProjection;
 import com.NetCracker.entities.doctor.Doctor;
 import com.NetCracker.entities.doctor.Specialist;
 import com.NetCracker.entities.user.User;
@@ -41,6 +42,8 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     @Query("FROM Doctor doctor INNER JOIN doctor.specialist specialist INNER JOIN doctor.user user WHERE specialist.specialization = :specializationName ORDER BY user.lastName")
     List<Doctor> findBySpecializationName(@Param("specializationName") String specializationName);
 
-//    Collection<DoctorShortInformation> findByIdIn(Collection<Long> id);
+    //Collection<DoctorShortInformation> findByIdIn(Collection<Long> id);
+    @Query("select a from Doctor a")
+    List<Doctor> fixedFindAll();
 
 }

@@ -153,6 +153,7 @@ public class ScheduleService
     @Transactional
     public Collection<Doctor> getDoctorShortInformation(List<Long> doctorIds) throws DataAccessException
     {
-        return doctorRepository.findByIdInOrderByLastNameAscFirstNameAsc(doctorIds);
+        System.out.println("Size is: " + doctorRepository.fixedFindAll().size());
+        return doctorRepository.fixedFindAll();
     }
 }

@@ -7,8 +7,8 @@ ON CONFLICT (id) DO NOTHING;
 
 
 INSERT INTO specialist (specialization)
-VALUES ('Лев'),
-       ('Тигр')
+VALUES ('Терапевт'),
+       ('Окулист')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO doctor (date_of_employment, education, room_id,firstname,lastname)

@@ -1,5 +1,7 @@
 package com.NetCracker.security;
 
+
+import com.NetCracker.security.jwt.*;
 import com.NetCracker.security.jwt.AuthEntryPointJwt;
 import com.NetCracker.security.jwt.AuthTokenFilter;
 import com.NetCracker.services.user.UserDetailsServiceImpl;
@@ -24,7 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 		// securedEnabled = true,
 		// jsr250Enabled = true,
 		prePostEnabled = true)
-@ComponentScan("com.NetCracker.Security.jwt")
+@ComponentScan("com.NetCracker.security.jwt")
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	UserDetailsServiceImpl userDetailsService;
@@ -60,7 +62,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 			.authorizeRequests().antMatchers("/api/auth/**").permitAll()
 			.antMatchers("/api/test/**").permitAll()
-			.anyRequest().authenticated();
+//			.anyRequest().authenticated();
+		.anyRequest().permitAll();
 
 		http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 	}
