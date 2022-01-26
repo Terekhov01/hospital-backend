@@ -13,6 +13,7 @@ import java.lang.reflect.Type;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -29,15 +30,15 @@ public class ScheduleViewService
     {
         LocalDate date;
 
-        String startOfDay;
+        SortedSet<LocalTime> timeIntervals;
 
-        String endOfDay;
+        public DoctorScheduleTableDataDaily()
+        {}
 
-        public DoctorScheduleTableDataDaily(LocalDate date, String startOfDay, String endOfDay)
+        public DoctorScheduleTableDataDaily(LocalDate date, SortedSet<LocalTime> timeIntervals)
         {
             this.date = date;
-            this.startOfDay = startOfDay;
-            this.endOfDay = endOfDay;
+            this.timeIntervals = timeIntervals;
         }
 
         public LocalDate getDate()
@@ -45,12 +46,12 @@ public class ScheduleViewService
             return date;
         }
 
-        public static final Comparator<DoctorScheduleTableDataDaily> dateAscendComparator = new Comparator<DoctorScheduleTableDataDaily>() {
-            @Override
-            public int compare(DoctorScheduleTableDataDaily o1, DoctorScheduleTableDataDaily o2) {
-                return o1.getDate().compareTo(o2.getDate());
-            }
-        };
+        public SortedSet<LocalTime> getTimeIntervals()
+        {
+            return timeIntervals;
+        }
+
+        public static final Comparator<DoctorScheduleTableDataDaily> dateAscendComparator = Comparator.comparing(DoctorScheduleTableDataDaily::getDate);
     }
 
     static class DoctorScheduleTableData
@@ -70,57 +71,38 @@ public class ScheduleViewService
         public DoctorScheduleTableData(DoctorSchedule schedule, LocalDateTime dateBeginRepresent, LocalDateTime dateEndRepresent)
         {
             this.id = schedule.getRelatedDoctor().getId();
-            //this.specializationNames = "Goose";
             this.specializationNames = schedule.getRelatedDoctor().getSpecialist().stream().map(Specialist::getSpecialization).collect(Collectors.toList());
             this.firstName = schedule.getRelatedDoctor().getUser().getFirstName();
             this.lastName = schedule.getRelatedDoctor().getUser().getLastName();
             this.middleName = schedule.getRelatedDoctor().getUser().getPatronymic();
-            this.dailyInformation = new TreeSet<DoctorScheduleTableDataDaily>(DoctorScheduleTableDataDaily.dateAscendComparator);
-            var setIterator = schedule.getStateSet().iterator();
+            this.dailyInformation = new TreeSet<>(DoctorScheduleTableDataDaily.dateAscendComparator);
+            var subSet = schedule.getStateSet().subSet(new ScheduleInterval(dateBeginRepresent), new ScheduleInterval(dateEndRepresent));
 
             LocalDate curDate = null;
-            LocalTime startOfDay = null;
-            LocalTime endOfDay = null;
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+            DoctorScheduleTableDataDaily dayData = null;
 
-            while (setIterator.hasNext())
+            for (var interval : subSet)
             {
-                var interval = setIterator.next();
-
-                if (interval.getIntervalStartTime().isBefore(dateBeginRepresent))
+                if (interval.getStartTime().toLocalDate().equals(curDate))
                 {
-                    continue;
-                }
-
-                if (interval.getIntervalStartTime().isAfter(dateEndRepresent))
-                {
-                    break;
-                }
-
-                LocalDate intervalDate = interval.getIntervalStartTime().toLocalDate();
-                LocalTime intervalTime = interval.getIntervalStartTime().toLocalTime();
-                if (intervalDate.equals(curDate))
-                {
-                    if (intervalTime.plusMinutes(30).isAfter(endOfDay))
-                    {
-                        endOfDay = intervalTime.plusMinutes(30);
-                    }
+                    dayData.getTimeIntervals().add(interval.getStartTime().toLocalTime());
                 }
                 else
                 {
-                    if (curDate != null)
+                    if (dayData != null)
                     {
-                        dailyInformation.add(new DoctorScheduleTableDataDaily(curDate, startOfDay.format(formatter), endOfDay.format(formatter)));
+                        dailyInformation.add(dayData);
                     }
 
-                    curDate = intervalDate;
-                    startOfDay = intervalTime;
-                    endOfDay = intervalTime.plusMinutes(30);
+                    curDate = interval.getStartTime().toLocalDate();
+                    dayData = new DoctorScheduleTableDataDaily(curDate, new TreeSet<>(Comparator.naturalOrder()));
+                    dayData.getTimeIntervals().add(interval.getStartTime().toLocalTime());
                 }
             }
-            if (startOfDay != null && endOfDay != null)
+
+            if (dayData != null && dayData.getTimeIntervals().size() != 0)
             {
-                dailyInformation.add(new DoctorScheduleTableDataDaily(curDate, startOfDay.format(formatter), endOfDay.format(formatter)));
+                dailyInformation.add(dayData);
             }
         }
 
@@ -140,10 +122,38 @@ public class ScheduleViewService
     {
         Set<DoctorSchedule> schedules = scheduleService.getDoctorSchedule(doctorIds);
 
+        Supplier<TreeSet<DoctorScheduleTableData>> treeSetSupplier = () -> new TreeSet<>(new Comparator<DoctorScheduleTableData>()
+        {
+            @Override
+            public int compare(DoctorScheduleTableData o1, DoctorScheduleTableData o2)
+            {
+                int lastNameComparisonResult = o1.lastName.compareTo(o2.lastName);
+                if (lastNameComparisonResult != 0)
+                {
+                    return lastNameComparisonResult;
+                }
+
+                int firstNameComparisonResult = o1.firstName.compareTo(o2.firstName);
+
+                if (firstNameComparisonResult != 0)
+                {
+                    return firstNameComparisonResult;
+                }
+
+                int middleNameComparisonResult = o1.middleName.compareTo(o2.middleName);
+
+                if (middleNameComparisonResult != 0)
+                {
+                    return middleNameComparisonResult;
+                }
+
+                return o1.id.compareTo(o2.id);
+            }
+        });
         //Required data - each doctor is matched with set of scheduleIntervals - time, when (s)he is working (not busy)
-        Set<DoctorScheduleTableData> doctorScheduleTableDataSet = schedules.stream()
+        SortedSet<DoctorScheduleTableData> doctorScheduleTableDataSet = schedules.stream()
                 .map(schedule -> new DoctorScheduleTableData(schedule, dateBeginRepresent, dateEndRepresent))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(treeSetSupplier));
 
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(LocalDate.class, new JsonSerializer<LocalDate>()
@@ -153,6 +163,16 @@ public class ScheduleViewService
             {
                 DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE;
                 return new JsonPrimitive(dateTimeFormatter.format(localDate));
+            }
+        });
+
+        gsonBuilder.registerTypeAdapter(LocalTime.class, new JsonSerializer<LocalTime>()
+        {
+            @Override
+            public JsonElement serialize(LocalTime localTime, Type type, JsonSerializationContext jsonDeserializationContext) throws JsonParseException
+            {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+                return new JsonPrimitive(formatter.format(localTime));
             }
         });
 
@@ -235,10 +255,6 @@ public class ScheduleViewService
 
             //Remove all entries that have empty value
             doctorScheduleTableDataSet.removeIf(doctorScheduleTableData -> doctorScheduleTableData.getIntervalSet().size() == 0);
-            /*doctorDataSet = doctorDataSet.entrySet().stream().filter(pair ->
-                            pair.getValue().getIntervalSet().size() != 0)
-                    .map(pair -> entry(pair.getKey(), pair.getValue()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));*/
         }
 
         GsonBuilder gsonBuilder = new GsonBuilder();
@@ -289,10 +305,6 @@ public class ScheduleViewService
     {
         //TODO - switch to related service, delete function.
         var persistedDoctorShortInformationCollection = scheduleService.getDoctorShortInformation(doctorIds);
-        for (var debug : persistedDoctorShortInformationCollection)
-        {
-            System.out.println("Geese are cool!");
-        }
         var doctorShortInformationCollection = new ArrayList<>();
         persistedDoctorShortInformationCollection.forEach(persistedPair ->
                 doctorShortInformationCollection.add(new DoctorShortInformation(persistedPair)));

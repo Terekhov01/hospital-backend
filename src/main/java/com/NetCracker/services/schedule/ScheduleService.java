@@ -103,14 +103,14 @@ public class ScheduleService
 
         final LocalDate dayToApplyPatternTo = dayToApplyPatternFrom.plusDays(pattern.getDaysLength());
 
-        scheduleIntervalSet.stream().filter(interval -> (interval.getIntervalStartTime().toLocalDate().isAfter(dayToApplyPatternFrom)
-                || interval.getIntervalStartTime().toLocalDate().isEqual(dayToApplyPatternFrom))
-                && interval.getIntervalStartTime().toLocalDate().isBefore(dayToApplyPatternTo)).forEach(interval -> scheduleIntervalRepository.delete(interval));
+        scheduleIntervalSet.stream().filter(interval -> (interval.getStartTime().toLocalDate().isAfter(dayToApplyPatternFrom)
+                || interval.getStartTime().toLocalDate().isEqual(dayToApplyPatternFrom))
+                && interval.getStartTime().toLocalDate().isBefore(dayToApplyPatternTo)).forEach(interval -> scheduleIntervalRepository.delete(interval));
 
         scheduleIntervalSet.removeIf(interval ->
-                (interval.getIntervalStartTime().toLocalDate().isAfter(dayToApplyPatternFrom)
-                        || interval.getIntervalStartTime().toLocalDate().isEqual(dayToApplyPatternFrom))
-                        && interval.getIntervalStartTime().toLocalDate().isBefore(dayToApplyPatternTo));
+                (interval.getStartTime().toLocalDate().isAfter(dayToApplyPatternFrom)
+                        || interval.getStartTime().toLocalDate().isEqual(dayToApplyPatternFrom))
+                        && interval.getStartTime().toLocalDate().isBefore(dayToApplyPatternTo));
 
         pattern.getStateSet().forEach(patternInterval ->
                 scheduleIntervalSet.add(new ScheduleInterval(schedule, dayToApplyPatternFrom, patternInterval))

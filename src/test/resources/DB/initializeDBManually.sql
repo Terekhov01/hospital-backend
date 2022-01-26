@@ -3,6 +3,8 @@ INSERT INTO roles VALUES(1, 'ROLE_PATIENT');
 INSERT INTO roles VALUES(2, 'ROLE_DOCTOR');
 INSERT INTO roles VALUES(3, 'ROLE_ADMIN');
 
+-- Создание пользователя происходит через графический интерфейс (сайт)
+
 UPDATE user_roles SET role_id = 1 WHERE user_id = 1;
 UPDATE user_roles SET role_id = 2 WHERE user_id = 2;
 UPDATE user_roles SET role_id = 3 WHERE user_id = 3;
@@ -18,7 +20,13 @@ INSERT INTO doctor VALUES (0, '1999-01-08', 'Linux > windows', 0, 2);
 INSERT INTO doctor VALUES (1, '1993-12-11', 'Geese are really cool!', 0, 4);
 INSERT INTO doctor VALUES (2, '1993-12-11', 'Geese are really cool!', 1, 5);
 
+-- Просмотр всех докторов
+SELECT users.id, users.first_name, users.patronymic, users.last_name, doctor.id, doctor.date_of_employment, doctor.education FROM users JOIN doctor ON users.id = doctor.user_id;
+
 INSERT INTO doctor_schedule VALUES (0, 0);
+INSERT INTO doctor_schedule VALUES (1, 2);
+
+-- Заполнение расписания происходит через графический инерфейс
 
 INSERT INTO specialist VALUES (0, 'Goose');
 INSERT INTO specialist VALUES (1, 'Gosling');

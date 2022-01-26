@@ -8,16 +8,16 @@ public class ScheduleIntervalId implements Serializable
 {
     private Long doctorSchedule;
 
-    private LocalDateTime intervalStartTime;
+    private LocalDateTime startTime;
 
     public ScheduleIntervalId()
     {
     }
 
-    public ScheduleIntervalId(Long doctorSchedule, LocalDateTime intervalStartTime)
+    public ScheduleIntervalId(Long doctorSchedule, LocalDateTime startTime)
     {
         this.doctorSchedule = doctorSchedule;
-        this.intervalStartTime = intervalStartTime;
+        this.startTime = startTime;
     }
 
     public Long getDoctorSchedule()
@@ -25,9 +25,9 @@ public class ScheduleIntervalId implements Serializable
         return doctorSchedule;
     }
 
-    public LocalDateTime getIntervalStartTime()
+    public LocalDateTime getStartTime()
     {
-        return intervalStartTime;
+        return startTime;
     }
 
     public void setDoctorSchedule(Long doctorSchedule)
@@ -35,9 +35,9 @@ public class ScheduleIntervalId implements Serializable
         this.doctorSchedule = doctorSchedule;
     }
 
-    public void setIntervalStartTime(LocalDateTime intervalStartTime)
+    public void setStartTime(LocalDateTime startTime)
     {
-        this.intervalStartTime = intervalStartTime;
+        this.startTime = startTime;
     }
 
     @Override
@@ -46,12 +46,12 @@ public class ScheduleIntervalId implements Serializable
         if (this == o) return true;
         if (!(o instanceof ScheduleIntervalId)) return false;
         ScheduleIntervalId that = (ScheduleIntervalId) o;
-        return Objects.equals(doctorSchedule, that.doctorSchedule) && Objects.equals(intervalStartTime, that.intervalStartTime);
+        return Objects.equals(doctorSchedule, that.doctorSchedule) && Objects.equals(startTime, that.startTime);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(doctorSchedule, intervalStartTime);
+        return Objects.hash(doctorSchedule, startTime);
     }
 }

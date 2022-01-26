@@ -37,7 +37,7 @@ public class ScheduleInterval
     @Column(name = "interval_start_time")
     @Id
     @Expose
-    protected LocalDateTime intervalStartTime;
+    protected LocalDateTime startTime;
 
     @Column(name = "is_assigned")
     @Expose
@@ -53,14 +53,14 @@ public class ScheduleInterval
     /**
      * Consider using other constructor if you want to persist (save to DB) created variable.
      */
-    public ScheduleInterval(LocalDateTime intervalStartTime)
+    public ScheduleInterval(LocalDateTime startTime)
     {
-        this.intervalStartTime = floorHalfHourInterval(intervalStartTime);
+        this.startTime = floorHalfHourInterval(startTime);
     }
 
-    public ScheduleInterval(DoctorSchedule schedule, LocalDateTime intervalStartTime) throws NullPointerException
+    public ScheduleInterval(DoctorSchedule schedule, LocalDateTime startTime) throws NullPointerException
     {
-        this(intervalStartTime);
+        this(startTime);
         doctorSchedule = schedule;
         isAssigned = false;
     }
@@ -92,9 +92,9 @@ public class ScheduleInterval
         return doctorSchedule;
     }
 
-    public LocalDateTime getIntervalStartTime()
+    public LocalDateTime getStartTime()
     {
-        return intervalStartTime;
+        return startTime;
     }
 
     public void setDoctorSchedule(DoctorSchedule doctorSchedule)
@@ -107,9 +107,9 @@ public class ScheduleInterval
         this.isAssigned = isAssigned;
     }
 
-    public void setIntervalStartTime(LocalDateTime intervalStartTime)
+    public void setStartTime(LocalDateTime startTime)
     {
-        this.intervalStartTime = intervalStartTime;
+        this.startTime = startTime;
     }
 
     @Override
@@ -118,13 +118,13 @@ public class ScheduleInterval
         if (this == o) return true;
         if (!(o instanceof ScheduleInterval)) return false;
         ScheduleInterval that = (ScheduleInterval) o;
-        return intervalStartTime.equals(that.intervalStartTime) && doctorSchedule.getId().equals(that.doctorSchedule.getId()) && isAssigned == that.isAssigned;
+        return startTime.equals(that.startTime) && doctorSchedule.getId().equals(that.doctorSchedule.getId()) && isAssigned == that.isAssigned;
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(intervalStartTime, (doctorSchedule == null) ? null : doctorSchedule.getId(), isAssigned);
+        return Objects.hash(startTime, (doctorSchedule == null) ? null : doctorSchedule.getId(), isAssigned);
     }
 
     public static class ScheduleIntervalDateAscendComparator implements Comparator<ScheduleInterval>
@@ -132,13 +132,13 @@ public class ScheduleInterval
         @Override
         public int compare(ScheduleInterval o1, ScheduleInterval o2)
         {
-            return o1.getIntervalStartTime().compareTo(o2.getIntervalStartTime());
+            return o1.getStartTime().compareTo(o2.getStartTime());
         }
     }
     public static final Comparator<ScheduleInterval> dateAscendComparator = new Comparator<ScheduleInterval>() {
         @Override
         public int compare(ScheduleInterval o1, ScheduleInterval o2) {
-            return o1.getIntervalStartTime().compareTo(o2.getIntervalStartTime());
+            return o1.getStartTime().compareTo(o2.getStartTime());
         }
     };
 }
