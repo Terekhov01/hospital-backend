@@ -54,7 +54,7 @@ public class User {
 	@Size(max = 50)
 	@Email
 	private String email;
-
+	private boolean isEnabled;
 	@NotBlank
 	@Size(max = 120)
 	private String password;
