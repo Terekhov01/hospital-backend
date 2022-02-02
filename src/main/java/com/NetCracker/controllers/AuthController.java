@@ -1,32 +1,34 @@
 package com.NetCracker.controllers;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import com.NetCracker.entities.ConfirmationToken;
+import com.NetCracker.repositories.ConfirmationTokenRepository;
 import com.NetCracker.repositories.user.UserRepository;
 import com.NetCracker.entities.patient.Patient;
 import com.NetCracker.payload.Response.JwtResponse;
 import com.NetCracker.payload.Response.MessageResponse;
 import com.NetCracker.repositories.patient.PatientRepository;
 import com.NetCracker.security.jwt.JwtUtils;
+import com.NetCracker.services.EmailSenderService;
 import com.NetCracker.services.user.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.NetCracker.entities.user.ERole;
 import com.NetCracker.entities.user.Role;
@@ -34,6 +36,7 @@ import com.NetCracker.entities.user.User;
 import com.NetCracker.payload.Request.LoginRequest;
 import com.NetCracker.payload.Request.SignupRequest;
 import com.NetCracker.repositories.RoleRepository;
+import org.springframework.web.servlet.ModelAndView;
 
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("/api/auth")
@@ -53,6 +56,11 @@ public class AuthController {
 	@Autowired
 	PasswordEncoder encoder;
 
+	@Autowired
+	private ConfirmationTokenRepository confirmationTokenRepository;
+
+	@Autowired
+	private EmailSenderService emailSenderService;
 	@Autowired
 	JwtUtils jwtUtils;
 
@@ -76,9 +84,8 @@ public class AuthController {
 				userDetails.getEmail(),
 				roles));
 	}
-
 	@PostMapping("/signup")
-	public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+	public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest, ModelAndView modelAndView) {
 		if (userRepository.existsByUserName(signUpRequest.getUsername())) {
 			return ResponseEntity
 					.badRequest()
@@ -138,7 +145,42 @@ public class AuthController {
 
 		patient.setUser(user);
 		patientRepository.save(patient);
+		ConfirmationToken confirmationToken = new ConfirmationToken(user);
+
+		confirmationTokenRepository.save(confirmationToken);
+
+		SimpleMailMessage mailMessage = new SimpleMailMessage();
+		mailMessage.setTo(user.getEmail());
+		mailMessage.setSubject("Complete Registration!");
+		mailMessage.setFrom("netclinictech@mail.ru");
+		mailMessage.setText("To confirm your account, please click here : "
+				+"http://localhost:8080/api/auth/confirm-account?token="+confirmationToken.getConfirmationToken());
+
+		emailSenderService.sendEmail(mailMessage);
+
+		modelAndView.addObject("email", user.getEmail());
+
+		modelAndView.setViewName("successfulRegisteration");
 
 		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+	}
+	@RequestMapping(value="/confirm-account", method= {RequestMethod.GET, RequestMethod.POST})
+	public ModelAndView confirmUserAccount(ModelAndView modelAndView, @RequestParam("token")String confirmationToken,  HttpServletResponse response) throws IOException {
+		ConfirmationToken token = confirmationTokenRepository.findByConfirmationToken(confirmationToken);
+
+		if(token != null)
+		{	response.sendRedirect("http://localhost:4200/");
+			User user = userRepository.findByEmailIgnoreCase(token.getUser().getEmail());
+			user.setEnabled(true);
+			userRepository.save(user);
+			modelAndView.setViewName("accountVerified");
+		}
+		else
+		{
+			modelAndView.addObject("message","The link is invalid or broken!");
+			modelAndView.setViewName("error");
+		}
+
+		return modelAndView;
 	}
 }
