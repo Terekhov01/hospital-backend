@@ -20,4 +20,11 @@ public class PatientService {
         log.info("IN UserService save {}", patient);
         return patientRepository.save(patient);
     }
+
+    public Patient findById(Long id){
+
+        log.info("IN UserServive getById {}",id);
+        return patientRepository.findById(id).get();
+    }
+
 }

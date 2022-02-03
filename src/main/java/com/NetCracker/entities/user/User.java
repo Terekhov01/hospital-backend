@@ -30,9 +30,8 @@ public class User {
 	private Long id;
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 	@PrimaryKeyJoinColumn
-	@JsonBackReference
-//	@JsonIgnore
 	private Patient patient;
+
 
 	@Column(name = "first_name")
 	private String firstName;

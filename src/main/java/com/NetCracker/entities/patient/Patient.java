@@ -17,18 +17,15 @@ import java.util.List;
 public class Patient {
     @Id
     private Long id;
-
     @OneToOne
     @MapsId
-//    @JsonIgnore
-    @JsonManagedReference
+    @JsonIgnore
     private User user;
-
     @Column
     private String passport;
-
     @Column
     private String polys;
+
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JoinColumn(name = "PATIENT")
