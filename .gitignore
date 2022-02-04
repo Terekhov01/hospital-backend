@@ -9,4 +9,4 @@
 out/*
 target/*
 src/main/webapp/doctorScheduleUI/*
-src/main/resources/application.properties
+src/main/resources/cridentials.properties

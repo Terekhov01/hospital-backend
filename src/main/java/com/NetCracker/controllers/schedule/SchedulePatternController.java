@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+//All controllers can be optimized. The easiest way is to reduce throw/catch sections amount
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("schedule-pattern")
 @RestController
@@ -246,10 +247,12 @@ public class SchedulePatternController
 
         String patternName;
         String dateToApplyStr;
+        Integer repeatCnt;
         try
         {
             patternName = (String) requestBody.get("patternName");
             dateToApplyStr = (String) requestBody.get("dateToApplyStr");
+            repeatCnt = (Integer) requestBody.get("repeatCnt");
         }
         catch (ClassCastException | NullPointerException e)
         {
@@ -261,8 +264,8 @@ public class SchedulePatternController
         {
             return new ResponseEntity<String>("Некорректный запрос - не получилось распознать дату применения шаблона.", HttpStatus.BAD_REQUEST);
         }
-        SchedulePattern requestedPattern;
 
+        SchedulePattern requestedPattern;
         try
         {
             requestedPattern = schedulePatternService.findPatternByNameAndRelatedDoctor(patternName, authenticatedDoctor.getId());
@@ -274,11 +277,55 @@ public class SchedulePatternController
 
         try
         {
-            scheduleService.applyPatternToSchedule(authenticatedDoctor, requestedPattern, dateToApply.toLocalDate());
+            scheduleService.applyPatternToSchedule(authenticatedDoctor, requestedPattern, dateToApply.toLocalDate(), repeatCnt);
         }
         catch (DataAccessException e)
         {
             return new ResponseEntity<String>("Не удалоссь продлить расписание. Ошибка связи с базой данных.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<String>("", HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ROLE_DOCTOR')")
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deletePattern(@RequestParam(name = "patternName") String patternName, Authentication authentication)
+    {
+        Doctor authenticatedDoctor = null;
+        try
+        {
+            authenticatedDoctor = getRequestingDoctor(authentication);
+        }
+        catch (ClassCastException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена.", HttpStatus.UNAUTHORIZED);
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена. Ошибка сервера связаться с БД.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        catch (NotFoundException e)
+        {
+            return new ResponseEntity<String>("Не найден доктор с Вашей регистрационной информацией. Ошибка сервера.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        SchedulePattern requestedPattern;
+        try
+        {
+            requestedPattern = schedulePatternService.findPatternByNameAndRelatedDoctor(patternName, authenticatedDoctor.getId());
+        }
+        catch(DataAccessException e)
+        {
+            return new ResponseEntity<String>("Шаблон с указанным назваением несуществует или недоступен.", HttpStatus.BAD_REQUEST);
+        }
+
+        try
+        {
+            schedulePatternService.delete(requestedPattern);
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Невозможно удалить шаблон. Ошибка сервера связаться с БД.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<String>("", HttpStatus.OK);

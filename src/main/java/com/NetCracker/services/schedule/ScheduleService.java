@@ -90,7 +90,7 @@ public class ScheduleService
     }
 
     @Transactional
-    public void applyPatternToSchedule(Doctor doctor, SchedulePattern pattern, LocalDate dayToApplyPatternFrom) throws DataAccessException
+    public void applyPatternToSchedule(Doctor doctor, SchedulePattern pattern, LocalDate dayToApplyPattern, Integer repeatCnt) throws DataAccessException
     {
         DoctorSchedule schedule = getDoctorSchedule(doctor);
 
@@ -101,23 +101,28 @@ public class ScheduleService
 
         SortedSet<ScheduleInterval> scheduleIntervalSet = schedule.getStateSet();
 
-        final LocalDate dayToApplyPatternTo = dayToApplyPatternFrom.plusDays(pattern.getDaysLength());
-
-        scheduleIntervalSet.stream().filter(interval -> (interval.getStartTime().toLocalDate().isAfter(dayToApplyPatternFrom)
-                || interval.getStartTime().toLocalDate().isEqual(dayToApplyPatternFrom))
-                && interval.getStartTime().toLocalDate().isBefore(dayToApplyPatternTo)).forEach(interval -> scheduleIntervalRepository.delete(interval));
+        // Clear currently stored information about those days
+        LocalDate dayToApplyPatternTo = dayToApplyPattern.plusDays(pattern.getDaysLength() * repeatCnt);
 
         scheduleIntervalSet.removeIf(interval ->
-                (interval.getStartTime().toLocalDate().isAfter(dayToApplyPatternFrom)
-                        || interval.getStartTime().toLocalDate().isEqual(dayToApplyPatternFrom))
+                (interval.getStartTime().toLocalDate().isAfter(dayToApplyPattern)
+                        || interval.getStartTime().toLocalDate().isEqual(dayToApplyPattern))
                         && interval.getStartTime().toLocalDate().isBefore(dayToApplyPatternTo));
 
-        pattern.getStateSet().forEach(patternInterval ->
-                scheduleIntervalSet.add(new ScheduleInterval(schedule, dayToApplyPatternFrom, patternInterval))
-                );
+        scheduleIntervalSet.stream().filter(interval -> (interval.getStartTime().toLocalDate().isAfter(dayToApplyPattern)
+                || interval.getStartTime().toLocalDate().isEqual(dayToApplyPattern))
+                && interval.getStartTime().toLocalDate().isBefore(dayToApplyPatternTo)).forEach(interval -> scheduleIntervalRepository.delete(interval));
+
+        for (int repeatCur = 0; repeatCur < repeatCnt; repeatCur++)
+        {
+            LocalDate dayToApplyPatternFrom = dayToApplyPattern.plusDays(pattern.getDaysLength() * repeatCur);
+
+            pattern.getStateSet().forEach(patternInterval ->
+                    scheduleIntervalSet.add(new ScheduleInterval(schedule, dayToApplyPatternFrom, patternInterval))
+            );
+        }
 
         scheduleIntervalRepository.saveAll(scheduleIntervalSet);
-        schedule.setStateSet(scheduleIntervalSet);
     }
 
     /**

@@ -12,6 +12,8 @@ import java.util.Optional;
 @Repository
 public interface SchedulePatternRepository extends JpaRepository<SchedulePattern, Long>
 {
+    void deleteByName(String name);
+
     @Query("FROM SchedulePattern WHERE relatedDoctor.id = :id")//as pattern JOIN Doctor as doctor ON pattern.doctor_id = doctor.id WHERE doctor.id = :id")
     List<SchedulePattern> findByRelatedDoctorId(@Param("id") Long doctor_id);
 
