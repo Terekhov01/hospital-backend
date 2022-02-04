@@ -20,11 +20,8 @@ public class DoctorSchedule
     @Expose
     private Long id;
 
-    /**
-     * Must contain TreeSet instance!
-     */
     @NotNull
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "doctorSchedule")
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.REMOVE, mappedBy = "doctorSchedule")
     @SortComparator(ScheduleInterval.ScheduleIntervalDateAscendComparator.class)
     @Expose
     @JsonManagedReference

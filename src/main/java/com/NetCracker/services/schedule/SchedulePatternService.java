@@ -41,13 +41,19 @@ public class SchedulePatternService
     }
 
     @Transactional
-    public void remove(SchedulePattern pattern)
+    public void delete(String patternName)
+    {
+        schedulePatternRepository.deleteByName(patternName);
+    }
+
+    @Transactional
+    public void delete(SchedulePattern pattern)
     {
         schedulePatternRepository.delete(pattern);
     }
 
     @Transactional
-    public void remove(Iterable<SchedulePattern> pattern)
+    public void delete(Iterable<SchedulePattern> pattern)
     {
         schedulePatternRepository.deleteAll(pattern);
     }
