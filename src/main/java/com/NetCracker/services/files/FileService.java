@@ -1,5 +1,6 @@
 package com.NetCracker.services.files;
 
+import com.NetCracker.entities.appointment.Appointment;
 import com.NetCracker.entities.patient.File;
 import com.NetCracker.entities.patient.Patient;
 import com.NetCracker.repositories.patient.FileRepository;
@@ -25,9 +26,9 @@ public class FileService {
         File fileEntity = new File();
     }
 
-    public void save(String fileName, Patient relatedPatient, byte[] fileBytes) throws DataAccessException
+    public void save(String fileName, Appointment appointment, byte[] fileBytes) throws DataAccessException
     {
-        File file = new File(fileName, relatedPatient, fileBytes);
+        File file = new File(fileName, appointment, fileBytes);
         fileRepository.save(file);
     }
 
