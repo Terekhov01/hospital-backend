@@ -45,6 +45,15 @@ class AppointmentController {
         }
     }
 
+    @GetMapping("/appointments/last/{id}")
+    public ResponseEntity<Appointment> getLastAppointment(@PathVariable("id") Long id) {
+        Optional<Appointment> appointmentData = repository.findLastAppointment(id);
+
+        return appointmentData.map(appointment ->
+                new ResponseEntity<>(appointment, HttpStatus.OK)).orElseGet(() ->
+                new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
     @GetMapping("/appointments/{id}")
     public ResponseEntity<Appointment> getAppointmentById(@PathVariable("id") Long id) {
         Optional<Appointment> appointmentData = repository.findById(id);
@@ -76,7 +85,7 @@ class AppointmentController {
 //                                appointment.getFile(),
 //                                appointment.getService(),
                                 appointment.getRecipe(), appointment.getTreatPlan(),
-                                appointment.getRehabPlan(), appointment.getDocStatement()/*, appointment.getFile()*/));
+                                appointment.getRehabPlan(), appointment.getDocStatement(), appointment.getFiles()/*, appointment.getFile()*/));
 //                System.out.println("Here4");
                 return new ResponseEntity<>(_appointment, HttpStatus.CREATED);
             } catch (Exception e) {
@@ -111,6 +120,7 @@ class AppointmentController {
 //                _appointment.setDoctor(appointmentRegistrationData.get().getDoctor());
 //                _appointment.setPatient(appointmentRegistrationData.get().getPatient());
                 _appointment.setAppointmentRegistration(appointmentRegistrationData.get());
+                _appointment.setFiles(appointment.getFiles());
                 return new ResponseEntity<>(repository.save(_appointment), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);

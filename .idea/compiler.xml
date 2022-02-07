@@ -14,7 +14,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="hospital-applcation-project" target="17" />
-      <module name="HospitalApplication" target="17" />
+      <module name="HospitalApplication" target="16" />
       <module name="spring-boot-server" target="17" />
     </bytecodeTargetLevel>
   </component>

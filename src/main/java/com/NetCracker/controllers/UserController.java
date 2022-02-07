@@ -92,6 +92,7 @@ public class UserController {
     public ResponseEntity<Map<String, Boolean>> deleteUser(@PathVariable Long id){
         User user =  userService.findById(id);
 
+
          userService.deleteById(id);
         Map<String, Boolean> response = new HashMap<>();
         response.put("deleted", Boolean.TRUE);

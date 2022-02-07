@@ -62,7 +62,7 @@ public class PatientController {
     public ResponseEntity<Patient> createPatient(@RequestBody Patient patient) {
         try {
             Patient _patient = repository
-                    .save(new Patient(patient.getUser(), patient.getPassport(), patient.getPolys(), patient.getFiles()));
+                    .save(new Patient(patient.getUser(), patient.getPassport(), patient.getPolys()/*, patient.getFiles()*/));
             return new ResponseEntity<>(_patient, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -78,7 +78,7 @@ public class PatientController {
             _patient.setUser(patient.getUser());
             _patient.setPassport(patient.getPassport());
             _patient.setPolys(patient.getPolys());
-            _patient.setFiles(patient.getFiles());
+//            _patient.setFiles(patient.getFiles());
             return new ResponseEntity<>(repository.save(_patient), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

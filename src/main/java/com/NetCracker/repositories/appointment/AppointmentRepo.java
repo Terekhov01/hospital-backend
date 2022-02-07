@@ -18,5 +18,8 @@ public interface AppointmentRepo extends JpaRepository<Appointment, Long> {
     @Query("select a from Appointment a where a.id = :id")
     Optional<Appointment> findById(@Param("id") Long id);
 
+    @Query("select a from Appointment a where a.appointmentRegistration.start = (select max(aa.start) from AppointmentRegistration aa where aa.patient.id = :id) and a.appointmentRegistration.patient.id = :id")
+    Optional<Appointment> findLastAppointment(@Param("id") Long id);
+
 }
 

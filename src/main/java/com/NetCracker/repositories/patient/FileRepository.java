@@ -18,7 +18,7 @@ public interface FileRepository extends JpaRepository<File, Long> {
     @Query("select f from File f where f.id = :id")
     Optional<File> findById(@Param("id") Long id);
 
-    @Query("select f from File f where f.patient.id = :id")
-    List<File> findByPatientId(@Param("id") Long id);// mb return list
+    @Query("select f from File f where f.appointment.id = :id")
+    List<File> findByAppointmentId(@Param("id") Long id);// mb return list
 
 }

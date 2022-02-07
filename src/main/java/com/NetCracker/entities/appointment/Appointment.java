@@ -1,8 +1,12 @@
 package com.NetCracker.entities.appointment;
 
+import com.NetCracker.entities.patient.File;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.hibernate.annotations.Type;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -60,6 +64,11 @@ public class Appointment {
     @Column(name = "DOCTORS_STATEMENT")
     private String docStatement;
 
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JoinColumn(name = "APPOINTMENT")
+    @JsonManagedReference
+    private List<File> files;
+
     public Appointment() {
     }
 
@@ -69,7 +78,7 @@ public class Appointment {
 //                       File file,
 //                       String service,
                        String recipe, String treatPlan,
-                       String rehabPlan, String docStatement) {//,
+                       String rehabPlan, String docStatement, List<File> files) {//,
 //                       byte[] file) {
         this.id = id;
         this.appointmentRegistration = appointmentRegistration;
@@ -82,6 +91,7 @@ public class Appointment {
         this.treatPlan = treatPlan;
         this.rehabPlan = rehabPlan;
         this.docStatement = docStatement;
+        this.files = files;
 //        this.file = new byte[file.length];
 //        System.arraycopy(file, 0, this.file, 0, file.length);
     }
@@ -94,7 +104,15 @@ public class Appointment {
         this.id = id;
     }
 
-//    public File getFile() {
+    public List<File> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<File> files) {
+        this.files = files;
+    }
+
+    //    public File getFile() {
 //        return file;
 //    }
 //
