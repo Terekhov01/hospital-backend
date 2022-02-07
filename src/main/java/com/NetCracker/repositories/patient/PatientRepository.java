@@ -21,4 +21,6 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     @Query("select a from Patient a where a.user.lastName = :pat")
     Optional<Patient> findPatientByLastName(@Param("pat") String pat);
 
+    @Query("FROM Patient patient INNER JOIN patient.user user WHERE user.id = :relatedUserId")
+    Optional<Patient> findByRelatedUserId(@Param("relatedUserId") Long userId);
 }

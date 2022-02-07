@@ -27,4 +27,9 @@ public class PatientService {
         return patientRepository.findById(id).get();
     }
 
+    public Patient findByRelatedUserId(Long id)
+    {
+        log.info("IN UserService findByRelatedUserId {}", id);
+        return patientRepository.findByRelatedUserId(id).orElse(null);
+    }
 }

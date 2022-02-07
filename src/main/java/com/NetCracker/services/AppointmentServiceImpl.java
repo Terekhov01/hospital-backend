@@ -3,11 +3,12 @@ package com.NetCracker.services;
 import com.NetCracker.entities.appointment.Appointment;
 import com.NetCracker.repositories.appointment.AppointmentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
+@Service
 public class AppointmentServiceImpl implements AppointmentService {
 
     private AppointmentRepo appointmentRepo;
@@ -28,9 +29,10 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
-    public Appointment getById(Long theId) {
-        Optional<Appointment> result = appointmentRepo.findById(theId);
-        Appointment theAppointment;
+    public Appointment getById(Long theId)
+    {
+        return appointmentRepo.findById(theId).orElse(null);
+        /*Appointment theAppointment;
 
         if (result.isPresent()) {
             theAppointment = result.get();
@@ -38,7 +40,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new RuntimeException("Did not find appointment id - " + theId);
         }
 
-        return theAppointment;
+        return theAppointment;*/
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -33,10 +34,26 @@ public class File {
     @Type(type = "org.hibernate.type.BinaryType")
     private byte[] file_data;
 
+    private LocalDateTime creationDate;
+
+    private String name;
+
     public File() {
     }
 
-    public File(Patient patient, byte[] file_data) {
+    public File(Patient patient, byte[] fileData)
+    {
+        this.name = "Untitled";
+        this.creationDate = LocalDateTime.now();
+        this.patient = patient;
+        this.file_data = new byte[file_data.length];
+        System.arraycopy(file_data, 0, this.file_data, 0, file_data.length);
+    }
+
+    public File(String name, Patient patient, byte[] file_data)
+    {
+        this.name = name;
+        this.creationDate = LocalDateTime.now();
         this.patient = patient;
         this.file_data = new byte[file_data.length];
         System.arraycopy(file_data, 0, this.file_data, 0, file_data.length);

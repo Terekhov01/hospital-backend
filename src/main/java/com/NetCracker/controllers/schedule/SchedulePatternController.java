@@ -2,14 +2,13 @@ package com.NetCracker.controllers.schedule;
 
 import com.NetCracker.entities.doctor.Doctor;
 import com.NetCracker.entities.schedule.SchedulePattern;
+import com.NetCracker.services.AuthenticationService;
 import com.NetCracker.services.doctor.DoctorUserService;
 import com.NetCracker.services.schedule.SchedulePatternService;
 import com.NetCracker.services.schedule.SchedulePatternViewService;
 import com.NetCracker.services.schedule.ScheduleService;
-import com.NetCracker.services.user.UserDetailsImpl;
 import com.NetCracker.utils.StringUtils;
 import com.google.gson.JsonParseException;
-import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.crossstore.ChangeSetPersister;
@@ -44,21 +43,6 @@ public class SchedulePatternController
     @Autowired
     private DoctorUserService doctorUserService;
 
-    Doctor getRequestingDoctor(Authentication authentication) throws NotFoundException, DataAccessException, ClassCastException
-    {
-        UserDetailsImpl userDetails = null;
-        Doctor authenticatedDoctor = null;
-
-        userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        authenticatedDoctor = doctorUserService.findByRelatedUserId(userDetails.getId());
-
-        if (authenticatedDoctor == null)
-        {
-            throw new NotFoundException("Doctor '" + userDetails.getUsername() + "' not found");
-        }
-        return authenticatedDoctor;
-    }
-
     @PreAuthorize("hasRole('ROLE_DOCTOR')")
     @GetMapping("/list-patterns")
     public ResponseEntity<String> getSchedulePatternList(Authentication authentication)
@@ -68,7 +52,7 @@ public class SchedulePatternController
         Doctor authenticatedDoctor = null;
         try
         {
-            authenticatedDoctor = getRequestingDoctor(authentication);
+            authenticatedDoctor = AuthenticationService.getAuthenticatedDoctor(authentication);
         }
         catch (ClassCastException e)
         {
@@ -78,7 +62,8 @@ public class SchedulePatternController
         {
             return new ResponseEntity<String>("Аутентификация не пройдена. Ошибка сервера связаться с БД.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        catch (NotFoundException e)
+
+        if (authenticatedDoctor == null)
         {
             return new ResponseEntity<String>("Не найден доктор с Вашей регистрационной информацией. Ошибка сервера.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -102,7 +87,7 @@ public class SchedulePatternController
         Doctor authenticatedDoctor = null;
         try
         {
-            authenticatedDoctor = getRequestingDoctor(authentication);
+            authenticatedDoctor = AuthenticationService.getAuthenticatedDoctor(authentication);
         }
         catch (ClassCastException e)
         {
@@ -112,7 +97,8 @@ public class SchedulePatternController
         {
             return new ResponseEntity<String>("Аутентификация не пройдена. Ошибка сервера связаться с БД.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        catch (NotFoundException e)
+
+        if (authenticatedDoctor == null)
         {
             return new ResponseEntity<String>("Не найден доктор с Вашей регистрационной информацией. Ошибка сервера.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -138,7 +124,7 @@ public class SchedulePatternController
         Doctor authenticatedDoctor = null;
         try
         {
-            authenticatedDoctor = getRequestingDoctor(authentication);
+            authenticatedDoctor = AuthenticationService.getAuthenticatedDoctor(authentication);
         }
         catch (ClassCastException e)
         {
@@ -148,7 +134,8 @@ public class SchedulePatternController
         {
             return new ResponseEntity<String>("Аутентификация не пройдена. Ошибка сервера связаться с БД.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        catch (NotFoundException e)
+
+        if (authenticatedDoctor == null)
         {
             return new ResponseEntity<String>("Не найден доктор с Вашей регистрационной информацией. Ошибка сервера.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -230,7 +217,7 @@ public class SchedulePatternController
         Doctor authenticatedDoctor = null;
         try
         {
-            authenticatedDoctor = getRequestingDoctor(authentication);
+            authenticatedDoctor = AuthenticationService.getAuthenticatedDoctor(authentication);
         }
         catch (ClassCastException e)
         {
@@ -240,7 +227,8 @@ public class SchedulePatternController
         {
             return new ResponseEntity<String>("Аутентификация не пройдена. Ошибка сервера связаться с БД.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        catch (NotFoundException e)
+
+        if (authenticatedDoctor == null)
         {
             return new ResponseEntity<String>("Не найден доктор с Вашей регистрационной информацией. Ошибка сервера.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -294,7 +282,7 @@ public class SchedulePatternController
         Doctor authenticatedDoctor = null;
         try
         {
-            authenticatedDoctor = getRequestingDoctor(authentication);
+            authenticatedDoctor = AuthenticationService.getAuthenticatedDoctor(authentication);
         }
         catch (ClassCastException e)
         {
@@ -304,7 +292,8 @@ public class SchedulePatternController
         {
             return new ResponseEntity<String>("Аутентификация не пройдена. Ошибка сервера связаться с БД.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        catch (NotFoundException e)
+
+        if (authenticatedDoctor == null)
         {
             return new ResponseEntity<String>("Не найден доктор с Вашей регистрационной информацией. Ошибка сервера.", HttpStatus.INTERNAL_SERVER_ERROR);
         }

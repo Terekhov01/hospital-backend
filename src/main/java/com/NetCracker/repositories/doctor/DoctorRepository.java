@@ -22,6 +22,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     /*@Query("select a from Doctor a where a.id = :id")
     Optional<Doctor> findById(@Param("id") Long id);*/
 
+    //Warning! There can be multiple doctors with the same last name
     @Query("select a from Doctor a where a.user.lastName = :doc")
     Optional<Doctor> findDoctorByLastName(@Param("doc") String doc);
 

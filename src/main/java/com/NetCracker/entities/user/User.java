@@ -113,6 +113,15 @@ public User(User user)
 		this.userName = username;
 	}
 
+	public String getFullNameFormatted()
+	{
+		StringBuilder nameBuilder = new StringBuilder();
+		nameBuilder.append(this.firstName).append(' ');
+		nameBuilder.append(this.lastName).append(' ');
+		nameBuilder.append(this.patronymic);
+		return nameBuilder.toString();
+	}
+
 	public String getEmail() {
 		return email;
 	}
