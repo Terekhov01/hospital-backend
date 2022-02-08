@@ -72,7 +72,7 @@ public class FileController {
     @Autowired
     FileViewService fileViewService;
 
-    @GetMapping("api/files")
+    @GetMapping("files")
     public ResponseEntity<List<File>> getAllFiles(@RequestParam(required = false) Long id) {
         try {
             List<File> files = new ArrayList<>();
@@ -223,7 +223,7 @@ public class FileController {
         }
     }
 
-    @GetMapping("api/files/id/{id}")
+    @GetMapping("files/id/{id}")
     public ResponseEntity<List<File>> getFilesByPatientId(@PathVariable("id") Long id) {
         System.out.println("In getFilesByPatientId method");
         System.out.println("Id is: " + id.toString());
@@ -232,7 +232,7 @@ public class FileController {
         return new ResponseEntity<>(fileData, HttpStatus.OK);
     }
 
-    @PostMapping("api/files/{id}")
+    @PostMapping("files/{id}")
     public ResponseEntity<File> createFile(@RequestParam("files") List<MultipartFile> files, @PathVariable("id") Long id) {
 //        Optional<Patient> patient = patientRepository.findById(id);
         System.out.println("Posting a file, id is " + id.toString());
@@ -345,7 +345,7 @@ public class FileController {
         return new ResponseEntity<String>(fileViewService.toJson(requestedFile), HttpStatus.OK);
     }
 
-    @PutMapping("api/files/{file_id}/{patient_id}")
+    @PutMapping("files/{file_id}/{patient_id}")
     public ResponseEntity<File> updateFile(@PathVariable("file_id") Long file_id,
                                            @PathVariable("patient_id") Long patient_id,
                                            @RequestBody MultipartFile file) throws IOException {
@@ -362,7 +362,7 @@ public class FileController {
         }
     }
 
-    @DeleteMapping("api/files/{id}")
+    @DeleteMapping("files/{id}")
     public ResponseEntity<HttpStatus> deleteFile(@PathVariable("id") Long id) {
         try {
             repository.deleteById(id);

@@ -94,8 +94,8 @@ public class SickListFactory
 
         addFrontTitle(retVal);
         addCaption(retVal, LocalDate.now());
-        addDocumentBody(retVal, patient.getUser().getFullNameFormatted(), doctor.getUser().getFullNameFormatted(),
-                        appointment.getDocStatement(), recoveryDate);
+//        addDocumentBody(retVal, patient.getUser().getFullNameFormatted(), doctor.getUser().getFullNameFormatted(),
+//                        appointment.getDocStatement(), recoveryDate);
         addSignature(retVal);
 
         return retVal;

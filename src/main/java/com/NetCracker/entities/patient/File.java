@@ -54,8 +54,8 @@ public class File {
         this.name = "Untitled";
         this.creationDate = LocalDateTime.now();
         this.appointment = appointment;
-        this.file_data = new byte[file_data.length];
-        System.arraycopy(file_data, 0, this.file_data, 0, file_data.length);
+        this.file_data = new byte[fileData.length];
+        System.arraycopy(fileData, 0, this.file_data, 0, fileData.length);
     }
 
     public File(String name, Appointment appointment, byte[] file_data)

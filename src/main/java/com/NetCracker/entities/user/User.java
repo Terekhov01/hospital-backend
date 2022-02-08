@@ -14,7 +14,6 @@ import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 @Getter
 @Setter
@@ -31,8 +30,9 @@ public class User {
 	private Long id;
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 	@PrimaryKeyJoinColumn
+	@JsonBackReference
+//	@JsonIgnore
 	private Patient patient;
-
 
 	@Column(name = "first_name")
 	private String firstName;
@@ -55,12 +55,12 @@ public class User {
 	@Email
 	private String email;
 
-	@Column(columnDefinition = "boolean default true")
-	private boolean isEnabled;
-
 	@NotBlank
 	@Size(max = 120)
 	private String password;
+
+	@Column(columnDefinition = "boolean default true")
+	private boolean isEnabled;
 
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(	name = "user_roles",
@@ -92,7 +92,7 @@ public class User {
 		this.roles = roles;
 	}
 
-public User(User user)
+	public User(User user)
 	{
 		this(user.firstName, user.lastName, user.patronymic, user.phone, user.userName, user.email, user.password, user.roles);
 	}
@@ -111,15 +111,6 @@ public User(User user)
 
 	public void setUsername(String username) {
 		this.userName = username;
-	}
-
-	public String getFullNameFormatted()
-	{
-		StringBuilder nameBuilder = new StringBuilder();
-		nameBuilder.append(this.firstName).append(' ');
-		nameBuilder.append(this.lastName).append(' ');
-		nameBuilder.append(this.patronymic);
-		return nameBuilder.toString();
 	}
 
 	public String getEmail() {

@@ -71,12 +71,13 @@ public class DoctorController {
     public ResponseEntity<Doctor> createDoctor(@RequestBody Doctor doctor) {
         try {
             Doctor _doctor = repository
-                    .save(new Doctor(doctor.getUser(), doctor.getDateOfEmployment(), doctor.getEducation(), doctor.getRoom(), doctor.getSpecialist(), doctor.getSchedule(), doctor.getUser().getFirstName(), doctor.getUser().getLastName(), doctor.getRatings()));
+                    .save(new Doctor(doctor.getDateOfEmployment(), doctor.getEducation(), doctor.getRoom(), doctor.getSpecialist(), doctor.getSchedule(), doctor.getUser().getFirstName(), doctor.getUser().getLastName(), doctor.getRatings()));
             return new ResponseEntity<>(_doctor, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     @PutMapping("/doctors/{id}")
     public ResponseEntity<Doctor> updateDoctor(@PathVariable("id") Long id, @RequestBody Doctor doctor) {
