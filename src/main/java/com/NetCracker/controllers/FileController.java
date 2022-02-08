@@ -92,11 +92,11 @@ public class FileController {
         }
     }
 
-    @GetMapping("/files/download/{file_id}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable("file_id") Long id) throws IOException {
+    @GetMapping("/files/download/{appointment_id}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable("appointment_id") Long id) throws IOException {
 //        File file = repository.getById(id);
         System.out.println("In download get method");
-        System.out.println("Id is:" + id.toString());
+        System.out.println("Appointment id is:" + id.toString());
         List<File> fileData = repository.findByAppointmentId(id);
         System.out.println("Found files: " + fileData.size());
         Long fileId = fileData.get(0).getId();
