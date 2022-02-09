@@ -9,9 +9,11 @@ import com.NetCracker.entities.appointment.AppointmentRegistration;
 import com.NetCracker.exceptions.AppointmentNotFoundException;
 import com.NetCracker.repositories.appointment.AppointmentRegistrationRepo;
 import com.NetCracker.repositories.appointment.AppointmentRepo;
+import com.NetCracker.services.EmailSenderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,6 +27,8 @@ class AppointmentController {
     @Autowired
     AppointmentRegistrationRepo appointmentRegistrations;
 
+    @Autowired
+    private EmailSenderService emailSenderService;
     @GetMapping("/appointments")
     public ResponseEntity<List<Appointment>> getAllAppointments(@RequestParam(required = false) Long id) {
         try {
@@ -87,6 +91,13 @@ class AppointmentController {
                                 appointment.getRecipe(), appointment.getTreatPlan(),
                                 appointment.getRehabPlan(), appointment.getDocStatement(), appointment.getFiles()/*, appointment.getFile()*/));
 //                System.out.println("Here4");
+                SimpleMailMessage mailMessage = new SimpleMailMessage();
+                mailMessage.setTo(appointment.getAppointmentRegistration().getPatient().getUser().getEmail());
+                mailMessage.setSubject("Запись на прием!");
+                mailMessage.setFrom("netclinictech@mail.ru");
+                mailMessage.setText("Вы успешно записались на прием к врачу"+appointment.getAppointmentRegistration().getDoctor().getUser().getLastName() +appointment.getAppointmentRegistration().getDoctor().getUser().getFirstName() + appointment.getFiles());
+
+                emailSenderService.sendEmail(mailMessage);
                 return new ResponseEntity<>(_appointment, HttpStatus.CREATED);
             } catch (Exception e) {
 //                System.out.println("Here5");
@@ -121,6 +132,8 @@ class AppointmentController {
 //                _appointment.setPatient(appointmentRegistrationData.get().getPatient());
                 _appointment.setAppointmentRegistration(appointmentRegistrationData.get());
                 _appointment.setFiles(appointment.getFiles());
+
+
                 return new ResponseEntity<>(repository.save(_appointment), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
