@@ -30,7 +30,8 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     List<Doctor> findAll();
 
-    Optional<Doctor> findById(Long id);
+    @Query("select a from Doctor a where a.id = :id")
+    Optional<Doctor> findById(@Param("id") Long id);
 
     Optional<Doctor> findByUser_id(Long id);
 

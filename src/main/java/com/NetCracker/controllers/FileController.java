@@ -73,6 +73,7 @@ public class FileController {
     FileViewService fileViewService;
 
     @GetMapping("files")
+//    @PreAuthorize("hasAnyRole('ROLE_DOCTOR', 'ROLE_PATIENT')")
     public ResponseEntity<List<File>> getAllFiles(@RequestParam(required = false) Long id) {
         try {
             List<File> files = new ArrayList<>();
@@ -93,6 +94,7 @@ public class FileController {
     }
 
     @GetMapping("/files/download/{appointment_id}")
+//    @PreAuthorize("hasAnyRole('ROLE_DOCTOR', 'ROLE_PATIENT')")
     public ResponseEntity<Resource> downloadFile(@PathVariable("appointment_id") Long id) throws IOException {
 //        File file = repository.getById(id);
         System.out.println("In download get method");
@@ -224,6 +226,7 @@ public class FileController {
     }
 
     @GetMapping("files/id/{id}")
+//    @PreAuthorize("hasAnyRole('ROLE_DOCTOR', 'ROLE_PATIENT')")
     public ResponseEntity<List<File>> getFilesByPatientId(@PathVariable("id") Long id) {
         System.out.println("In getFilesByPatientId method");
         System.out.println("Id is: " + id.toString());
@@ -233,6 +236,7 @@ public class FileController {
     }
 
     @PostMapping("files/{id}")
+//    @PreAuthorize("hasRole(ROLE_DOCTOR)")
     public ResponseEntity<File> createFile(@RequestParam("files") List<MultipartFile> files, @PathVariable("id") Long id) {
 //        Optional<Patient> patient = patientRepository.findById(id);
         System.out.println("Posting a file, id is " + id.toString());
