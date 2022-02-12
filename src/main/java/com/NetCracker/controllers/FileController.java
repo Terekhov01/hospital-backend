@@ -5,6 +5,7 @@ import com.NetCracker.entities.doctor.Doctor;
 import com.NetCracker.entities.patient.File;
 import com.NetCracker.entities.patient.Patient;
 import com.NetCracker.exceptions.FileNotFoundException;
+import com.NetCracker.payload.Request.FileRequest;
 import com.NetCracker.repositories.appointment.AppointmentRepo;
 import com.NetCracker.repositories.patient.FileRepository;
 import com.NetCracker.repositories.patient.PatientRepository;
@@ -72,8 +73,10 @@ public class FileController {
     @Autowired
     FileViewService fileViewService;
 
+    @Autowired
+    AuthenticationService authenticationService;
+
     @GetMapping("files")
-//    @PreAuthorize("hasAnyRole('ROLE_DOCTOR', 'ROLE_PATIENT')")
     public ResponseEntity<List<File>> getAllFiles(@RequestParam(required = false) Long id) {
         try {
             List<File> files = new ArrayList<>();
@@ -105,7 +108,7 @@ public class FileController {
         System.out.println("File Id is: " + fileId.toString());
         File file = repository.getById(fileId);
         Path path = Paths.get("/Users/mikhail/Downloads/tmp");
-        Files.write(path, file.getFile_data());
+        Files.write(path, file.getFileData());
         Resource resource = new UrlResource(path.toUri());
         if (resource.exists() || resource.isReadable()) {
             return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -247,7 +250,7 @@ public class FileController {
                 File _file = new File();
                 for (MultipartFile file : files) {
                     _file = repository
-                            .save(new File(appointment.get(), file.getBytes()));
+                            .save(new File(file.getName(), appointment.get(), file.getBytes()));
                 }
                 return new ResponseEntity<>(_file, HttpStatus.CREATED);
             } catch (Exception e) {
@@ -259,71 +262,31 @@ public class FileController {
         }
     }
 
-    @PostMapping("/create-sick-list")
-    @PreAuthorize("hasRole(ROLE_DOCTOR)")
-    public ResponseEntity<String> createSickList(String fileName, Long appointmentId, LocalDate recoveryDate, Authentication authentication)
+    //TODO - provide doctor way to view files
+    @GetMapping("/files/get-by-id")
+    @PreAuthorize("hasRole('ROLE_PATIENT')")
+    public ResponseEntity<String> getFile(Long fileId, Authentication authentication)
     {
-        Doctor requestingDoctor = null;
-        Appointment requestedAppointment = null;
+        Patient requestingPatient;
         try
         {
-            requestingDoctor = AuthenticationService.getAuthenticatedDoctor(authentication);
+            requestingPatient = authenticationService.getAuthenticatedPatient(authentication);
         }
         catch (ClassCastException ex)
         {
-            return new ResponseEntity<String>("Срвер не смог получить информацию о Вас", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("Срвер не смог получить информацию о Вас",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
         catch (DataAccessException ex)
         {
-            return new ResponseEntity<String>("Срвер не смог получить информацию из базы данных", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("Срвер не смог получить информацию о пользователе из базы данных",
+                    HttpStatus.SERVICE_UNAVAILABLE);
         }
-
-        if (requestingDoctor == null)
-        {
-            return new ResponseEntity<String>("В базе данных не содержится информация о пользователе, делавшем запрос", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        requestedAppointment = appointmentService.getById(appointmentId);
-
-        if (requestedAppointment == null)
-        {
-            return new ResponseEntity<String>("Встреча не найдена", HttpStatus.BAD_REQUEST);
-        }
-
-        if (!requestedAppointment.getAppointmentRegistration().getDoctor().getId().equals(requestingDoctor.getId()))
-        {
-            return new ResponseEntity<String>("Создавать больничный может только врач, который проводит прием.", HttpStatus.UNAUTHORIZED);
-        }
-
-        XWPFDocument sickList = SickListFactory.createDocument(requestedAppointment, recoveryDate);
-
-        ByteArrayOutputStream fileByteStream = new ByteArrayOutputStream();
-
-        try
-        {
-            sickList.write(fileByteStream);
-        }
-        catch (IOException ex)
-        {
-            return new ResponseEntity<String>("Ошибка формирования документа", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        byte[] sickListBytes = fileByteStream.toByteArray();
-
-        fileService.save(fileName, requestedAppointment, sickListBytes);
-
-        return new ResponseEntity<String>("", HttpStatus.OK);
-    }
-
-    @GetMapping("/files/get-by-id")
-    @PreAuthorize("hasRole(ROLE_PATIENT)")
-    public ResponseEntity<String> getFile(Long fileId, Authentication authentication)
-    {
-        Patient requestingPatient = AuthenticationService.getAuthenticatedPatient(authentication);
 
         if (requestingPatient == null)
         {
-            return new ResponseEntity<String>("Не найден пользователь с Вашим id", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Не найден пользователь с Вашим id. Ошибка сервера.",
+                                                                        HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         File requestedFile;
@@ -333,7 +296,8 @@ public class FileController {
         }
         catch (DataAccessException ex)
         {
-            return new ResponseEntity<String>("Невозможно получить файл: хранилище недоступно", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("Невозможно получить файл: хранилище недоступно",
+                    HttpStatus.SERVICE_UNAVAILABLE);
         }
 
         if (requestedFile == null)
@@ -341,7 +305,8 @@ public class FileController {
             return new ResponseEntity<String>("Запрашиваемый файл не существует", HttpStatus.NOT_FOUND);
         }
 
-        if (!requestedFile.getAppointment().getAppointmentRegistration().getPatient().getId().equals(requestingPatient.getId()))
+        if (!requestedFile.getAppointment().getAppointmentRegistration().getPatient().getId()
+                                                                                    .equals(requestingPatient.getId()))
         {
             return new ResponseEntity<String>("У Вас нет доступа к этому файлу", HttpStatus.UNAUTHORIZED);
         }
@@ -358,7 +323,7 @@ public class FileController {
 //        Optional<Patient> patient = patientRepository.findById(patient_id);
         if (fileData.isPresent() && appointment.isPresent()) {
             File _file = fileData.get();
-            _file.setFile_data(file.getBytes());
+            _file.setFileData(file.getBytes());
             _file.setAppointment(appointment.get());
             return new ResponseEntity<>(repository.save(_file), HttpStatus.OK);
         } else {

@@ -28,11 +28,6 @@ public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-	@PrimaryKeyJoinColumn
-	@JsonBackReference
-//	@JsonIgnore
-	private Patient patient;
 
 	@Column(name = "first_name")
 	private String firstName;
@@ -103,6 +98,15 @@ public class User {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public String getFullNameFormatted()
+	{
+		StringBuilder nameBuilder = new StringBuilder();
+		nameBuilder.append(this.lastName).append(' ');
+		nameBuilder.append(this.firstName).append(' ');
+		nameBuilder.append(this.patronymic);
+		return nameBuilder.toString();
 	}
 
 	public String getUsername() {

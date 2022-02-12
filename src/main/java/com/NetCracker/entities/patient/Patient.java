@@ -1,15 +1,11 @@
 package com.NetCracker.entities.patient;
 
 import com.NetCracker.entities.user.User;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Getter
@@ -21,7 +17,6 @@ public class Patient {
 
     @OneToOne
     @MapsId
-//    @JsonIgnore
     @JsonManagedReference
     private User user;
 
