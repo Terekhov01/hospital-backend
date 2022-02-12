@@ -3,20 +3,24 @@ package com.NetCracker.services;
 import com.NetCracker.entities.doctor.Doctor;
 import com.NetCracker.entities.patient.Patient;
 import com.NetCracker.services.doctor.DoctorUserService;
+import com.NetCracker.services.doctor.DoctorUserServiceImpl;
 import com.NetCracker.services.user.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
 
+@Service
 public class AuthenticationService
 {
     @Autowired
-    static PatientService patientService;
+    PatientService patientService;
 
     @Autowired
-    static DoctorUserService doctorUserService;
+    DoctorUserServiceImpl doctorUserService;
 
-    public static Doctor getAuthenticatedDoctor(Authentication authentication) throws DataAccessException, ClassCastException
+    public Doctor getAuthenticatedDoctor(Authentication authentication) throws DataAccessException,
+                                                                                        ClassCastException
     {
         UserDetailsImpl userDetails = null;
         Doctor authenticatedDoctor = null;
@@ -27,7 +31,8 @@ public class AuthenticationService
         return authenticatedDoctor;
     }
 
-    public static Patient getAuthenticatedPatient(Authentication authentication) throws DataAccessException, ClassCastException
+    public Patient getAuthenticatedPatient(Authentication authentication) throws DataAccessException,
+                                                                                        ClassCastException
     {
         UserDetailsImpl userDetails = null;
         Patient patient = null;

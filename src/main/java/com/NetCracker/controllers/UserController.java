@@ -52,7 +52,7 @@ public class UserController {
     // create user rest api
     @PostMapping("/employees")
     public User createUser(@RequestBody User user) {
-        return  userService.saveUser(user);
+        return userService.saveUser(user);
     }
 
     // get user by id rest api
@@ -99,9 +99,7 @@ public class UserController {
     @DeleteMapping("/employees/{id}")
     public ResponseEntity<Map<String, Boolean>> deleteUser(@PathVariable Long id){
         User user =  userService.findById(id);
-
-
-         userService.deleteById(id);
+        userService.deleteById(id);
         Map<String, Boolean> response = new HashMap<>();
         response.put("deleted", Boolean.TRUE);
         return ResponseEntity.ok(response);

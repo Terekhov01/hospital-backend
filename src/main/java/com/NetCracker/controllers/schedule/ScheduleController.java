@@ -42,14 +42,15 @@ public class ScheduleController
         {
             try
             {
-                doctorIds = scheduleService.getAllDoctorSchedules().stream().map(doctorSchedule -> doctorSchedule.getRelatedDoctor().getId()).collect(Collectors.toList());
+                doctorIds = scheduleService.getAllDoctorSchedules().stream().map(doctorSchedule ->
+                        doctorSchedule.getRelatedDoctor().getId()).collect(Collectors.toList());
             }
             catch (DataAccessException e)
             {
                 //TODO - log errors
                 return new ResponseEntity<String>(
                         "Сервер не смог загрузить информацию обо всех докторах из базы данных",
-                        HttpStatus.INTERNAL_SERVER_ERROR);
+                        HttpStatus.SERVICE_UNAVAILABLE);
             }
         }
         else
@@ -57,7 +58,8 @@ public class ScheduleController
             doctorIds = StringUtils.stringToLongList(doctorIdsStr);
             if (doctorIds == null)
             {
-                return new ResponseEntity<String>("Некорректный запрос - идентификаторы докторов получены в неверном формате", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - идентификаторы докторов получены " +
+                        "в неверном формате", HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -71,7 +73,8 @@ public class ScheduleController
             dateBeginRepresent = StringUtils.stringToLocalDateTime(dateBeginRepresentStr);
             if (dateBeginRepresent == null)
             {
-                return new ResponseEntity<String>("Некорректный запрос - не получилось распознать начальную дату", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - не получилось распознать начальную дату",
+                        HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -85,12 +88,14 @@ public class ScheduleController
             dateEndRepresent = StringUtils.stringToLocalDateTime(dateEndRepresentStr);
             if (dateEndRepresent == null)
             {
-                return new ResponseEntity<String>("Некорректный запрос - не получилось распознать конечную дату", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - не получилось распознать конечную дату",
+                        HttpStatus.BAD_REQUEST);
             }
 
             if (dateEndRepresent.isBefore(dateBeginRepresent))
             {
-                return new ResponseEntity<String>("Некорректный запрос - начальная дата оказалась позже конечной", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - начальная дата оказалась позже конечной",
+                        HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -103,11 +108,17 @@ public class ScheduleController
         String jsonTable = "";
         try
         {
-            jsonTable = scheduleViewService.getScheduleTableJson(doctorIds, dateBeginRepresent, dateEndRepresent.plusDays(1));
+            jsonTable = scheduleViewService.getScheduleTableJson(doctorIds, dateBeginRepresent, dateEndRepresent
+                    .plusDays(1));
         }
-        catch (DataAccessException | IllegalStateException e)
+        catch (DataAccessException e)
         {
-            return new ResponseEntity<String>("Сервер не смог получить информацию из базы данных или обработать её", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("Сервер не смог получить расписание из базы данных",
+                    HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        catch (IllegalStateException e)
+        {
+            return new ResponseEntity<String>("Сервер не смог создать таблицу", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         //TODO - delete in prod
@@ -132,14 +143,15 @@ public class ScheduleController
         {
             try
             {
-                doctorIds = scheduleService.getAllDoctorSchedules().stream().map(doctorSchedule -> doctorSchedule.getRelatedDoctor().getId()).toList();
+                doctorIds = scheduleService.getAllDoctorSchedules().stream().map(doctorSchedule ->
+                        doctorSchedule.getRelatedDoctor().getId()).toList();
             }
             catch (DataAccessException e)
             {
                 //TODO - log errors
                 return new ResponseEntity<String>(
                         "Сервер не смог загрузить информацию обо всех докторах из базы данных",
-                        HttpStatus.INTERNAL_SERVER_ERROR);
+                        HttpStatus.SERVICE_UNAVAILABLE);
             }
         }
         else
@@ -147,7 +159,8 @@ public class ScheduleController
             doctorIds = StringUtils.stringToLongList(doctorIdsStr);
             if (doctorIds == null)
             {
-                return new ResponseEntity<String>("Некорректный запрос - идентификаторы докторов получены в неверном формате", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - идентификаторы докторов получены в " +
+                        "неверном формате", HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -161,7 +174,8 @@ public class ScheduleController
             startDate = StringUtils.stringToLocalDateTime(startDateStr);
             if (startDate == null)
             {
-                return new ResponseEntity<String>("Некорректный запрос - не получилось распознать начальную дату", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - не получилось распознать начальную дату",
+                        HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -175,12 +189,14 @@ public class ScheduleController
             endDate = StringUtils.stringToLocalDateTime(endDateStr);
             if (endDate == null)
             {
-                return new ResponseEntity<String>("Некорректный запрос - не получилось распознать конечную дату", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - не получилось распознать конечную дату",
+                        HttpStatus.BAD_REQUEST);
             }
 
             if (endDate.isBefore(startDate))
             {
-                return new ResponseEntity<String>("Некорректный запрос - начальная дата оказалась позже конечной", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Некорректный запрос - начальная дата оказалась позже конечной",
+                        HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -202,16 +218,20 @@ public class ScheduleController
         {
             jsonCalendar = scheduleViewService.getScheduleAssignmentCalendarJson(doctorIds, startDate, endDate, getFreeTimeOnly);
         }
-        catch (DataAccessException | IllegalStateException e)
+        catch (DataAccessException e)
         {
-            //TODO - log errors
+            return new ResponseEntity<String>("Срвер не смог получить информацию о возможных датах для посещения " +
+                    "из базы данных", HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        catch (IllegalStateException e)
+        {
             return new ResponseEntity<String>(
-                    "Срвер не смог получить информацию о возможных датах для посещения из базы данных или обработать её",
+                    "Сервер не смог обработать информацию о возможных датах для посещения",
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
         catch (Throwable e)
         {
-            return new ResponseEntity<String>("Unknown error - retry later", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("Неизвестная ошибка", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<String>(jsonCalendar, HttpStatus.OK);
@@ -235,7 +255,7 @@ public class ScheduleController
         {
             return new ResponseEntity<String>(
                     "Сервер не смог получить сокращенную информацию о докторах из базы данных",
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+                    HttpStatus.SERVICE_UNAVAILABLE);
         }
         catch (Exception e)
         {

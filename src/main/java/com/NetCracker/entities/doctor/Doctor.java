@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.util.*;
@@ -35,7 +37,7 @@ public class Doctor
     private String education;
 
     @ToString.Exclude
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "room_id")
     private Room room;
 
@@ -45,13 +47,12 @@ public class Doctor
             joinColumns = @JoinColumn(name = "doctor_id"),
             inverseJoinColumns = @JoinColumn(name = "specialist_id"),
             foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-//    @ManyToMany(mappedBy = "doctors")
     @JsonIgnore
     @ToString.Exclude
     private Set<Specialist> specialist = new HashSet<>();
 
     @ToString.Exclude
-    @OneToOne(mappedBy = "relatedDoctor")
+    @OneToOne(mappedBy = "relatedDoctor", cascade = CascadeType.REMOVE)
     @JsonBackReference
     DoctorSchedule schedule;
 

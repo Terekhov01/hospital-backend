@@ -54,13 +54,17 @@ public class SickListFactory
         captionRun.addBreak(BreakType.PAGE);
     }
 
-    private static void addDocumentBody(XWPFDocument document, String patientFullName, String doctorFullName, String statement, LocalDate recoveryDate)
+    private static void addDocumentBody(XWPFDocument document, String patientFullName, String passportStr, String policyIdStr, String doctorFullName, String statement, LocalDate recoveryDate)
     {
         var documentBodyParagraph = document.createParagraph();
         var documentBodyRun = documentBodyParagraph.createRun();
         documentBodyRun.setFontSize(12);
         documentBodyRun.setFontFamily("Times New Roman");
         documentBodyRun.setText("Имя пациента: " + patientFullName);
+        documentBodyRun.addBreak();
+        documentBodyRun.setText("Номер паспорта: " + passportStr);
+        documentBodyRun.addBreak();
+        documentBodyRun.setText("Номер полиса: " + policyIdStr);
         documentBodyRun.addBreak();
         documentBodyRun.setText("Ответственный врач: " + doctorFullName);
         documentBodyRun.addBreak();
@@ -94,8 +98,8 @@ public class SickListFactory
 
         addFrontTitle(retVal);
         addCaption(retVal, LocalDate.now());
-//        addDocumentBody(retVal, patient.getUser().getFullNameFormatted(), doctor.getUser().getFullNameFormatted(),
-//                        appointment.getDocStatement(), recoveryDate);
+        addDocumentBody(retVal, patient.getUser().getFullNameFormatted(), patient.getPassport(), patient.getPolys(),
+                doctor.getUser().getFullNameFormatted(), appointment.getDocStatement(), recoveryDate);
         addSignature(retVal);
 
         return retVal;

@@ -1,18 +1,35 @@
 package com.NetCracker.controllers;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import com.NetCracker.entities.appointment.Appointment;
 import com.NetCracker.entities.appointment.AppointmentRegistration;
+import com.NetCracker.entities.doctor.Doctor;
 import com.NetCracker.exceptions.AppointmentNotFoundException;
+import com.NetCracker.payload.Request.AppointmentCreationDTO;
 import com.NetCracker.repositories.appointment.AppointmentRegistrationRepo;
 import com.NetCracker.repositories.appointment.AppointmentRepo;
+import com.NetCracker.services.AppointmentRegistrationService;
+import com.NetCracker.services.AppointmentService;
+import com.NetCracker.services.AuthenticationService;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -24,6 +41,18 @@ class AppointmentController {
 
     @Autowired
     AppointmentRegistrationRepo appointmentRegistrations;
+
+    @Autowired
+    AppointmentRegistrationService appointmentRegistrationService;
+
+    @Autowired
+    AppointmentService appointmentService;
+
+    @Autowired
+    AuthenticationService authenticationService;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     @GetMapping("/appointments")
     public ResponseEntity<List<Appointment>> getAllAppointments(@RequestParam(required = false) Long id) {
@@ -63,39 +92,115 @@ class AppointmentController {
                 new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @PreAuthorize("hasRole('ROLE_DOCTOR')")
     @PostMapping("/appointments")
-    public ResponseEntity<Appointment> createAppointment(@RequestBody Appointment appointment) {
-
-        Optional<AppointmentRegistration> appointmentRegistration =
-                appointmentRegistrations.findByDoctorAndPatient(
-                        appointment.getAppointmentRegistration().getDoctor().getUser().getLastName(),
-                        appointment.getAppointmentRegistration().getPatient().getUser().getLastName());
-//                        appointment.getDoctor().getLastName(),
-//                        appointment.getPatient().getLastName());
-//        System.out.println("Here1");
-        if (appointmentRegistration.isPresent()) {
-//            System.out.println("Here2");
-            try {
-//                System.out.println("Here3");
-//                System.out.println("File is" + (appointment.getFile() == null));
-                Appointment _appointment = repository
-                        .save(new Appointment(appointment.getId(), appointmentRegistration.get(),
-//                                appointmentRegistration.get().getPatient(), appointmentRegistration.get().getDoctor(),
-                                appointment.getDescription(),
-//                                appointment.getFile(),
-//                                appointment.getService(),
-                                appointment.getRecipe(), appointment.getTreatPlan(),
-                                appointment.getRehabPlan(), appointment.getDocStatement(), appointment.getFiles()/*, appointment.getFile()*/));
-//                System.out.println("Here4");
-                return new ResponseEntity<>(_appointment, HttpStatus.CREATED);
-            } catch (Exception e) {
-//                System.out.println("Here5");
-//                System.out.println("Exception: " + e.getMessage());
-                return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        } else {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<String> createAppointment(@RequestParam MultipartFile appointmentDTOBlob,
+                                                    @RequestParam List<MultipartFile> filesToUpload,
+                                                    Authentication authentication) {
+        String appointmentDTOJson;
+        try
+        {
+            appointmentDTOJson = new String(appointmentDTOBlob.getBytes(), StandardCharsets.UTF_8);
         }
+        catch (IOException e)
+        {
+            return new ResponseEntity<String>("Ошибка разбора информации из запроса. Неправильная кодировка " +
+                    "данных о встрече", HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
+        AppointmentCreationDTO appointmentDTO;
+        try
+        {
+            appointmentDTO = objectMapper.readValue(appointmentDTOJson, AppointmentCreationDTO.class);
+        }
+        catch (JsonProcessingException e)
+        {
+            return new ResponseEntity<String>("Ошибка разбора информации из запроса. " +
+                    "JsonProcessingException", HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
+        if (appointmentDTO.isSickListNeeded() &&
+                (appointmentDTO.getRecoveryDate() == null || appointmentDTO.getRecoveryDate().isBefore(LocalDate.now())))
+        {
+            return new ResponseEntity<String>("Неправильная дата выхода на работу", HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
+        AppointmentRegistration appointmentRegistration;
+
+        try
+        {
+            Optional<AppointmentRegistration> appointmentRegistrationOpt;
+            try
+            {
+                appointmentRegistrationOpt = appointmentRegistrationService.findById(
+                        appointmentDTO.getAppointmentRegistrationId());
+            }
+            catch (DataAccessException e)
+            {
+                return new ResponseEntity<String>("Ошибка получения существующей записи из базы данных. " +
+                        "Возможно, база данных утеряла целостность. Попробуйте зарегистрировать пациента заново",
+                                                                                    HttpStatus.SERVICE_UNAVAILABLE);
+            }
+
+            if (appointmentRegistrationOpt.isEmpty())
+            {
+                return new ResponseEntity<String>("Не удалось получить регистрационную информацию",
+                        HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            appointmentRegistration = appointmentRegistrationOpt.get();
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Нет подключения к базе данных", HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
+        Doctor requestingDoctor;
+        try
+        {
+            requestingDoctor = authenticationService.getAuthenticatedDoctor(authentication);
+
+            if (!requestingDoctor.getId().equals(appointmentRegistration.getDoctor().getId()))
+            {
+                return new ResponseEntity<String>("У Вас нет прав проводить эту встречу", HttpStatus.UNAUTHORIZED);
+            }
+        }
+        catch (ClassCastException ex)
+        {
+            return new ResponseEntity<String>("Срвер не смог получить информацию о Вас",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        catch (DataAccessException ex)
+        {
+            return new ResponseEntity<String>("Срвер не смог получить информацию о пользователе из базы данных",
+                    HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
+        // Check if an appointment related to requested appointmentRegistration was already conducted
+        var conductedAppointment = appointmentService.findByAppointmentRegistration(appointmentRegistration);
+        if (conductedAppointment.isPresent())
+        {
+            var appointmentDate = conductedAppointment.get().getAppointmentRegistration().getEnd();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy 'в' HH:mm:ss");
+            return new ResponseEntity<String>("Этот прием уже завершился " + formatter.format(appointmentDate),
+                                                                                        HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
+        try
+        {
+            appointmentService.createAppointment(appointmentDTO, filesToUpload, appointmentRegistration);
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Ошибка связи с базой данных. Транзакция не была завершена",
+                    HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        catch (IOException ex)
+        {
+            return new ResponseEntity<String>("Ошибка формирования больничного листа",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<String>("", HttpStatus.OK);
     }
 
     @PutMapping("/appointments/{id}")

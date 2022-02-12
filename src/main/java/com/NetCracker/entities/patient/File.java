@@ -40,7 +40,7 @@ public class File {
 //    @Type(type = "org.hibernate.type.BlobType")
 //    @Type(type="org.hibernate.type.PrimitiveByteArrayBlobType")
     @Type(type = "org.hibernate.type.BinaryType")
-    private byte[] file_data;
+    private byte[] fileData;
 
     private LocalDateTime creationDate;
 
@@ -49,22 +49,13 @@ public class File {
     public File() {
     }
 
-    public File(Appointment appointment, byte[] fileData)
-    {
-        this.name = "Untitled";
-        this.creationDate = LocalDateTime.now();
-        this.appointment = appointment;
-        this.file_data = new byte[fileData.length];
-        System.arraycopy(fileData, 0, this.file_data, 0, fileData.length);
-    }
-
-    public File(String name, Appointment appointment, byte[] file_data)
+    public File(String name, Appointment appointment, byte[] fileData)
     {
         this.name = name;
         this.creationDate = LocalDateTime.now();
         this.appointment = appointment;
-        this.file_data = new byte[file_data.length];
-        System.arraycopy(file_data, 0, this.file_data, 0, file_data.length);
+        this.fileData = new byte[fileData.length];
+        System.arraycopy(fileData, 0, this.fileData, 0, fileData.length);
     }
 
     public Appointment getAppointment() {
@@ -83,13 +74,13 @@ public class File {
         this.id = id;
     }
 
-    public byte[] getFile_data() {
-        return file_data;
+    public byte[] getFileData() {
+        return fileData;
     }
 
-    public void setFile_data(byte[] file_data) {
-        this.file_data = new byte[file_data.length];
-        System.arraycopy(file_data, 0, this.file_data, 0, file_data.length);
+    public void setFileData(byte[] fileData) {
+        this.fileData = new byte[fileData.length];
+        System.arraycopy(fileData, 0, this.fileData, 0, fileData.length);
     }
 
     @Override
@@ -97,13 +88,13 @@ public class File {
         if (this == o) return true;
         if (!(o instanceof File)) return false;
         File file = (File) o;
-        return getId() == file.getId() && getAppointment().equals(file.getAppointment()) && Arrays.equals(getFile_data(), file.getFile_data());
+        return getId() == file.getId() && getAppointment().equals(file.getAppointment()) && Arrays.equals(getFileData(), file.getFileData());
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hash(getId(), getAppointment());
-        result = 31 * result + Arrays.hashCode(getFile_data());
+        result = 31 * result + Arrays.hashCode(getFileData());
         return result;
     }
 
@@ -112,7 +103,7 @@ public class File {
         return "File{" +
                 "id=" + id +
                 ", appointment=" + appointment +
-                ", file_data=" + Arrays.toString(file_data) +
+                ", file_data=" + Arrays.toString(fileData) +
                 '}';
     }
 }
