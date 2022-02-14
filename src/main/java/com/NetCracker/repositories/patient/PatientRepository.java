@@ -15,7 +15,7 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     @Query("select a from Patient a order by a.id asc")
     public List<Patient> findAllByOrderByIdAsc();
 
-    @Query("select a from Patient a where a.id = :id")
+    @Query("select a from Patient a where a.user.id = :id")
     Optional<Patient> findById(@Param("id") Long id);
 
     @Query("select a from Patient a where a.user.lastName = :pat")

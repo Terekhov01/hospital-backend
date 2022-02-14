@@ -17,7 +17,7 @@ public class Patient {
 
     @OneToOne
     @MapsId
-    @JsonManagedReference
+//    @JsonManagedReference(value = "PatientUser")
     private User user;
 
     @Column

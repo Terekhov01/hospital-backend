@@ -80,6 +80,32 @@ class AppointmentController {
         }
     }
 
+    @GetMapping("/appointments/doctor/{id}")
+    public ResponseEntity<List<Appointment>> getDoctorAppointments(@PathVariable("id") Long id) {
+        try {
+            List<Appointment> appointments = new ArrayList<>(repository.findAllByDoctor(id));
+            if (appointments.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(appointments, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/appointments/patient/{id}")
+    public ResponseEntity<List<Appointment>> getPatientAppointments(@PathVariable("id") Long id) {
+        try {
+            List<Appointment> appointments = new ArrayList<>(repository.findAllByPatient(id));
+            if (appointments.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(appointments, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/appointments/last/{id}")
     public ResponseEntity<Appointment> getLastAppointment(@PathVariable("id") Long id) {
         Optional<Appointment> appointmentData = repository.findLastAppointment(id);
@@ -250,7 +276,8 @@ class AppointmentController {
 //                _appointment.setDoctor(appointmentRegistrationData.get().getDoctor());
 //                _appointment.setPatient(appointmentRegistrationData.get().getPatient());
                 _appointment.setAppointmentRegistration(appointmentRegistrationData.get());
-                _appointment.setFiles(appointment.getFiles());
+                _appointment.getFiles().addAll(appointment.getFiles());
+//                _appointment.setFiles(appointment.getFiles());
 
 
                 return new ResponseEntity<>(repository.save(_appointment), HttpStatus.OK);

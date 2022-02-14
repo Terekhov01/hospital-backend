@@ -65,6 +65,32 @@ public class AppointmentRegistrationController {
                 new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @GetMapping("/appointmentRegistrations/patient/{id}")
+    public ResponseEntity<List<AppointmentRegistration>> getPatientAppointmentRegistration(@PathVariable("id") Long id) {
+        try {
+            List<AppointmentRegistration> appointmentRegistrations = new ArrayList<>(repository.findAllByPatient(id));
+            if (appointmentRegistrations.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(appointmentRegistrations, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/appointmentRegistrations/doctor/{id}")
+    public ResponseEntity<List<AppointmentRegistration>> getDoctorAppointmentRegistration(@PathVariable("id") Long id) {
+        try {
+            List<AppointmentRegistration> appointmentRegistrations = new ArrayList<>(repository.findAllByDoctor(id));
+            if (appointmentRegistrations.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(appointmentRegistrations, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PostMapping("/appointmentRegistrations")
     public ResponseEntity<AppointmentRegistration> createAppointmentRegistration(@RequestBody AppointmentRegistration appointmentRegistration) {
 

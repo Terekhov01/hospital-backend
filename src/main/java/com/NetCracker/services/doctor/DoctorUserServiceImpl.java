@@ -71,7 +71,7 @@ public class DoctorUserServiceImpl implements DoctorUserService {
                 simpleUser.setFirstName(user.getFirstname());
                 simpleUser.setLastName(user.getLastname());
                 userService.saveUser(simpleUser);
-                          }
+            }
 // момент требующий внимания
 //to do
 
