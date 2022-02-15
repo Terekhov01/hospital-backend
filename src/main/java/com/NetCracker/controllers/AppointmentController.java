@@ -130,9 +130,12 @@ class AppointmentController {
                                                     @RequestParam List<MultipartFile> filesToUpload,
                                                     Authentication authentication) {
         String appointmentDTOJson;
+        System.out.println("In post mapping");
         try
         {
             appointmentDTOJson = new String(appointmentDTOBlob.getBytes(), StandardCharsets.UTF_8);
+            System.out.println("appointmentDTOJson:\n");
+            System.out.println(appointmentDTOJson);
         }
         catch (IOException e)
         {

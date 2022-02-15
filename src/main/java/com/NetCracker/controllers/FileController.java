@@ -230,6 +230,7 @@ public class FileController {
 
     @GetMapping("files/id/{id}")
 //    @PreAuthorize("hasAnyRole('ROLE_DOCTOR', 'ROLE_PATIENT')")
+    @PreAuthorize("hasAnyRole('ROLE_DOCTOR', 'ROLE_PATIENT')")
     public ResponseEntity<List<File>> getFilesByPatientId(@PathVariable("id") Long id) {
         System.out.println("In getFilesByPatientId method");
         System.out.println("Id is: " + id.toString());
@@ -240,6 +241,7 @@ public class FileController {
 
     @PostMapping("files/{id}")
 //    @PreAuthorize("hasRole(ROLE_DOCTOR)")
+    @PreAuthorize("hasRole('ROLE_DOCTOR')")
     public ResponseEntity<File> createFile(@RequestParam("files") List<MultipartFile> files, @PathVariable("id") Long id) {
 //        Optional<Patient> patient = patientRepository.findById(id);
         System.out.println("Posting a file, id is " + id.toString());
