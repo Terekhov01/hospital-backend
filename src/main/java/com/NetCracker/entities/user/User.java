@@ -28,6 +28,14 @@ public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+	@PrimaryKeyJoinColumn
+//	@JsonBackReference
+//	@JsonIgnore
+	@JsonManagedReference
+	private Patient patient;
+
+
 
 	@Column(name = "first_name")
 	private String firstName;
