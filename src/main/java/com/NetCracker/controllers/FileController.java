@@ -187,7 +187,11 @@ public class FileController {
                             text = text.replace("recipe", appointment.get().getRecipe());
                             r.setText(text, 0);
                         } else if (text != null && text.contains("polys")) {
-                            text = text.replace("polys", appointment.get().getAppointmentRegistration().getPatient().getPolys());
+                            if (appointment.get().getAppointmentRegistration().getPatient().getPolys() != null) {
+                                text = text.replace("polys", appointment.get().getAppointmentRegistration().getPatient().getPolys());
+                            } else {
+                                text = text.replace("polys", "");
+                            }
                             r.setText(text, 0);
                         }
                     }
