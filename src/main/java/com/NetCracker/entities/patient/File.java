@@ -83,6 +83,16 @@ public class File {
         System.arraycopy(fileData, 0, this.fileData, 0, fileData.length);
     }
 
+    public String getName()
+    {
+        return name;
+    }
+
+    public LocalDateTime getCreationDate()
+    {
+        return creationDate;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

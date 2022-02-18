@@ -124,6 +124,8 @@ class AppointmentController {
                 new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    // Asserting file size is done via spring.
+    // See spring.servlet.multipart.max-file-size in .properties
     @PreAuthorize("hasRole('ROLE_DOCTOR')")
     @PostMapping("/appointments")
     public ResponseEntity<String> createAppointment(@RequestParam MultipartFile appointmentDTOBlob,
