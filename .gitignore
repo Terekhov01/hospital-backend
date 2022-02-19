@@ -9,4 +9,5 @@
 out/*
 target/*
 src/main/webapp/doctorScheduleUI/*
-src/main/resources/cridentials.properties
+src/main/resources/credentials.properties
+src/main/resources/fileTempStorage/*
