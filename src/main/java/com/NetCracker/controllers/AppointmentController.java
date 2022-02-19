@@ -129,7 +129,7 @@ class AppointmentController {
     @PreAuthorize("hasRole('ROLE_DOCTOR')")
     @PostMapping("/appointments")
     public ResponseEntity<String> createAppointment(@RequestParam MultipartFile appointmentDTOBlob,
-                                                    @RequestParam List<MultipartFile> filesToUpload,
+                                                    @RequestParam(required = false) List<MultipartFile> filesToUpload,
                                                     Authentication authentication) {
         String appointmentDTOJson;
         System.out.println("In post mapping");

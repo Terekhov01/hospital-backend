@@ -84,6 +84,7 @@ public class AuthController {
 				userDetails.getEmail(),
 				roles));
 	}
+
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest, ModelAndView modelAndView) {
 		if (userRepository.existsByUserName(signUpRequest.getUsername())) {
@@ -164,6 +165,7 @@ public class AuthController {
 
 		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
 	}
+
 	@RequestMapping(value="/confirm-account", method= {RequestMethod.GET, RequestMethod.POST})
 	public ModelAndView confirmUserAccount(ModelAndView modelAndView, @RequestParam("token")String confirmationToken,  HttpServletResponse response) throws IOException {
 		ConfirmationToken token = confirmationTokenRepository.findByConfirmationToken(confirmationToken);

@@ -7,14 +7,32 @@ import org.apache.poi.xwpf.usermodel.BreakType;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.UnderlinePatterns;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @Service
 public class SickListFactory
 {
+    private static void addFileProperties(XWPFDocument document)
+    {
+        var fileProperties = document.getDocument().getBody().addNewSectPr();
+        var pageSize = fileProperties.addNewPgSz();
+        pageSize.setOrient(STPageOrientation.PORTRAIT);
+        pageSize.setH(842 * 20);
+        pageSize.setW(595 * 20);
+
+        CTPageMar pageMar = fileProperties.addNewPgMar();
+
+        pageMar.setLeft(BigInteger.valueOf(720L));
+        pageMar.setTop(BigInteger.valueOf(1440L));
+        pageMar.setRight(BigInteger.valueOf(720L));
+        pageMar.setBottom(BigInteger.valueOf(1440L));
+    }
+
     private static void addFrontTitle(XWPFDocument document)
     {
         var titleParagraph = document.createParagraph();
@@ -96,6 +114,7 @@ public class SickListFactory
 
         XWPFDocument retVal = new XWPFDocument();
 
+        addFileProperties(retVal);
         addFrontTitle(retVal);
         addCaption(retVal, LocalDate.now());
         addDocumentBody(retVal, patient.getUser().getFullNameFormatted(), patient.getPassport(), patient.getPolys(),

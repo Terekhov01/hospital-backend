@@ -86,7 +86,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
-    public Appointment createAppointment(AppointmentCreationDTO appointmentDTO, List<MultipartFile>filesToUpload, AppointmentRegistration appointmentRegistration) throws DataAccessException, IOException
+    public Appointment createAppointment(AppointmentCreationDTO appointmentDTO, List<MultipartFile> filesToUpload, AppointmentRegistration appointmentRegistration) throws DataAccessException, IOException
     {
         Appointment appointment = new Appointment(null, appointmentRegistration, appointmentDTO.getDescription(),
                 appointmentDTO.getRecipe(), appointmentDTO.getTreatPlan(), appointmentDTO.getRehabPlan(),
@@ -94,11 +94,14 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointmentRepo.save(appointment);
 
-        for (var file : filesToUpload)
+        if (filesToUpload != null)
         {
-            File fileToSave = new File(file.getOriginalFilename(), appointment, file.getBytes());
-            fileService.save(fileToSave);
-            appointment.getFiles().add(fileToSave);
+            for (var file : filesToUpload)
+            {
+                File fileToSave = new File(file.getOriginalFilename(), appointment, file.getBytes());
+                fileService.save(fileToSave);
+                appointment.getFiles().add(fileToSave);
+            }
         }
 
         if (appointmentDTO.isSickListNeeded())
@@ -110,8 +113,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             sickLeaveDocument.write(fileByteStream);
             byte[] sickListBytes = fileByteStream.toByteArray();
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm:ss");
-            File sickList = new File("Больничный лист от " + formatter.format(LocalDateTime.now()) + ".docx", appointment, sickListBytes);
+            File sickList = new File("Больничный лист.docx", appointment, sickListBytes);
 
             fileService.save(sickList);
         }
