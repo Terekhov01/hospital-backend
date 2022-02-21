@@ -1,8 +1,0 @@
-package com.NetCracker.Repositories;
-
-import com.NetCracker.Entities.ConfirmationToken;
-import org.springframework.data.repository.CrudRepository;
-
-public interface ConfirmationTokenRepository extends CrudRepository<ConfirmationToken, String> {
-    ConfirmationToken findByConfirmationToken(String confirmationToken);
-}

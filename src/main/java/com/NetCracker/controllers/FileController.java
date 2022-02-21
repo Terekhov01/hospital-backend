@@ -5,7 +5,8 @@ import com.NetCracker.entities.doctor.Doctor;
 import com.NetCracker.entities.patient.File;
 import com.NetCracker.entities.patient.Patient;
 import com.NetCracker.exceptions.FileNotFoundException;
-import com.NetCracker.payload.Request.FileRequest;
+import com.NetCracker.payload.Response.FileDTO;
+import com.NetCracker.payload.Response.FileResourceDTO;
 import com.NetCracker.repositories.appointment.AppointmentRepo;
 import com.NetCracker.repositories.patient.FileRepository;
 import com.NetCracker.repositories.patient.PatientRepository;
@@ -15,6 +16,10 @@ import com.NetCracker.services.files.FileService;
 import com.NetCracker.services.PatientService;
 import com.NetCracker.services.files.FileViewService;
 import com.NetCracker.services.files.SickListFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.poi.xwpf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -28,14 +33,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -76,6 +78,9 @@ public class FileController {
     @Autowired
     AuthenticationService authenticationService;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @GetMapping("files")
     public ResponseEntity<List<File>> getAllFiles(@RequestParam(required = false) Long id) {
         try {
@@ -96,7 +101,7 @@ public class FileController {
         }
     }
 
-    @GetMapping("/files/download/{appointment_id}")
+    /*@GetMapping("/files/download/{appointment_id}")
 //    @PreAuthorize("hasAnyRole('ROLE_DOCTOR', 'ROLE_PATIENT')")
     public ResponseEntity<Resource> downloadFile(@PathVariable("appointment_id") Long id) throws IOException {
 //        File file = repository.getById(id);
@@ -107,7 +112,8 @@ public class FileController {
         Long fileId = fileData.get(0).getId();
         System.out.println("File Id is: " + fileId.toString());
         File file = repository.getById(fileId);
-        Path path = Paths.get("/Users/mikhail/Downloads/tmp");
+        Path path = Paths.get(PropertiesUtils.getProperty(PropertiesUtils.applicationProperties,
+                                                        "app.hospital.tmp.directory"));
         Files.write(path, file.getFileData());
         Resource resource = new UrlResource(path.toUri());
         if (resource.exists() || resource.isReadable()) {
@@ -115,6 +121,92 @@ public class FileController {
         } else {
             throw new RuntimeException("Could not read the file!");
         }
+    }*/
+
+    @GetMapping("/files/download/{appointment_id}")
+    @PreAuthorize("hasAnyRole('ROLE_DOCTOR', 'ROLE_PATIENT')")
+    public ResponseEntity<?> downloadFiles(@PathVariable("appointment_id") Long id, Authentication authentication) throws IOException {
+        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_DOCTOR")))
+        {
+            Doctor authenticatedDoctor;
+
+            try
+            {
+                authenticatedDoctor = authenticationService.getAuthenticatedDoctor(authentication);
+            }
+            catch (ClassCastException e)
+            {
+                return new ResponseEntity<String>("Аутентификация не пройдена", HttpStatus.UNAUTHORIZED);
+            }
+            catch (DataAccessException e)
+            {
+                return new ResponseEntity<String>("Аутентификация не пройдена. База данных недоступна",
+                                                                                HttpStatus.SERVICE_UNAVAILABLE);
+            }
+
+            if (authenticatedDoctor == null)
+            {
+                return new ResponseEntity<String>("Не найден доктор с Вашей регистрационной информацией. " +
+                        "Ошибка сервера", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+        else
+        {
+            Patient authenticatedPatient;
+
+            try
+            {
+                authenticatedPatient = authenticationService.getAuthenticatedPatient(authentication);
+            }
+            catch (ClassCastException e)
+            {
+                return new ResponseEntity<String>("Аутентификация не пройдена", HttpStatus.UNAUTHORIZED);
+            }
+            catch (DataAccessException e)
+            {
+                return new ResponseEntity<String>("Аутентификация не пройдена. База данных недоступна",
+                        HttpStatus.SERVICE_UNAVAILABLE);
+            }
+
+            if (authenticatedPatient == null)
+            {
+                return new ResponseEntity<String>("Не найден доктор с Вашей регистрационной информацией. " +
+                        "Ошибка сервера", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        List<FileDTO> fileResources;
+
+        try
+        {
+            fileResources = fileService.provideFileDTOByAppointmentId(id);
+        }
+        catch (IOException e)
+        {
+            return new ResponseEntity<String>("Не удалось создать временные копии запрашиваемых файлов", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Не удалось получить файлы из базы данных", HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return new ResponseEntity<String>("Неизвестная ошибка", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        String fileDTOJSON;
+
+        try
+        {
+            fileDTOJSON = objectMapper.writeValueAsString(fileResources);
+        }
+        catch (JsonProcessingException e)
+        {
+            return new ResponseEntity<String>("Не удалось преобразовать информацию в JSON", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<String>(fileDTOJSON, HttpStatus.OK);
     }
 
     @GetMapping("/files/getRecipe/{id}")

@@ -68,23 +68,23 @@ public class AuthController {
 	@PostMapping("/signin")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
-			Authentication authentication = authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+		Authentication authentication = authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-			String jwt = jwtUtils.generateJwtToken(authentication);
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		String jwt = jwtUtils.generateJwtToken(authentication);
 
-			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-			List<String> roles = userDetails.getAuthorities().stream()
-					.map(item -> item.getAuthority())
-					.collect(Collectors.toList());
+		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+		List<String> roles = userDetails.getAuthorities().stream()
+				.map(item -> item.getAuthority())
+				.collect(Collectors.toList());
 
-			return ResponseEntity.ok(new JwtResponse(jwt,
-					userDetails.getId(),
-					userDetails.getUsername(),
-					userDetails.getEmail(),
-					roles));
-		}
+		return ResponseEntity.ok(new JwtResponse(jwt,
+				userDetails.getId(),
+				userDetails.getUsername(),
+				userDetails.getEmail(),
+				roles));
+	}
 
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest, ModelAndView modelAndView) {
@@ -166,6 +166,7 @@ public class AuthController {
 
 		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
 	}
+
 	@RequestMapping(value="/confirm-account", method= {RequestMethod.GET, RequestMethod.POST})
 	public ModelAndView confirmUserAccount(ModelAndView modelAndView, @RequestParam("token")String confirmationToken,  HttpServletResponse response) throws IOException {
 		ConfirmationToken token = confirmationTokenRepository.findByConfirmationToken(confirmationToken);
@@ -184,54 +185,5 @@ public class AuthController {
 		}
 
 		return modelAndView;
-	}
-	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	@PostMapping("/signup/doctor")
-	public ResponseEntity<?> registerDoctor(@Valid @RequestBody SignupRequest signUpRequest, ModelAndView modelAndView) {
-		if (userRepository.existsByUserName(signUpRequest.getUsername())) {
-			return ResponseEntity
-					.badRequest()
-					.body(new MessageResponse("Error: Username is already taken!"));
-		}
-
-		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-			return ResponseEntity
-					.badRequest()
-					.body(new MessageResponse("Error: Email is already in use!"));
-		}
-
-		// Create new user's account
-		User user = new User(signUpRequest.getFirstName(),
-				signUpRequest.getLastName(),
-				signUpRequest.getPatronymic(),
-				signUpRequest.getPhone(),
-				signUpRequest.getUsername(),
-				signUpRequest.getEmail(),
-				encoder.encode(signUpRequest.getPassword()));
-
-		Set<String> strRoles = signUpRequest.getRole();
-		Set<Role> roles = new HashSet<>();
-		Role modRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
-				.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-		roles.add(modRole);
-		user.setRoles(roles);
-		userRepository.save(user);
-
-		ConfirmationToken confirmationToken = new ConfirmationToken(user);
-
-		confirmationTokenRepository.save(confirmationToken);
-
-		SimpleMailMessage mailMessage = new SimpleMailMessage();
-		mailMessage.setTo(user.getEmail());
-		mailMessage.setSubject("Подтвердите вашу регистрацию!");
-		mailMessage.setFrom("netclinictech@mail.ru");
-		mailMessage.setText("Чтобы подтвердить регистрацию перейдите по ссылке: "
-				+"http://localhost:8080/api/auth/confirm-account?token="+confirmationToken.getConfirmationToken());
-
-		emailSenderService.sendEmail(mailMessage);
-
-
-
-		return ResponseEntity.ok(new MessageResponse("Doctor registered successfully!"));
 	}
 }
