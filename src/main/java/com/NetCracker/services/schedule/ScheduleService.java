@@ -15,6 +15,7 @@ import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.print.Doc;
 import java.time.*;
 import java.util.*;
 
@@ -54,6 +55,20 @@ public class ScheduleService
     public List<DoctorSchedule> getAllDoctorSchedules() throws DataAccessException
     {
         return doctorScheduleRepository.findAll();
+    }
+
+    public Long getDoctorScheduleIdByDoctorId(Long docId) {
+        Optional<DoctorSchedule> ds = doctorScheduleRepository.findByDoctorId(docId);
+        return ds.map(DoctorSchedule::getId).orElse(null);
+    }
+
+    public Optional<ScheduleInterval> getScheduleInterval(Long docId, LocalDateTime time) {
+        return scheduleIntervalRepository.findScheduleIntervalByDoctorScheduleIdAndIntervalStartTime(docId, time);
+    }
+
+    @Transactional
+    public void save(ScheduleInterval scheduleInterval) {
+        scheduleIntervalRepository.save(scheduleInterval);
     }
 
     @Transactional

@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 
@@ -19,6 +20,9 @@ public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, 
 
     @Query(value = "SELECT * FROM doctor_schedule WHERE doctor_id = :doctorId", nativeQuery = true)
     DoctorSchedule findByRelatedDoctor(@Param("doctorId") Long doctorId) throws DataAccessException;
+
+    @Query("select ds from DoctorSchedule ds where ds.relatedDoctor.user.id = :docId")
+    Optional<DoctorSchedule> findByDoctorId(@Param("docId") Long id);
 
     /*@Query(value = "FROM doctor_schedule JOIN doctor.name IN :")
     DoctorSchedule findByRelatedDoctorName(Collection<String> doctorNames);

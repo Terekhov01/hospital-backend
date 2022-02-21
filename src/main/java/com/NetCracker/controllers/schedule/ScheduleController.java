@@ -1,8 +1,13 @@
 package com.NetCracker.controllers.schedule;
 
+import com.NetCracker.entities.schedule.DoctorSchedule;
+import com.NetCracker.entities.schedule.scheduleElements.ScheduleInterval;
 import com.NetCracker.services.schedule.ScheduleService;
 import com.NetCracker.services.schedule.ScheduleViewService;
 import com.NetCracker.utils.StringUtils;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -13,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
@@ -139,6 +146,8 @@ public class ScheduleController
         LocalDateTime startDate = null;
         LocalDateTime endDate = null;
 
+        System.out.println("Start time: " + startDateStr);
+
         if (doctorIdsStr == null)
         {
             try
@@ -264,4 +273,37 @@ public class ScheduleController
 
         return new ResponseEntity<String>(doctorsShortInformation, HttpStatus.OK);
     }
+
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    private static class StateDTO {
+        private String docId;
+        private String startDateTime;
+    }
+
+    @PreAuthorize("hasRole('ROLE_PATIENT')")
+//    @PreAuthorize("permitAll()")
+    @PutMapping("/markAsAssigned")
+    public ResponseEntity<String> markAsAssigned(@RequestBody StateDTO stateDTO) {
+        String docId = stateDTO.docId;
+        String startDateTime = stateDTO.startDateTime;
+        Long dsIdToLong = Long.valueOf(docId);
+        Long dsId = scheduleService.getDoctorScheduleIdByDoctorId(dsIdToLong);
+        if (dsId == null) {
+            throw new IllegalArgumentException("No doctor schedule found!");
+        }
+        LocalDateTime startDate = null;
+        startDate = StringUtils.stringToLocalDateTime(startDateTime);
+        Optional<ScheduleInterval> osi = scheduleService.getScheduleInterval(dsId, startDate);
+        if (osi.isEmpty()) {
+            throw new IllegalArgumentException("No schedule interval found!");
+        }
+        ScheduleInterval si = osi.get();
+        si.setAssigned(true);
+        scheduleService.save(si);
+        System.out.println("Saved!");
+        return new ResponseEntity<String>("Time marked as assigned",  HttpStatus.OK);
+    }
+
 }
