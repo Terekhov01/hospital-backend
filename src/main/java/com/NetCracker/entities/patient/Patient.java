@@ -1,6 +1,8 @@
 package com.NetCracker.entities.patient;
 
 import com.NetCracker.entities.user.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,8 +19,10 @@ public class Patient {
 
     @OneToOne
     @MapsId
-//    @JsonManagedReference(value = "PatientUser")
+//    @JsonIgnore
+    @JsonManagedReference
     private User user;
+
 
     @Column
     private String passport;
