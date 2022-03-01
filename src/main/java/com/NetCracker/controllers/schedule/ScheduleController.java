@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -285,11 +286,10 @@ public class ScheduleController
 
     @PreAuthorize("hasRole('ROLE_PATIENT')")
     @PutMapping("/updateIntervalIsAssigned")
-    @Transactional(isolation = Isolation.SERIALIZABLE)
-    public ResponseEntity<String> markAsAssigned(@RequestBody StateDTO stateDTO) {
+    @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRED)
+    public ResponseEntity<String> updateIntervalIsAssigned(@RequestBody StateDTO stateDTO) {
         String docId = stateDTO.docId;
         String startDateTime = stateDTO.startDateTime;
-        System.out.println("StartDateTime: " + startDateTime);
         Long dsIdToLong = Long.valueOf(docId);
         Long dsId = scheduleService.getDoctorScheduleIdByDoctorId(dsIdToLong);
         if (dsId == null) {
@@ -297,7 +297,6 @@ public class ScheduleController
         }
         LocalDateTime startDate = null;
         startDate = StringUtils.stringToLocalDateTime(startDateTime);
-        System.out.println("Parsed date: " + startDate.toString());
         Optional<ScheduleInterval> osi = scheduleService.getScheduleInterval(dsId, startDate);
         if (osi.isEmpty()) {
             throw new IllegalArgumentException("No schedule interval found!");

@@ -29,6 +29,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -210,6 +213,7 @@ public class FileController {
     }
 
     @GetMapping("/files/getRecipe/{id}")
+    @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRED)
     public ResponseEntity<Resource> getRecipe(@PathVariable("id") Long id) throws Exception {
         System.out.println("Printing recipe");
 
@@ -217,9 +221,9 @@ public class FileController {
 
         if (appointment.isPresent()) {
 
-            java.io.File file = new java.io.File("/Users/mikhail/Downloads/rec.docx");
+            java.io.File file = new java.io.File("src/main/resources/templates/application/rec.docx");
             FileInputStream fis = new FileInputStream(file.getAbsolutePath());
-            OutputStream out = new FileOutputStream("/Users/mikhail/Downloads/recipe_new.docx");
+            OutputStream out = new FileOutputStream("src/main/resources/fileTempStorage/recipe_new.docx");
             XWPFDocument srcDoc = new XWPFDocument(fis);
             XWPFDocument destDoc = new XWPFDocument();
 
@@ -237,7 +241,7 @@ public class FileController {
             out.flush();
             out.close();
 
-            java.io.File dest = new java.io.File("/Users/mikhail/Downloads/recipe_new.docx");
+            java.io.File dest = new java.io.File("src/main/resources/fileTempStorage/recipe_new.docx");
             FileInputStream destFis = new FileInputStream(dest.getAbsolutePath());
             XWPFDocument doc = new XWPFDocument(destFis);
 
@@ -290,15 +294,15 @@ public class FileController {
                 }
             }
 
-            doc.write(new FileOutputStream("/Users/mikhail/Downloads/recipe_new.docx"));
+            doc.write(new FileOutputStream("src/main/resources/fileTempStorage/recipe_new.docx"));
             destFis.close();
 
             try {
-                InputStream templateInputStream = new FileInputStream("/Users/mikhail/Downloads/recipe_new.docx");
+                InputStream templateInputStream = new FileInputStream("src/main/resources/fileTempStorage/recipe_new.docx");
                 WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(templateInputStream);
                 MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 
-                String outputfilepath = "/Users/mikhail/Downloads/recipe_new.pdf";
+                String outputfilepath = "src/main/resources/fileTempStorage/recipe_new.pdf";
                 FileOutputStream os = new FileOutputStream(outputfilepath);
 
                 Docx4J.toPDF(wordMLPackage,os);
@@ -314,7 +318,7 @@ public class FileController {
             throw new RuntimeException("Internal Error!");
         }
 
-        Path path = Paths.get("/Users/mikhail/Downloads/recipe_new.pdf");
+        Path path = Paths.get("src/main/resources/fileTempStorage/recipe_new.pdf");
 
         Resource resource = new UrlResource(path.toUri());
         if (resource.exists() || resource.isReadable()) {
