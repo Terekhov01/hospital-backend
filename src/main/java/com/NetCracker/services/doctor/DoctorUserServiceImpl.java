@@ -101,6 +101,12 @@ public class DoctorUserServiceImpl implements DoctorUserService {
         return null;
     }
 
+    @Transactional
+    public void save(Doctor doctor)
+    {
+        this.doctorRepository.save(doctor);
+    }
+
     @Override
     public void delete(Long id) {
         Doctor doctorUser = findById(id);
