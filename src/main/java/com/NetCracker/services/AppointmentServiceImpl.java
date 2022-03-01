@@ -110,7 +110,9 @@ public class AppointmentServiceImpl implements AppointmentService {
                     appointmentDTO.getRecoveryDate());
 
             ByteArrayOutputStream fileByteStream = new ByteArrayOutputStream();
+
             sickLeaveDocument.write(fileByteStream);
+
             byte[] sickListBytes = fileByteStream.toByteArray();
 
             File sickList = new File("Больничный лист.docx", appointment, sickListBytes);

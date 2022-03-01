@@ -17,10 +17,13 @@ import com.NetCracker.payload.Response.JwtResponse;
 import com.NetCracker.payload.Response.MessageResponse;
 import com.NetCracker.repositories.patient.PatientRepository;
 import com.NetCracker.security.jwt.JwtUtils;
+import com.NetCracker.services.AuthenticationService;
 import com.NetCracker.services.EmailSenderService;
 import com.NetCracker.services.user.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,6 +32,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import com.NetCracker.entities.user.ERole;
@@ -49,21 +53,18 @@ public class AuthController {
 
 	@Autowired
 	UserRepository userRepository;
-	@Autowired
-	PatientRepository patientRepository;
-	@Autowired
-	RoleRepository roleRepository;
-
-	@Autowired
-	PasswordEncoder encoder;
-
-	@Autowired
-	private ConfirmationTokenRepository confirmationTokenRepository;
 
 	@Autowired
 	private EmailSenderService emailSenderService;
+
 	@Autowired
 	JwtUtils jwtUtils;
+
+	@Autowired
+	AuthenticationService authenticationService;
+
+	@Autowired
+	ConfirmationTokenRepository confirmationTokenRepository;
 
 	@PostMapping("/signin")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -100,69 +101,44 @@ public class AuthController {
 					.body(new MessageResponse("Error: Email is already in use!"));
 		}
 
-		// Create new user's account
-		User user = new User(signUpRequest.getFirstName(),
-				signUpRequest.getLastName(),
-				signUpRequest.getPatronymic(),
-				signUpRequest.getPhone(),
-				signUpRequest.getUsername(),
-				signUpRequest.getEmail(),
-				encoder.encode(signUpRequest.getPassword()));
+		AuthenticationService.UserRegistrationData registrationData = null;
 
-		Patient patient = new Patient(signUpRequest.getPassport(),
-				signUpRequest.getPolys());
-
-		Set<String> strRoles = signUpRequest.getRole();
-		Set<Role> roles = new HashSet<>();
-
-		if (strRoles == null) {
-			Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-			roles.add(userRole);
-		} else {
-			strRoles.forEach(role -> {
-				switch (role) {
-					case "admin":
-						Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-						roles.add(adminRole);
-
-						break;
-					case "mod":
-						Role modRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
-								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-						roles.add(modRole);
-
-						break;
-					default:
-						Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-						roles.add(userRole);
-				}
-			});
+		try
+		{
+			registrationData = authenticationService.registerUser(signUpRequest);
+		}
+		catch (DataAccessException e)
+		{
+			return new ResponseEntity<String>("Ошибка свяязи с базой данных. Попробуте позже",
+											HttpStatus.SERVICE_UNAVAILABLE);
+		}
+		catch (Exception e)
+		{
+			return new ResponseEntity<String>("Неизвестная ошибка", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		user.setRoles(roles);
-		userRepository.save(user);
+		try
+		{
+			//TODO - extract this code to a separate mail service
+			SimpleMailMessage mailMessage = new SimpleMailMessage();
+			mailMessage.setTo(registrationData.getUser().getEmail());
+			mailMessage.setSubject("Подтверждение регистрации!");
+			mailMessage.setFrom("netclinictech@mail.ru");
+			mailMessage.setText("Чтобы подтвердить аккаунт перейдите по ссылке "
+					+ "http://localhost:8080/api/auth/confirm-account?token="
+					+ registrationData.getConfirmationToken().getConfirmationToken());
 
-		patient.setUser(user);
-		patientRepository.save(patient);
-		ConfirmationToken confirmationToken = new ConfirmationToken(user);
+			emailSenderService.sendEmail(mailMessage);
+		}
+		catch (Exception e)
+		{
+			//TODO - handle error correctly. Is it possible to create a new user without e-mail confirmation?
+			return new ResponseEntity<String>("Пользователь зарегистрирован, но письмо на почту не было отправлено", HttpStatus.OK);
+		}
 
-		confirmationTokenRepository.save(confirmationToken);
+		modelAndView.addObject("email", registrationData.getUser().getEmail());
 
-		SimpleMailMessage mailMessage = new SimpleMailMessage();
-		mailMessage.setTo(user.getEmail());
-		mailMessage.setSubject("Подтверждение регистрации!");
-		mailMessage.setFrom("netclinictech@mail.ru");
-		mailMessage.setText("Чтобы подтвердить аккаунт перейдите по ссылке "
-				+"http://localhost:8080/api/auth/confirm-account?token="+confirmationToken.getConfirmationToken());
-
-		emailSenderService.sendEmail(mailMessage);
-
-		modelAndView.addObject("email", user.getEmail());
-
-		modelAndView.setViewName("successfulRegisteration");
+		modelAndView.setViewName("successfulRegistration");
 
 		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
 	}

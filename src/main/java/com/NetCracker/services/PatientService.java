@@ -32,4 +32,9 @@ public class PatientService {
         log.info("IN UserService findByRelatedUserId {}", id);
         return patientRepository.findByRelatedUserId(id).orElse(null);
     }
+
+    public Long countAll()
+    {
+        return patientRepository.count();
+    }
 }

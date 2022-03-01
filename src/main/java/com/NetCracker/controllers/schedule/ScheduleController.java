@@ -130,9 +130,6 @@ public class ScheduleController
             return new ResponseEntity<String>("Сервер не смог создать таблицу", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        //TODO - delete in prod
-        System.out.println(jsonTable);
-
         return new ResponseEntity<String>(jsonTable, HttpStatus.OK);
     }
 

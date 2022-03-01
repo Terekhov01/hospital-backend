@@ -73,6 +73,24 @@ public class DoctorUserController {
         return doctorUserService.findAllDoctorWithName();
     }
 
+    @PreAuthorize("permitAll()")
+    @GetMapping("/count-all")
+    public ResponseEntity<?> countAll()
+    {
+        Long doctorsAmount = null;
+        try
+        {
+            doctorsAmount = doctorUserService.countAll();
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Не удалось получить количество врачей больницы " +
+                                            "- база данных недоступна", HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
+        return new ResponseEntity<String>(doctorsAmount.toString(), HttpStatus.OK);
+    }
+
     //@PreAuthorize("hasRole('ADMIN')")
     @PreAuthorize("permitAll()")
     @GetMapping("/update-doctor/{id}")

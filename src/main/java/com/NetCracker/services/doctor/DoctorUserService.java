@@ -20,6 +20,8 @@ public interface DoctorUserService {
 
     Doctor create(UserDto user);
 
+    void save(Doctor doctor);
+
     void delete(Long id);
 
     List<Doctor> findAll();
@@ -32,4 +34,6 @@ public interface DoctorUserService {
     List<DoctorShortInfo> findShortInfoBySpecializationName(String specializationName);
 
     List<DoctorUnionUserDto> findAllDoctorWithName();
+
+    Long countAll();
 }

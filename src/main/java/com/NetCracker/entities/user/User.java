@@ -35,8 +35,6 @@ public class User {
 	@JsonBackReference
 	private Patient patient;
 
-
-
 	@Column(name = "first_name")
 	private String firstName;
 
@@ -75,6 +73,7 @@ public class User {
 	}
 
 	public User(String firstName, String lastName, String patronymic, String phone,String userName, String email, String password) {
+		this.patient = null;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.patronymic = patronymic;
@@ -85,6 +84,7 @@ public class User {
 	}
 
 	public User(String firstName, String lastName, String patronymic, String phone,String username, String email, String password, Set<Role> roles) {
+		this.patient = null;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.patronymic = patronymic;
