@@ -68,7 +68,7 @@ public class AppointmentRegistrationController {
     @GetMapping("/appointmentRegistrations/patient/{id}")
     public ResponseEntity<List<AppointmentRegistration>> getPatientAppointmentRegistration(@PathVariable("id") Long id) {
         try {
-            List<AppointmentRegistration> appointmentRegistrations = new ArrayList<>(repository.findAllByPatient(id));
+            List<AppointmentRegistration> appointmentRegistrations = new ArrayList<>(repository.findAllByPatientNotConducted(id));
             if (appointmentRegistrations.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
@@ -81,7 +81,7 @@ public class AppointmentRegistrationController {
     @GetMapping("/appointmentRegistrations/doctor/{id}")
     public ResponseEntity<List<AppointmentRegistration>> getDoctorAppointmentRegistration(@PathVariable("id") Long id) {
         try {
-            List<AppointmentRegistration> appointmentRegistrations = new ArrayList<>(repository.findAllByDoctor(id));
+            List<AppointmentRegistration> appointmentRegistrations = new ArrayList<>(repository.findAllByDoctorNotConducted(id));
             if (appointmentRegistrations.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
