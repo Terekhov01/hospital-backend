@@ -10,7 +10,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import com.NetCracker.entities.ConfirmationToken;
+import com.NetCracker.entities.MedCard;
 import com.NetCracker.repositories.ConfirmationTokenRepository;
+import com.NetCracker.repositories.MedCardRepo;
 import com.NetCracker.repositories.user.UserRepository;
 import com.NetCracker.entities.patient.Patient;
 import com.NetCracker.payload.Response.JwtResponse;
@@ -53,6 +55,8 @@ public class AuthController {
 	PatientRepository patientRepository;
 	@Autowired
 	RoleRepository roleRepository;
+	@Autowired
+	MedCardRepo medCardRepo;
 
 	@Autowired
 	PasswordEncoder encoder;
@@ -147,6 +151,10 @@ public class AuthController {
 
 		patient.setUser(user);
 		patientRepository.save(patient);
+
+		MedCard medCard = new MedCard(patient, "Нет", "Нет");
+		medCardRepo.save(medCard);
+
 		ConfirmationToken confirmationToken = new ConfirmationToken(user);
 
 		confirmationTokenRepository.save(confirmationToken);

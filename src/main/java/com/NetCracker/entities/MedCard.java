@@ -34,6 +34,12 @@ public class MedCard {
         this.appointments = appointments;
     }
 
+    public MedCard(Patient patient, String contraindications, String hereditary) {
+        this.patient = patient;
+        this.contraindications = contraindications;
+        this.hereditary = hereditary;
+    }
+
     public void deleteAppointments(Set<Appointment> appointments){
         this.appointments.removeAll(appointments);
     }
