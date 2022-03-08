@@ -1,4 +1,4 @@
-package com.NetCracker.entities.user;
+package com.NetCracker.entities.user.role;
 
 public enum ERole {
 	ROLE_USER,

@@ -1,9 +1,8 @@
 package com.NetCracker.services.user;
 
 
-import com.NetCracker.entities.user.ERole;
+import com.NetCracker.entities.user.role.ERole;
 import com.NetCracker.entities.user.User;
-import com.NetCracker.repositories.doctor.DoctorRepository;
 import com.NetCracker.repositories.user.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

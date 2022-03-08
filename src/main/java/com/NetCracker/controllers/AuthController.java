@@ -1,29 +1,34 @@
 package com.NetCracker.controllers;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import com.NetCracker.entities.ConfirmationToken;
-import com.NetCracker.entities.MedCard;
+import com.NetCracker.payload.Request.DoctorSignupRequest;
+import com.NetCracker.payload.Request.UserSignupRequest;
 import com.NetCracker.repositories.ConfirmationTokenRepository;
 import com.NetCracker.repositories.MedCardRepo;
 import com.NetCracker.repositories.user.UserRepository;
-import com.NetCracker.entities.patient.Patient;
 import com.NetCracker.payload.Response.JwtResponse;
 import com.NetCracker.payload.Response.MessageResponse;
 import com.NetCracker.repositories.patient.PatientRepository;
 import com.NetCracker.security.jwt.JwtUtils;
+import com.NetCracker.services.security.AuthenticationService;
 import com.NetCracker.services.EmailSenderService;
+import com.NetCracker.services.security.RegistrationService;
 import com.NetCracker.services.user.UserDetailsImpl;
+import com.NetCracker.utils.IncorrectRoleException;
+import com.NetCracker.utils.IncorrectRoomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,11 +38,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import com.NetCracker.entities.user.ERole;
-import com.NetCracker.entities.user.Role;
 import com.NetCracker.entities.user.User;
 import com.NetCracker.payload.Request.LoginRequest;
-import com.NetCracker.payload.Request.SignupRequest;
+import com.NetCracker.payload.Request.PatientSignupRequest;
 import com.NetCracker.repositories.RoleRepository;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -51,10 +54,13 @@ public class AuthController {
 
 	@Autowired
 	UserRepository userRepository;
+
 	@Autowired
 	PatientRepository patientRepository;
+
 	@Autowired
 	RoleRepository roleRepository;
+
 	@Autowired
 	MedCardRepo medCardRepo;
 
@@ -62,10 +68,17 @@ public class AuthController {
 	PasswordEncoder encoder;
 
 	@Autowired
+	AuthenticationService authenticationService;
+
+	@Autowired
+	RegistrationService registrationService;
+
+	@Autowired
 	private ConfirmationTokenRepository confirmationTokenRepository;
 
 	@Autowired
 	private EmailSenderService emailSenderService;
+
 	@Autowired
 	JwtUtils jwtUtils;
 
@@ -90,89 +103,76 @@ public class AuthController {
 				roles));
 	}
 
-	@PostMapping("/signup")
-	public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest, ModelAndView modelAndView) {
-		if (userRepository.existsByUserName(signUpRequest.getUsername())) {
-			return ResponseEntity
-					.badRequest()
-					.body(new MessageResponse("Error: Username is already taken!"));
+	@PostMapping("/signup/doctor")
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public ResponseEntity<?> registerDoctor(@Valid @RequestBody DoctorSignupRequest doctorSignupRequest, ModelAndView modelAndView)
+	{
+		var validationResult = registrationService.validateUserRegistrationData((UserSignupRequest) doctorSignupRequest);
+		if (validationResult != null)
+		{
+			return validationResult;
 		}
 
-		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-			return ResponseEntity
-					.badRequest()
-					.body(new MessageResponse("Error: Email is already in use!"));
+		try
+		{
+			registrationService.registerDoctor(doctorSignupRequest, modelAndView);
+		}
+		catch (DataAccessException e)
+		{
+			return new ResponseEntity<String>("Ошибка свяязи с базой данных. Попробуте позже",
+					HttpStatus.SERVICE_UNAVAILABLE);
+		}
+		catch (IncorrectRoleException | IncorrectRoomException e)
+		{
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		catch (IOException e)
+		{
+			return new ResponseEntity<>("Ошибка отправки сообщения на электронную почту. Проверьте корректность" +
+					" введенных данных и попробуйте еще раз", HttpStatus.BAD_GATEWAY);
+		}
+		catch (Exception e)
+		{
+			return new ResponseEntity<String>("Неизвестная ошибка", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		// Create new user's account
-		User user = new User(signUpRequest.getFirstName(),
-				signUpRequest.getLastName(),
-				signUpRequest.getPatronymic(),
-				signUpRequest.getPhone(),
-				signUpRequest.getUsername(),
-				signUpRequest.getEmail(),
-				encoder.encode(signUpRequest.getPassword()));
+		return ResponseEntity.ok().build();
+	}
 
-		Patient patient = new Patient(signUpRequest.getPassport(),
-				signUpRequest.getPolys());
-
-		Set<String> strRoles = signUpRequest.getRole();
-		Set<Role> roles = new HashSet<>();
-
-		if (strRoles == null) {
-			Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-			roles.add(userRole);
-		} else {
-			strRoles.forEach(role -> {
-				switch (role) {
-					case "admin":
-						Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-						roles.add(adminRole);
-
-						break;
-					case "mod":
-						Role modRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
-								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-						roles.add(modRole);
-
-						break;
-					default:
-						Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-						roles.add(userRole);
-				}
-			});
+	@PostMapping("/signup/patient")
+	@PreAuthorize("permitAll()")
+	public ResponseEntity<?> registerPatient(@Valid @RequestBody PatientSignupRequest patientSignupRequest, ModelAndView modelAndView)
+	{
+		var validationResult = registrationService.validateUserRegistrationData((UserSignupRequest) patientSignupRequest);
+		if (validationResult != null)
+		{
+			return validationResult;
 		}
 
-		user.setRoles(roles);
-		userRepository.save(user);
+		try
+		{
+			registrationService.registerPatient(patientSignupRequest, modelAndView);
+		}
+		catch (DataAccessException e)
+		{
+			return new ResponseEntity<>("Ошибка свяязи с базой данных. Попробуте позже",
+											HttpStatus.SERVICE_UNAVAILABLE);
+		}
+		catch (IncorrectRoleException e)
+		{
+			return new ResponseEntity<>("Получены некорректные данные: роли полозователя указаны неверно", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		catch (MailSendException | IOException e)
+		{
+			return new ResponseEntity<>("Ошибка отправки сообщения на электронную почту. Проверьте корректность" +
+					"введенных данных и попробуйте еще раз", HttpStatus.BAD_GATEWAY);
+		}
+		catch (Exception e)
+		{
+			return new ResponseEntity<>("Неизвестная ошибка", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
-		patient.setUser(user);
-		patientRepository.save(patient);
-
-		MedCard medCard = new MedCard(patient, "Нет", "Нет");
-		medCardRepo.save(medCard);
-
-		ConfirmationToken confirmationToken = new ConfirmationToken(user);
-
-		confirmationTokenRepository.save(confirmationToken);
-
-		SimpleMailMessage mailMessage = new SimpleMailMessage();
-		mailMessage.setTo(user.getEmail());
-		mailMessage.setSubject("Подтверждение регистрации!");
-		mailMessage.setFrom("netclinictech@mail.ru");
-		mailMessage.setText("Чтобы подтвердить аккаунт перейдите по ссылке "
-				+"http://localhost:8080/api/auth/confirm-account?token="+confirmationToken.getConfirmationToken());
-
-		emailSenderService.sendEmail(mailMessage);
-
-		modelAndView.addObject("email", user.getEmail());
-
-		modelAndView.setViewName("successfulRegisteration");
-
-		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+		return ResponseEntity.ok().build();
 	}
 
 	@RequestMapping(value="/confirm-account", method= {RequestMethod.GET, RequestMethod.POST})

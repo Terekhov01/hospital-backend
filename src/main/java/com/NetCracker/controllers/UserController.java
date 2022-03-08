@@ -2,14 +2,11 @@ package com.NetCracker.controllers;
 
 
 import com.NetCracker.entities.doctor.Doctor;
-import com.NetCracker.entities.doctor.DoctorRating;
 import com.NetCracker.entities.doctor.Room;
-import com.NetCracker.entities.doctor.Specialist;
 import com.NetCracker.entities.patient.Patient;
-import com.NetCracker.entities.schedule.DoctorSchedule;
-import com.NetCracker.entities.user.ERole;
-import com.NetCracker.entities.user.Role;
-import com.NetCracker.payload.Request.SignupRequest;
+import com.NetCracker.entities.user.role.ERole;
+import com.NetCracker.entities.user.role.Role;
+import com.NetCracker.payload.Request.PatientSignupRequest;
 import com.NetCracker.repositories.RoomRepository;
 import com.NetCracker.repositories.doctor.DoctorRepository;
 import com.NetCracker.repositories.user.UserRepository;
@@ -66,16 +63,16 @@ public class UserController {
 
     // update user rest api
     @PutMapping("/employees/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody SignupRequest signupRequest){
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody PatientSignupRequest patientSignupRequest){
         User user =  userService.findById(id);
 
-        user.setFirstName(signupRequest.getFirstName());
-        user.setLastName(signupRequest.getLastName());
-        user.setPatronymic(signupRequest.getPatronymic());
-        user.setPhone(signupRequest.getPhone());
+        user.setFirstName(patientSignupRequest.getFirstName());
+        user.setLastName(patientSignupRequest.getLastName());
+        user.setPatronymic(patientSignupRequest.getMiddleName());
+        user.setPhone(patientSignupRequest.getPhone());
         Patient patient = patientService.findById(id);
-        patient.setPassport(signupRequest.getPassport());
-        patient.setPolys(signupRequest.getPolys());
+        patient.setPassport(patientSignupRequest.getPassport());
+        patient.setPolys(patientSignupRequest.getPolys());
         patient.setUser(user);
         patientService.savePatient(patient);
         User updatedUser =  userService.saveUser(user);

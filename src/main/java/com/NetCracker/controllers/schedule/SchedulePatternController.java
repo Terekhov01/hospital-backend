@@ -2,7 +2,7 @@ package com.NetCracker.controllers.schedule;
 
 import com.NetCracker.entities.doctor.Doctor;
 import com.NetCracker.entities.schedule.SchedulePattern;
-import com.NetCracker.services.AuthenticationService;
+import com.NetCracker.services.security.AuthenticationService;
 import com.NetCracker.services.doctor.DoctorUserService;
 import com.NetCracker.services.schedule.SchedulePatternService;
 import com.NetCracker.services.schedule.SchedulePatternViewService;
@@ -19,7 +19,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.ConstraintViolationException;
 import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.util.List;

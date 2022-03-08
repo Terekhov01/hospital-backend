@@ -10,6 +10,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.*;
 
 @Entity
@@ -23,7 +24,7 @@ import java.util.*;
 public class Doctor
 {
     @Id
-    //@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     private Long id;
 
     @OneToOne
@@ -83,6 +84,17 @@ public class Doctor
         this.user.setLastName(lastName);
         this.ratings = ratings;
         this.id = id;
+    }
+
+    public Doctor(String education, Room room, Set<Specialist> specialist, User user)
+    {
+        this.user = user;
+        this.dateOfEmployment = new Date();
+        this.education = education;
+        this.room = room;
+        this.specialist = specialist;
+        this.schedule = null;
+        this.ratings = new ArrayList<>();
     }
 
     @Override

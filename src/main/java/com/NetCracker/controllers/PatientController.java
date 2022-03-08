@@ -7,20 +7,27 @@ import java.util.Optional;
 import com.NetCracker.entities.patient.Patient;
 import com.NetCracker.exceptions.PatientNotFoundException;
 import com.NetCracker.repositories.patient.PatientRepository;
+import com.NetCracker.services.PatientService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
-@RequestMapping("/api")
+@RequestMapping("/api/patients")
 public class PatientController {
 
     @Autowired
     PatientRepository repository;
 
-    @GetMapping("/patients")
+    @Autowired
+    PatientService patientService;
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping
     public ResponseEntity<List<Patient>> getAllPatients(@RequestParam(required = false) Long id) {
         try {
             List<Patient> patients = new ArrayList<>();
@@ -40,7 +47,25 @@ public class PatientController {
         }
     }
 
-    @GetMapping("/patients/id/{id}")
+    @GetMapping("/count-all")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<?> countAll()
+    {
+        Long patientAmount = null;
+        try
+        {
+            patientAmount = patientService.countAll();
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Не удалось получить количество пациентов больницы " +
+                                                        "- база данных недоступна", HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
+        return new ResponseEntity<String>(patientAmount.toString(), HttpStatus.OK);
+    }
+
+    @GetMapping("/id/{id}")
     public ResponseEntity<Patient> getPatientById(@PathVariable("id") Long id) {
         Optional<Patient> patientData = repository.findById(id);
 
@@ -49,7 +74,7 @@ public class PatientController {
                 new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @GetMapping("/patients/lastname/{lastName}")
+    @GetMapping("/lastname/{lastName}")
     public ResponseEntity<Patient> getDoctorByLastName(@PathVariable("lastName") String lastName) {
         Optional<Patient> patientData = repository.findPatientByLastName(lastName);
 
@@ -58,7 +83,7 @@ public class PatientController {
                 new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PostMapping("/patients")
+    @PostMapping()
     public ResponseEntity<Patient> createPatient(@RequestBody Patient patient) {
         try {
             Patient _patient = repository
@@ -69,7 +94,7 @@ public class PatientController {
         }
     }
 
-    @PutMapping("/patients/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<Patient> updatePatient(@PathVariable("id") Long id, @RequestBody Patient patient) {
         Optional<Patient> patientData = repository.findById(id);
 
@@ -85,7 +110,7 @@ public class PatientController {
         }
     }
 
-    @DeleteMapping("/patients/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deletePatient(@PathVariable("id") Long id) {
         try {
             repository.deleteById(id);
@@ -95,7 +120,7 @@ public class PatientController {
         }
     }
 
-    @DeleteMapping("/patients")
+    @DeleteMapping()
     public ResponseEntity<HttpStatus> deleteAllPatients() {
         try {
             repository.deleteAll();
