@@ -37,3 +37,49 @@ INSERT INTO doctors_specialist VALUES (0, 2);
 INSERT INTO doctors_specialist VALUES (1, 1);
 INSERT INTO doctors_specialist VALUES (2, 1);
 INSERT INTO doctors_specialist VALUES (2, 2);
+
+-- In following queries change constraint names to the appropriate ones
+alter table file
+drop constraint fkhihf7pbm68htfxa9f6jlkfkcx,
+add constraint fkhihf7pbm68htfxa9f6jlkfkcx
+   foreign key (appointment)
+   references appointment(appointment_id)
+   on delete cascade;
+
+-- User (doctor) cascade drop below
+
+alter table doctors_specialist
+drop constraint fknf0a62urce3os299le9w44lf7,
+add constraint fknf0a62urce3os299le9w44lf7
+ foreign key (doctor_id)
+ references doctor(id)
+ on delete cascade;
+
+ alter table doctor
+ drop constraint fk11wrxiolc8qa2e64s32xc2yy4,
+ add constraint fk11wrxiolc8qa2e64s32xc2yy4
+    foreign key (user_id)
+    references users(id)
+    on delete cascade;
+
+alter table user_roles
+drop constraint fkhfh9dx7w3ubf1co1vdev94g3f,
+add constraint fkhfh9dx7w3ubf1co1vdev94g3f
+   foreign key (user_id)
+   references users(id)
+   on delete cascade;
+
+alter table doctor_schedule
+drop constraint fkrresxag4ex638q3fincrya0wr,
+add constraint fkrresxag4ex638q3fincrya0wr
+  foreign key (doctor_id)
+  references doctor(id)
+  on delete cascade;
+
+alter table doctors_specialist
+drop constraint fknf0a62urce3os299le9w44lf7,
+add constraint fknf0a62urce3os299le9w44lf7
+ foreign key (doctor_id)
+ references doctor(id)
+ on delete cascade;
+

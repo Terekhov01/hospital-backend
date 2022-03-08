@@ -1,9 +1,8 @@
 package com.NetCracker.entities.user;
 
 import com.NetCracker.entities.patient.Patient;
+import com.NetCracker.entities.user.role.Role;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -14,6 +13,7 @@ import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 @Getter
 @Setter
@@ -35,9 +35,12 @@ public class User {
 	@JsonBackReference
 	private Patient patient;
 
+
+	@NotBlank
 	@Column(name = "first_name")
 	private String firstName;
 
+	@NotBlank
 	@Column(name = "last_name")
 	private String lastName;
 
@@ -45,19 +48,22 @@ public class User {
 	private String patronymic;
 
 	@Column(name = "phone")
+	// https://stackoverflow.com/a/18626090/12287688 - regex phone number validation
+	@Pattern(regexp = "\\(?\\+[0-9]{1,3}\\)? ?-?[0-9]{1,3} ?-?[0-9]{3,5} ?-?[0-9]{4}( ?-?[0-9]{3})? ?(\\w{1,10}\\s?\\d{1,6})?")
 	private String phone;
 
 	@NotBlank
-	@Size(max = 20)
+	@Size(min = 3, max = 20)
 	private String userName;
 
 	@NotBlank
 	@Size(max = 50)
+	@Pattern(regexp = ".*@.*")
 	@Email
 	private String email;
 
 	@NotBlank
-	@Size(max = 120)
+	@Size(min = 6, max = 40)
 	private String password;
 
 	@Column(columnDefinition = "boolean default true")
@@ -72,7 +78,7 @@ public class User {
 	public User() {
 	}
 
-	public User(String firstName, String lastName, String patronymic, String phone,String userName, String email, String password) {
+	public User(String firstName, String lastName, String patronymic, String phone, String userName, String email, String password) {
 		this.patient = null;
 		this.firstName = firstName;
 		this.lastName = lastName;

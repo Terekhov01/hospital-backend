@@ -1,9 +1,6 @@
 package com.NetCracker.controllers.doctor;
 
 import com.NetCracker.domain.projection.DoctorRatingProjection;
-import com.NetCracker.entities.doctor.Doctor;
-import com.NetCracker.entities.user.ERole;
-import com.NetCracker.entities.user.User;
 import com.NetCracker.repositories.AllUserRepository;
 import com.NetCracker.repositories.doctor.DoctorRatingRepository;
 import com.NetCracker.repositories.doctor.DoctorRepository;

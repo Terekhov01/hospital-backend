@@ -3,7 +3,7 @@ package com.NetCracker.repositories.user;
 import java.util.List;
 import java.util.Optional;
 
-import com.NetCracker.entities.user.ERole;
+import com.NetCracker.entities.user.role.ERole;
 import com.NetCracker.entities.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

@@ -1,4 +1,4 @@
-package com.NetCracker.entities.user;
+package com.NetCracker.entities.user.role;
 
 import javax.persistence.*;
 
@@ -13,9 +13,8 @@ public class Role {
 	@Column(length = 20)
 	private ERole name;
 
-	public Role() {
-
-	}
+	public Role()
+	{}
 
 	public Role(ERole name) {
 		this.name = name;

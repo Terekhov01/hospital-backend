@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 
 @Entity
 @Getter
@@ -23,10 +25,13 @@ public class Patient {
     @JsonManagedReference
     private User user;
 
-
+    // https://stackoverflow.com/a/40647805/12287688
+    @Pattern(regexp = "^(?!^0+$)[a-zA-Z0-9]{3,20}$")
     @Column
     private String passport;
 
+    @NotBlank
+    @Pattern(regexp = "^\\d{16}$")
     @Column
     private String polys;
 

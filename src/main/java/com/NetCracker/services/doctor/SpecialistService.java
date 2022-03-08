@@ -1,5 +1,6 @@
 package com.NetCracker.services.doctor;
 
+import com.NetCracker.entities.doctor.Specialist;
 import com.NetCracker.repositories.doctor.SpecialistRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,5 +44,15 @@ public class SpecialistService
         }
 
         return specialistAutocompleteOptions;
+    }
+
+    public Specialist findById(Integer id)
+    {
+        return specialistRepository.findById(id).orElse(null);
+    }
+
+    public Specialist findBySpecialization(String name)
+    {
+        return specialistRepository.findBySpecialization(name).orElse(null);
     }
 }
