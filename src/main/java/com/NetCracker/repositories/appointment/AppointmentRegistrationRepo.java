@@ -1,5 +1,6 @@
 package com.NetCracker.repositories.appointment;
 
+import com.NetCracker.domain.projection.DoctorStatisticProjection;
 import com.NetCracker.entities.appointment.AppointmentRegistration;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface AppointmentRegistrationRepo extends JpaRepository<AppointmentRegistration, Long> {
-//            @Query("select a from AppointmentRegistration a where a.doctor.lastName = 'Фролов В.В.' order by a.id asc")
+    //            @Query("select a from AppointmentRegistration a where a.doctor.lastName = 'Фролов В.В.' order by a.id asc")
     @Query("select a from AppointmentRegistration a order by a.id asc")
     List<AppointmentRegistration> findAllByOrderByIdAsc();
 
@@ -34,8 +35,14 @@ public interface AppointmentRegistrationRepo extends JpaRepository<AppointmentRe
     @Query("select a from AppointmentRegistration a, Doctor d, Patient p where a.doctor.id = d.id and a.patient.id = p.id and p.user.lastName = :pat and d.user.lastName = :doc and a.start = (select min(aa.start) from AppointmentRegistration aa, Doctor dd, Patient pp where aa.doctor.id = dd.id and aa.patient.id = pp.id and pp.user.lastName = :pat and dd.user.lastName = :doc)")
     Optional<AppointmentRegistration> findByDoctorAndPatient(@Param("doc") String doc, @Param("pat") String pat);
 
-//    @Query("select a from AppointmentRegistration a, Doctor d, Patient p where a.doctor.id = d.id and a.patient.id = p.id and p.lastName = :pat and d.lastName = :doc and a.start = :start and a.start = (select min(aa.start) from AppointmentRegistration aa)")
+    //    @Query("select a from AppointmentRegistration a, Doctor d, Patient p where a.doctor.id = d.id and a.patient.id = p.id and p.lastName = :pat and d.lastName = :doc and a.start = :start and a.start = (select min(aa.start) from AppointmentRegistration aa)")
 //    Optional<AppointmentRegistration> findByDoctorAndPatientAndStart(@Param("doc") String doc, @Param("pat") String pat, @Param("start") LocalDateTime start);
+
+    @Query(nativeQuery = true, value ="SELECT date_trunc('month', app.start_date_time) AS date," +
+            " count(app.appointment_registration_id) as count " +
+            "FROM appointment_registration app WHERE app.doctor =:doctor " +
+            "GROUP BY date_trunc('month', app.start_date_time)")
+    List<DoctorStatisticProjection> search(@Param("doctor") Long doctor);
 }
 
 

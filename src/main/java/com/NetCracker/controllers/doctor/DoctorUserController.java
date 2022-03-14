@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 @AllArgsConstructor
+
 //@CrossOrigin(origins = "*", maxAge = 3600)
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RestController
@@ -70,6 +71,8 @@ public class DoctorUserController {
     @PreAuthorize("permitAll()")
     @GetMapping
     public List<DoctorUnionUserDto> findAll(){
+        System.out.println("findall");
+
         return doctorUserService.findAllDoctorWithName();
     }
 

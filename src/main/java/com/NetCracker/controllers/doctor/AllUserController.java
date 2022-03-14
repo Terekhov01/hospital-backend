@@ -30,17 +30,7 @@ public class AllUserController {
     @PreAuthorize("permitAll()")
     @GetMapping
     public List<DoctorRatingProjection> findByRoleLike(Long id) {
-        // сюда внести исправления
 
-
-//        if(){
-//
-//
-//        }
-
-
-
-//        System.out.println(role);
      return doctorRatingRepository.getRating();
     }
 }

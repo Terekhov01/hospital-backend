@@ -101,6 +101,7 @@ public class DoctorController {
 
     @DeleteMapping("/doctors/{id}")
     public ResponseEntity<HttpStatus> deleteDoctor(@PathVariable("id") Long id) {
+        System.out.println(0);
         try {
             repository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -111,6 +112,7 @@ public class DoctorController {
 
     @DeleteMapping("/doctors")
     public ResponseEntity<HttpStatus> deleteAllDoctors() {
+        System.out.println(0);
         try {
             repository.deleteAll();
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);

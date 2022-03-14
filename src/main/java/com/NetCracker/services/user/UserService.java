@@ -25,7 +25,7 @@ public class UserService {
     public User findById(Long id){
 
         log.info("IN UserServive getById {}",id);
-        return userRepository.findById(id).get();
+        return userRepository.findById(id).orElse(null);
     }
 
     public List<User> findAll(){

@@ -1,5 +1,6 @@
 package com.NetCracker.repositories.doctor;
 
+import com.NetCracker.domain.projection.DoctorEmploymentProjection;
 import com.NetCracker.domain.projection.DoctorNamesProjection;
 import com.NetCracker.entities.doctor.Doctor;
 import com.NetCracker.entities.doctor.Specialist;
@@ -48,4 +49,8 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     @Query("select a from Doctor a")
     List<Doctor> fixedFindAll();
 
+    @Query(nativeQuery = true, value = "with data as ( select date_trunc('month', date_of_employment) as month,count(1) from doctor group by 1 ORDER BY month ) select month,sum(count) over (order by month asc rows between unbounded preceding and current row)from data")
+    List<DoctorEmploymentProjection> employment();
+
 }
+
