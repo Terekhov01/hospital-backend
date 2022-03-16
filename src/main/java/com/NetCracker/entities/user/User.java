@@ -44,6 +44,16 @@ public class User {
 	@Column(name = "last_name")
 	private String lastName;
 
+	public void setPatient(Patient patient)
+	{
+		this.patient = patient;
+	}
+
+	public Patient getPatient()
+	{
+		return patient;
+	}
+
 	@Column(name = "patronymic")
 	private String patronymic;
 

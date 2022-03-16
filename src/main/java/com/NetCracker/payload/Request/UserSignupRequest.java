@@ -28,7 +28,6 @@ public class UserSignupRequest
 
     @NotBlank
     @Size(max = 50)
-    @Pattern(regexp = ".*@.*")
     @Email
     private String email;
 
