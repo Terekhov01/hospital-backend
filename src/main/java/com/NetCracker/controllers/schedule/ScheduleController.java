@@ -109,7 +109,7 @@ public class ScheduleController
             }
         }
 
-        //Protection from ddos attacks - the bigger date range is the longer it takes for server to process query
+        //Protection from various attacks - the bigger date range is the longer it takes for server to process query
         if (dateBeginRepresent.plusDays(31).isBefore(dateEndRepresent))
         {
             dateEndRepresent = dateBeginRepresent.plusDays(31);
