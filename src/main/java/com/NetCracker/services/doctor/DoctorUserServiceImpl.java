@@ -45,9 +45,6 @@ public class DoctorUserServiceImpl implements DoctorUserService {
     @Autowired
     RoleRepository roleRepository;
 
-    @Autowired
-    UserController userController;
-
 //    @PostConstruct
 //    private void Getsmth(){
 //

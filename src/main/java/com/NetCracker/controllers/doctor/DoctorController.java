@@ -1,4 +1,4 @@
-package com.NetCracker.controllers;
+package com.NetCracker.controllers.doctor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,10 +7,17 @@ import java.util.Optional;
 //import com.NetCracker.Entities.Doctor;
 import com.NetCracker.entities.doctor.Doctor;
 import com.NetCracker.exceptions.DoctorNotFoundException;
+import com.NetCracker.payload.Response.DoctorPersonalAccountDTO;
 import com.NetCracker.repositories.doctor.DoctorRepository;
+import com.NetCracker.services.security.AuthenticationService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,6 +27,12 @@ public class DoctorController {
 
     @Autowired
     DoctorRepository repository;
+
+    @Autowired
+    AuthenticationService authenticationService;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     @GetMapping("/doctors")
     public ResponseEntity<List<Doctor>> getAllDoctors(@RequestParam(required = false) Long id) {
@@ -42,7 +55,7 @@ public class DoctorController {
     }
 
     @GetMapping("/doctors/id/{id}")
-    public ResponseEntity<Doctor> getDoctorById(@PathVariable("id") Long id) {
+    public ResponseEntity<Doctor> getDoctorAccountInfoById(@PathVariable("id") Long id) {
         Optional<Doctor> doctorData = repository.findById(id);
 
         return doctorData.map(doctor ->
@@ -119,5 +132,44 @@ public class DoctorController {
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PreAuthorize("hasRole('ROLE_DOCTOR')")
+    @GetMapping("doctors/{id}")
+    public ResponseEntity<String> getDoctorAccountInfoById(@PathVariable Long id, Authentication authentication) {
+        Doctor authenticatedDoctor = null;
+        try
+        {
+            authenticatedDoctor = authenticationService.getAuthenticatedDoctor(authentication);
+        }
+        catch (ClassCastException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена", HttpStatus.UNAUTHORIZED);
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена. Ошибка сервера связаться с БД",
+                    HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
+        if (authenticatedDoctor == null)
+        {
+            return new ResponseEntity<String>("Не найден пациент с Вашей регистрационной информацией. " +
+                    "Ошибка сервера", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        var doctorPersonalAccountDTO = new DoctorPersonalAccountDTO(authenticatedDoctor);
+        String patientPersonalAccountStr;
+        try
+        {
+            patientPersonalAccountStr = objectMapper.writeValueAsString(doctorPersonalAccountDTO);
+        }
+        catch (JsonProcessingException e)
+        {
+            return ResponseEntity.internalServerError().body("Ошибка на сервере - не удалось преобразовать " +
+                    "информацию в строку");
+        }
+
+        return ResponseEntity.ok().body(patientPersonalAccountStr);
     }
 }
