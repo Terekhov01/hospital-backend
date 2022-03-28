@@ -6,13 +6,18 @@ import java.util.Optional;
 
 import com.NetCracker.entities.patient.Patient;
 import com.NetCracker.exceptions.PatientNotFoundException;
+import com.NetCracker.payload.Response.PatientPersinalAccountDTO;
 import com.NetCracker.repositories.patient.PatientRepository;
 import com.NetCracker.services.PatientService;
+import com.NetCracker.services.security.AuthenticationService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,6 +30,12 @@ public class PatientController {
 
     @Autowired
     PatientService patientService;
+
+    @Autowired
+    AuthenticationService authenticationService;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping
@@ -66,7 +77,7 @@ public class PatientController {
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<Patient> getPatientById(@PathVariable("id") Long id) {
+    public ResponseEntity<Patient> getPatientAccountInfoById(@PathVariable("id") Long id) {
         Optional<Patient> patientData = repository.findById(id);
 
         return patientData.map(patient ->
@@ -128,5 +139,45 @@ public class PatientController {
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PreAuthorize("hasRole('ROLE_PATIENT')")
+    @GetMapping("/{id}")
+    public ResponseEntity<String> getPatientAccountInfoById(@PathVariable Long id, Authentication authentication) {
+
+        Patient authenticatedPatient = null;
+        try
+        {
+            authenticatedPatient = authenticationService.getAuthenticatedPatient(authentication);
+        }
+        catch (ClassCastException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена", HttpStatus.UNAUTHORIZED);
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена. Ошибка сервера связаться с БД",
+                    HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
+        if (authenticatedPatient == null)
+        {
+            return new ResponseEntity<String>("Не найден пациент с Вашей регистрационной информацией. " +
+                    "Ошибка сервера", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        var patientPersonalAccountDTO = new PatientPersinalAccountDTO(authenticatedPatient);
+        String patientPersonalAccountStr;
+        try
+        {
+            patientPersonalAccountStr = objectMapper.writeValueAsString(patientPersonalAccountDTO);
+        }
+        catch (JsonProcessingException e)
+        {
+            return ResponseEntity.internalServerError().body("Ошибка на сервере - не удалось преобразовать " +
+                    "информацию в строку");
+        }
+
+        return ResponseEntity.ok().body(patientPersonalAccountStr);
     }
 }

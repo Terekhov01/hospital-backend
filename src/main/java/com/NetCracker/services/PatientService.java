@@ -1,6 +1,7 @@
 package com.NetCracker.services;
 
 import com.NetCracker.entities.patient.Patient;
+import com.NetCracker.payload.Response.PatientPersinalAccountDTO;
 import com.NetCracker.repositories.patient.PatientRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

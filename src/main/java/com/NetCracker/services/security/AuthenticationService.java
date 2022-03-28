@@ -46,6 +46,9 @@ public class AuthenticationService
     @Autowired
     private PatientService patientService;
 
+    @Autowired
+    private UserService userService;
+
     public Doctor getAuthenticatedDoctor(Authentication authentication) throws DataAccessException,
                                                                                         ClassCastException
     {
@@ -68,5 +71,32 @@ public class AuthenticationService
         patient = patientService.findByRelatedUserId(userDetails.getId());
 
         return patient;
+    }
+
+    public User getAuthenticatedUser(Authentication authentication) throws DataAccessException, ClassCastException
+    {
+        UserDetailsImpl userDetails = null;
+        User user = null;
+
+        userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        user = userService.findById(userDetails.getId());
+
+        return user;
+    }
+
+    public User getAuthenticatedAdmin(Authentication authentication) throws DataAccessException, ClassCastException
+    {
+        UserDetailsImpl userDetails = null;
+        User user = null;
+
+        userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        user = userService.findById(userDetails.getId());
+
+        if (user.getRoles().stream().anyMatch(role -> role.getName().equals(ERole.ROLE_ADMIN)))
+        {
+            return user;
+        }
+
+        return null;
     }
 }

@@ -119,6 +119,11 @@ public class ScheduleService
         // Clear currently stored information about those days
         LocalDate dayToApplyPatternTo = dayToApplyPattern.plusDays(pattern.getDaysLength() * repeatCnt);
 
+        scheduleIntervalSet.stream().filter(interval -> interval.getStartTime().toLocalDate().isAfter(dayToApplyPattern)
+                || interval.getStartTime().toLocalDate().isEqual(dayToApplyPattern)
+                && interval.getStartTime().toLocalDate().isBefore(dayToApplyPatternTo))
+                .forEach(interval -> scheduleIntervalRepository.delete(interval));
+
         scheduleIntervalSet.removeIf(interval ->
                 (interval.getStartTime().toLocalDate().isAfter(dayToApplyPattern)
                         || interval.getStartTime().toLocalDate().isEqual(dayToApplyPattern))

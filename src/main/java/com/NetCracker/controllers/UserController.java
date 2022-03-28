@@ -7,15 +7,22 @@ import com.NetCracker.entities.patient.Patient;
 import com.NetCracker.entities.user.role.ERole;
 import com.NetCracker.entities.user.role.Role;
 import com.NetCracker.payload.Request.PatientSignupRequest;
+import com.NetCracker.payload.Response.UserPersonalAccountDTO;
 import com.NetCracker.repositories.RoomRepository;
 import com.NetCracker.repositories.doctor.DoctorRepository;
 import com.NetCracker.repositories.user.UserRepository;
 import com.NetCracker.services.PatientService;
+import com.NetCracker.services.security.AuthenticationService;
 import com.NetCracker.services.user.UserService;
 import com.NetCracker.entities.user.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -26,7 +33,6 @@ import java.util.*;
 public class UserController {
     @Autowired
     private PatientService patientService;
-
 
     @Autowired
     private UserService userService;
@@ -39,6 +45,12 @@ public class UserController {
 
     @Autowired
     private DoctorRepository doctorRepository;
+
+    @Autowired
+    private AuthenticationService authenticationService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     // get all users
     @GetMapping("/employees")
@@ -53,13 +65,12 @@ public class UserController {
     }
 
     // get user by id rest api
-
-    @GetMapping("/employees/{id}")
+    /*@GetMapping("/employees/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user =  this.userService.findById(id);
 
         return ResponseEntity.ok().body(user);
-    }
+    }*/
 
     // update user rest api
     @PutMapping("/employees/{id}")
@@ -102,5 +113,42 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<String> getDoctorAccountInfoById(@PathVariable Long id, Authentication authentication) {
 
+        User authenticatedAdmin = null;
+        try
+        {
+            authenticatedAdmin = authenticationService.getAuthenticatedAdmin(authentication);
+        }
+        catch (ClassCastException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена", HttpStatus.UNAUTHORIZED);
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Аутентификация не пройдена. Ошибка сервера связаться с БД",
+                    HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
+        if (authenticatedAdmin == null)
+        {
+            return new ResponseEntity<String>("Вы не являетесь администратором", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        var userPersonalAccountDTO = new UserPersonalAccountDTO(authenticatedAdmin);
+        String userPersonalAccountStr;
+        try
+        {
+            userPersonalAccountStr = objectMapper.writeValueAsString(userPersonalAccountDTO);
+        }
+        catch (JsonProcessingException e)
+        {
+            return ResponseEntity.internalServerError().body("Ошибка на сервере - не удалось преобразовать " +
+                    "информацию в строку");
+        }
+
+        return ResponseEntity.ok().body(userPersonalAccountStr);
+    }
 }
