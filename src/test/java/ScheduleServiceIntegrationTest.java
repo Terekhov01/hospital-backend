@@ -31,14 +31,14 @@ import java.time.*;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {Main.class})
 public class ScheduleServiceIntegrationTest {
-    @Autowired
-    private DoctorRepository doctorRepository;
+//    @Autowired
+//    private DoctorRepository doctorRepository;
 
 //    @Autowired
 //    private DoctorScheduleRepository doctorScheduleRepository;
 
-    @Autowired
-    private TransactionTemplate txTemplate;
+//    @Autowired
+//    private TransactionTemplate txTemplate;
 
 //    @Autowired
 //    private ScheduleService scheduleService;

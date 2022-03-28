@@ -96,6 +96,17 @@ public class Appointment {
 //        System.arraycopy(file, 0, this.file, 0, file.length);
     }
 
+    public Appointment(Appointment appointment) {
+        this.files = appointment.getFiles();
+        this.appointmentRegistration = appointment.getAppointmentRegistration();
+        this.description = appointment.getDescription();
+        this.docStatement = appointment.getDocStatement();
+        this.id = appointment.getId();
+        this.recipe = appointment.getRecipe();
+        this.rehabPlan = appointment.getRehabPlan();
+        this.treatPlan = appointment.getTreatPlan();
+    }
+
     public Long getId() {
         return id;
     }

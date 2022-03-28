@@ -23,6 +23,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
@@ -31,6 +36,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import static java.util.stream.Collectors.toList;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -120,6 +127,35 @@ class AppointmentController {
         return appointmentData.map(appointment ->
                 new ResponseEntity<>(appointment, HttpStatus.OK)).orElseGet(() ->
                 new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @GetMapping("/appointments/doctorPaged/{id}")
+    public Page<Appointment> list(@RequestParam(name = "page", defaultValue = "0") int page,
+                                  @RequestParam(name = "size", defaultValue = "2") int size,
+                                  @RequestParam(name = "keyword", defaultValue = "") String keyWord,
+                                  @PathVariable("id") Long id) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Pageable paging = PageRequest.of(page, size);
+        Page<Appointment> pageResult;
+        System.out.println("PageRequest page number: " + pageRequest.getPageNumber());
+        System.out.println("PageRequest page size: " + pageRequest.getPageSize());
+        if (keyWord != null && !keyWord.equals("")) {
+            System.out.println("Received keyword");
+            System.out.println("KeyWord: " + keyWord);
+            pageResult = repository.findAllByDoctorAndKeyWordPaged(keyWord, paging, id);
+        } else {
+            System.out.println("Received no keyword");
+            pageResult = repository.findAllByDoctorPaged(paging, id);
+        }
+        System.out.println("PageResult total pages: " + pageResult.getTotalPages());
+        System.out.println("PageResult total elements: " + pageResult.getTotalElements());
+        List<Appointment> appointmentList = pageResult
+                .stream()
+                .map(Appointment::new)
+                .collect(toList());
+        System.out.println("AppointmentList size: " + appointmentList.size());
+        return new PageImpl<>(appointmentList, pageRequest, pageResult.getTotalElements());
+
     }
 
     // Asserting file size is done via spring.
