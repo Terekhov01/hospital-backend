@@ -24,7 +24,7 @@ import java.util.*;
 public class Doctor
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+//    @GeneratedValue(strategy = GenerationType.TABLE)
     private Long id;
 
     @OneToOne

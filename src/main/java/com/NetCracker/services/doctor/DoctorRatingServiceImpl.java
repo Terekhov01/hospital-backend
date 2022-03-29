@@ -4,8 +4,8 @@ package com.NetCracker.services.doctor;
 import com.NetCracker.domain.DTO.RequestRatingDto;
 import com.NetCracker.entities.doctor.Doctor;
 import com.NetCracker.entities.doctor.DoctorRating;
-import com.NetCracker.entities.doctor.UserStub;
-import com.NetCracker.repositories.AllUserRepository;
+//import com.NetCracker.entities.doctor.UserStub;
+//import com.NetCracker.repositories.AllUserRepository;
 import com.NetCracker.repositories.doctor.DoctorRatingRepository;
 import com.NetCracker.repositories.doctor.DoctorRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +19,11 @@ public class DoctorRatingServiceImpl {
 
     private final DoctorRatingRepository doctorRatingRepository;
     private final DoctorRepository doctorRepository;
-    private final AllUserRepository userRepository;
+//    private final AllUserRepository userRepository;
 
     //@PreAuthorize("permitAll()")
     public DoctorRating createRating(RequestRatingDto requestRatingDto){
-        Optional<UserStub> optionalUser = userRepository.findById(requestRatingDto.getUserId());
+//        Optional<UserStub> optionalUser = userRepository.findById(requestRatingDto.getUserId());
         Optional<Doctor> optionalDoctor = doctorRepository.findById(requestRatingDto.getDoctorId());
 
         // mb steel work

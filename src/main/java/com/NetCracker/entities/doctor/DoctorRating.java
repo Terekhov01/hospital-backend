@@ -20,9 +20,9 @@ public class DoctorRating {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserStub user;
+//    @ManyToOne
+//    @JoinColumn(name = "user_id")
+//    private UserStub user;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
