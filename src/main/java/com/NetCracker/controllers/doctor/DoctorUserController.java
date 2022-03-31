@@ -39,7 +39,7 @@ public class DoctorUserController {
 
 //    @PreAuthorize("hasRole('ROLE_DOCTOR')")
 //@PreAuthorize("hasRole('ADMIN')")
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public Doctor create(@RequestBody UserDto user){
         System.out.println(user);
@@ -54,21 +54,21 @@ public class DoctorUserController {
     }
 
     //@PreAuthorize("hasRole('ADMIN')")
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(path = {"/{id}"})
     public DoctorUnionUserDto update( @RequestBody DoctorUnionUserDto user){
         return doctorUserService.update(user);
     }
 
     //@PreAuthorize("hasRole('ADMIN')")
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(path ={"/{id}"})
     public void delete(@PathVariable("id") Long id) {
         doctorUserService.delete(id);
     }
 
     //@PreAuthorize("hasRole('ADMIN')")
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public List<DoctorUnionUserDto> findAll(){
         System.out.println("findall");

@@ -16,7 +16,7 @@ public class RatingController {
 
     private final DoctorRatingServiceImpl doctorRatingService;
 
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     // Доступ к созданию рейтингов для врачей
     @PostMapping
     public DoctorRating createRating(@RequestBody RequestRatingDto requestRatingDto){
