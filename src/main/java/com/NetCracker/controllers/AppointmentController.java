@@ -137,23 +137,15 @@ class AppointmentController {
         PageRequest pageRequest = PageRequest.of(page, size);
         Pageable paging = PageRequest.of(page, size);
         Page<Appointment> pageResult;
-        System.out.println("PageRequest page number: " + pageRequest.getPageNumber());
-        System.out.println("PageRequest page size: " + pageRequest.getPageSize());
         if (keyWord != null && !keyWord.equals("")) {
-            System.out.println("Received keyword");
-            System.out.println("KeyWord: " + keyWord);
             pageResult = repository.findAllByDoctorAndKeyWordPaged(keyWord, paging, id);
         } else {
-            System.out.println("Received no keyword");
             pageResult = repository.findAllByDoctorPaged(paging, id);
         }
-        System.out.println("PageResult total pages: " + pageResult.getTotalPages());
-        System.out.println("PageResult total elements: " + pageResult.getTotalElements());
         List<Appointment> appointmentList = pageResult
                 .stream()
                 .map(Appointment::new)
                 .collect(toList());
-        System.out.println("AppointmentList size: " + appointmentList.size());
         return new PageImpl<>(appointmentList, pageRequest, pageResult.getTotalElements());
 
     }

@@ -65,12 +65,12 @@ public class UserController {
     }
 
     // get user by id rest api
-    /*@GetMapping("/employees/{id}")
+    @GetMapping("/employees/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user =  this.userService.findById(id);
 
         return ResponseEntity.ok().body(user);
-    }*/
+    }
 
     // update user rest api
     @PutMapping("/employees/{id}")
