@@ -6,9 +6,13 @@ import java.util.Optional;
 
 //import com.NetCracker.Entities.Doctor;
 import com.NetCracker.entities.doctor.Doctor;
+import com.NetCracker.entities.patient.Patient;
 import com.NetCracker.exceptions.DoctorNotFoundException;
+import com.NetCracker.payload.Request.DoctorDTO;
+import com.NetCracker.payload.Request.PatientDTO;
 import com.NetCracker.payload.Response.DoctorPersonalAccountDTO;
 import com.NetCracker.repositories.doctor.DoctorRepository;
+import com.NetCracker.services.doctor.DoctorUserServiceImpl;
 import com.NetCracker.services.security.AuthenticationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +28,9 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/api")
 public class DoctorController {
+
+    @Autowired
+    DoctorUserServiceImpl doctorUserService;
 
     @Autowired
     DoctorRepository repository;
@@ -171,5 +178,40 @@ public class DoctorController {
         }
 
         return ResponseEntity.ok().body(patientPersonalAccountStr);
+    }
+
+    @PutMapping("doctors/update")
+    @PreAuthorize("hasRole('ROLE_DOCTOR')")
+    public ResponseEntity<?> updateDoctor(@RequestBody DoctorDTO doctorDTO, Authentication authentication)
+    {
+        Doctor authenticatedDoctor;
+        try
+        {
+            authenticatedDoctor = authenticationService.getAuthenticatedDoctor(authentication);
+        }
+        catch (ClassCastException e)
+        {
+            return ResponseEntity.internalServerError().body("Не удалось подтвердить Ваш аккаунт");
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Не удалось связаться с базой данных для подтверждения аккаунта",
+                    HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        if (authenticatedDoctor == null)
+        {
+            return ResponseEntity.internalServerError().body("Не удалось подтвердить Ваш аккаунт");
+        }
+
+        Doctor doctor = doctorUserService.findById(authenticatedDoctor.getId());
+
+        doctor.getUser().setFirstName(doctorDTO.getFirstName());
+        doctor.getUser().setLastName(doctorDTO.getLastName());
+        doctor.getUser().setPatronymic(doctorDTO.getMiddleName());
+        doctor.getUser().setPhone(doctorDTO.getPhone());
+        doctor.setEducation(doctorDTO.getEducation());
+        doctorUserService.save(doctor);
+
+        return ResponseEntity.ok("");
     }
 }

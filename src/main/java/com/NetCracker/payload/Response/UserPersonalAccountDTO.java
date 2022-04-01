@@ -6,22 +6,22 @@ import lombok.Getter;
 @Getter
 public class UserPersonalAccountDTO
 {
-    Long userId;
+    Long id;
     String userName;
     String firstName;
     String lastName;
     String middleName;
     String email;
-    String phoneNumber;
+    String phone;
 
     public UserPersonalAccountDTO(User user)
     {
-        userId = user.getId();
+        id = user.getId();
         userName = user.getUsername();
         firstName = user.getFirstName();
         lastName = user.getLastName();
         middleName = user.getPatronymic();
         email = user.getEmail();
-        phoneNumber = user.getPhone();
+        phone = user.getPhone();
     }
 }

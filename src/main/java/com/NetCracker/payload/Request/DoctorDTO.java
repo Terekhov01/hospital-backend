@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Getter
-public class DoctorSignupRequest extends UserSignupRequest
+public class DoctorDTO extends UserDTO
 {
     // https://stackoverflow.com/a/40647805/12287688
     @Pattern(regexp = "^(?!^0+$)[a-zA-Z0-9]{3,20}$")
@@ -24,9 +24,9 @@ public class DoctorSignupRequest extends UserSignupRequest
 
     Set<String> specializations;
 
-    public DoctorSignupRequest(String firstName, String lastName, String middleName, String userName, String email,
-                               String password, String phone, String passport, Integer roomNumber, String education,
-                               Set<String> specializations)
+    public DoctorDTO(String firstName, String lastName, String middleName, String userName, String email,
+                     String password, String phone, String passport, Integer roomNumber, String education,
+                     Set<String> specializations)
     {
         super(firstName, lastName, middleName, phone, userName, email, password,
                 new HashSet<String>(){{ add("ROLE_DOCTOR"); }});

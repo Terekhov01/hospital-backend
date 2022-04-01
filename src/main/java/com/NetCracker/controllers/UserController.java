@@ -6,7 +6,8 @@ import com.NetCracker.entities.doctor.Room;
 import com.NetCracker.entities.patient.Patient;
 import com.NetCracker.entities.user.role.ERole;
 import com.NetCracker.entities.user.role.Role;
-import com.NetCracker.payload.Request.PatientSignupRequest;
+import com.NetCracker.payload.Request.PatientDTO;
+import com.NetCracker.payload.Request.UserDTO;
 import com.NetCracker.payload.Response.UserPersonalAccountDTO;
 import com.NetCracker.repositories.RoomRepository;
 import com.NetCracker.repositories.doctor.DoctorRepository;
@@ -65,16 +66,50 @@ public class UserController {
     }
 
     // get user by id rest api
-    /*@GetMapping("/employees/{id}")
+    @GetMapping("/employees/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user =  this.userService.findById(id);
 
         return ResponseEntity.ok().body(user);
-    }*/
+    }
+
+    @PutMapping("/update")
+    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> updateUser(@RequestBody UserDTO userDTO, Authentication authentication)
+    {
+        User authenticatedUser;
+        try
+        {
+            authenticatedUser = authenticationService.getAuthenticatedUser(authentication);
+        }
+        catch (ClassCastException e)
+        {
+            return ResponseEntity.internalServerError().body("Не удалось подтвердить Ваш аккаунт");
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Не удалось связаться с базой данных для подтверждения аккаунта",
+                    HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        if (authenticatedUser == null)
+        {
+            return ResponseEntity.internalServerError().body("Не удалось подтвердить Ваш аккаунт");
+        }
+
+        User user = userService.findById(authenticatedUser.getId());
+
+        user.setFirstName(userDTO.getFirstName());
+        user.setLastName(userDTO.getLastName());
+        user.setPatronymic(userDTO.getMiddleName());
+        user.setPhone(userDTO.getPhone());
+        userService.saveUser(user);
+
+        return ResponseEntity.ok("Изменения сохранены");
+    }
 
     // update user rest api
     @PutMapping("/employees/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody PatientSignupRequest patientSignupRequest){
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody PatientDTO patientSignupRequest){
         User user =  userService.findById(id);
 
         user.setFirstName(patientSignupRequest.getFirstName());

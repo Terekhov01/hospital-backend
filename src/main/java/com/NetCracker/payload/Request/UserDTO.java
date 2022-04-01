@@ -8,7 +8,7 @@ import java.util.Set;
 
 @Getter
 @AllArgsConstructor
-public class UserSignupRequest
+public class UserDTO
 {
     @NotBlank
     private String firstName;
