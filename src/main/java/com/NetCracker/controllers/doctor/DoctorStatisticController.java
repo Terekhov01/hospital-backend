@@ -25,14 +25,14 @@ public class DoctorStatisticController {
     @Autowired
     DoctorRepository doctorRepository;
 
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = {"/{id}"})
     public Object notcreate(@PathVariable("id") Long doctor) throws Exception {
         System.out.println("get");
         return appointmentRegistrationRepo.search(doctor);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping()
     public List<DoctorEmploymentProjection> findAll() {
         System.out.println(doctorRepository.employment());

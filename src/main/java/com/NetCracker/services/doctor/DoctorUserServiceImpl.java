@@ -114,7 +114,7 @@ public class DoctorUserServiceImpl implements DoctorUserService {
 
             userService.deleteById(doctorUser.getId());
 
-            doctorRepository.delete(doctorUser);
+//            doctorRepository.delete(doctorUser);
         }
     }
 
