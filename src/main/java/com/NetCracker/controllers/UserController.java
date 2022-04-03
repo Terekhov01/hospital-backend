@@ -76,29 +76,31 @@ public class UserController {
     @PutMapping("/employees/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody PatientSignupRequest patientSignupRequest){
         User user =  userService.findById(id);
+        Set<Role> roles = new HashSet<Role>(user.getRoles());
 
         user.setFirstName(patientSignupRequest.getFirstName());
         user.setLastName(patientSignupRequest.getLastName());
         user.setPatronymic(patientSignupRequest.getMiddleName());
         user.setPhone(patientSignupRequest.getPhone());
-        Patient patient = patientService.findById(id);
-        patient.setPassport(patientSignupRequest.getPassport());
-        patient.setPolys(patientSignupRequest.getPolys());
-        patient.setUser(user);
-        patientService.savePatient(patient);
-        User updatedUser =  userService.saveUser(user);
-
-
-        Set<Role> roles = new HashSet<Role>(user.getRoles());
-
         for(Role role: roles) {
-            if (role.getName() == ERole.ROLE_DOCTOR) {
-                Room room = roomRepository.getById(1);
-                Doctor doc = new Doctor(new Date(), "education",
-                        room, null, null, updatedUser.getFirstName(), updatedUser.getLastName(), null, updatedUser, updatedUser.getId());
-                doctorRepository.save(doc);
+            if (role.getName() == ERole.ROLE_PATIENT) {
+                Patient patient = patientService.findById(id);
+                patient.setPassport(patientSignupRequest.getPassport());
+                patient.setPolys(patientSignupRequest.getPolys());
+                patient.setUser(user);
+                patientService.savePatient(patient);
             }
         }
+        User updatedUser =  userService.saveUser(user);
+
+//        for(Role role: roles) {
+//            if (role.getName() == ERole.ROLE_DOCTOR) {
+//                Room room = roomRepository.getById(1);
+//                Doctor doc = new Doctor(new Date(), "education",
+//                        room, null, null, updatedUser.getFirstName(), updatedUser.getLastName(), null, updatedUser, updatedUser.getId());
+//                doctorRepository.save(doc);
+//            }
+//        }
 
         return ResponseEntity.ok(updatedUser);
     }

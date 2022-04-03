@@ -123,7 +123,7 @@ public class MedCardController {
                 }
             }
             else if(role.getName() == ERole.ROLE_ADMIN ||
-                    role.getName() == ERole.ROLE_USER && Objects.equals(id, currentId)){
+                    role.getName() == ERole.ROLE_PATIENT && Objects.equals(id, currentId)){
                 return true;
             }
         }

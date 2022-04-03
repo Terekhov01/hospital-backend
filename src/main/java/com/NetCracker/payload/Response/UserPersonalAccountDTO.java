@@ -12,7 +12,7 @@ public class UserPersonalAccountDTO
     String lastName;
     String middleName;
     String email;
-    String phoneNumber;
+    String phone;
 
     public UserPersonalAccountDTO(User user)
     {
@@ -22,6 +22,6 @@ public class UserPersonalAccountDTO
         lastName = user.getLastName();
         middleName = user.getPatronymic();
         email = user.getEmail();
-        phoneNumber = user.getPhone();
+        phone = user.getPhone();
     }
 }
