@@ -18,8 +18,8 @@ public class DoctorRating {
     @Id
     @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-
+//    private int id;
+    private Long id;
 //    @ManyToOne
 //    @JoinColumn(name = "user_id")
 //    private UserStub user;
