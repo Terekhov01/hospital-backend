@@ -7,7 +7,6 @@ import java.util.Optional;
 import com.NetCracker.entities.patient.Patient;
 import com.NetCracker.entities.user.User;
 import com.NetCracker.exceptions.PatientNotFoundException;
-import com.NetCracker.payload.Request.PatientSignupRequest;
 import com.NetCracker.payload.Request.PatientDTO;
 import com.NetCracker.payload.Response.PatientPersinalAccountDTO;
 import com.NetCracker.repositories.patient.PatientRepository;
@@ -113,7 +112,7 @@ public class PatientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Patient> updatePatient(@PathVariable("id") Long id, @RequestBody PatientSignupRequest patientSignupRequest) {
+    public ResponseEntity<Patient> updatePatient(@PathVariable("id") Long id, @RequestBody PatientDTO patientSignupRequest) {
         Optional<Patient> patientData = repository.findById(id);
         User user =  userService.findById(id);
 
