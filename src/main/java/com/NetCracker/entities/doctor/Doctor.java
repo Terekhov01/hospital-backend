@@ -48,7 +48,6 @@ public class Doctor
             joinColumns = @JoinColumn(name = "doctor_id"),
             inverseJoinColumns = @JoinColumn(name = "specialist_id"),
             foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    @JsonIgnore
     @ToString.Exclude
     private Set<Specialist> specialist = new HashSet<>();
 

@@ -35,11 +35,12 @@ public class DoctorRatingServiceImpl {
 //                && requestRatingDto.getRating()>=1 && requestRatingDto.getRating()<=5) {
 //        }
 
-        if (optionalDoctor.isPresent()
-                && requestRatingDto.getRating()>=1 && requestRatingDto.getRating()<=5){
+        if (optionalDoctor.isPresent() &&
+                requestRatingDto.getRating()>=1 && requestRatingDto.getRating()<=5){
 
             DoctorRating doctorRating= new DoctorRating();
             doctorRating.setDoctor(optionalDoctor.get());
+//            optionalDoctor.get()
 //            doctorRating.setUser(optionalUser.get());
             doctorRating.setRating(requestRatingDto.getRating());
             doctorRating.setFeedback(requestRatingDto.getFeedback());

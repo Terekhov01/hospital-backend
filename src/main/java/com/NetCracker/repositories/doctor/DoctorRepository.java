@@ -20,7 +20,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     @Query("select a from Doctor a order by a.id asc")
     List<Doctor> findAllByOrderByIdAsc();
 
-    /*@Query("select a from Doctor a where a.id = :id")
+    /*    @Query("select a from Doctor a where a.id = :id")
     Optional<Doctor> findById(@Param("id") Long id);*/
 
     //Warning! There can be multiple doctors with the same last name
@@ -31,7 +31,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     List<Doctor> findAll();
 
-    @Query("select a from Doctor a where a.id = :id")
+    @Query("select a from Doctor a where a.user.id = :id")
     Optional<Doctor> findById(@Param("id") Long id);
 
     Optional<Doctor> findByUser_id(Long id);

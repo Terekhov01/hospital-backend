@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.Optional;
 
 import com.NetCracker.entities.patient.Patient;
+import com.NetCracker.entities.user.User;
 import com.NetCracker.exceptions.PatientNotFoundException;
 import com.NetCracker.payload.Request.PatientDTO;
 import com.NetCracker.payload.Response.PatientPersinalAccountDTO;
 import com.NetCracker.repositories.patient.PatientRepository;
 import com.NetCracker.services.PatientService;
 import com.NetCracker.services.security.AuthenticationService;
+import com.NetCracker.services.user.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,9 @@ public class PatientController {
 
     @Autowired
     PatientService patientService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     AuthenticationService authenticationService;
@@ -107,14 +112,21 @@ public class PatientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Patient> updatePatient(@PathVariable("id") Long id, @RequestBody Patient patient) {
+    public ResponseEntity<Patient> updatePatient(@PathVariable("id") Long id, @RequestBody PatientDTO patientSignupRequest) {
         Optional<Patient> patientData = repository.findById(id);
+        User user =  userService.findById(id);
+
+        user.setFirstName(patientSignupRequest.getFirstName());
+        user.setLastName(patientSignupRequest.getLastName());
+        user.setPatronymic(patientSignupRequest.getMiddleName());
+        user.setPhone(patientSignupRequest.getPhone());
 
         if (patientData.isPresent()) {
             Patient _patient = patientData.get();
-            _patient.setUser(patient.getUser());
-            _patient.setPassport(patient.getPassport());
-            _patient.setPolys(patient.getPolys());
+            _patient.setPassport(patientSignupRequest.getPassport());
+            _patient.setPolys(patientSignupRequest.getPolys());
+            _patient.setUser(user);
+            userService.saveUser(user);
 //            _patient.setFiles(patient.getFiles());
             return new ResponseEntity<>(repository.save(_patient), HttpStatus.OK);
         } else {
