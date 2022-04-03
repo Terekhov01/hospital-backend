@@ -94,8 +94,8 @@ public class AppointmentRegistrationController {
     @PostMapping("/appointmentRegistrations")
     public ResponseEntity<AppointmentRegistration> createAppointmentRegistration(@RequestBody AppointmentRegistration appointmentRegistration) {
 
-        Optional<Doctor> doctor = doctors.findDoctorByLastName(appointmentRegistration.getDoctor().getUser().getLastName());
-        Optional<Patient> patient = patients.findPatientByLastName(appointmentRegistration.getPatient().getUser().getLastName());
+        Optional<Doctor> doctor = doctors.findById(appointmentRegistration.getDoctor().getId());
+        Optional<Patient> patient = patients.findById(appointmentRegistration.getPatient().getUser().getId());
         if (doctor.isPresent() && patient.isPresent()) {
             try {
                 AppointmentRegistration _appointmentRegistration = repository

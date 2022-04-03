@@ -10,9 +10,9 @@ import com.NetCracker.entities.schedule.DoctorSchedule;
 import com.NetCracker.entities.user.User;
 import com.NetCracker.entities.user.role.ERole;
 import com.NetCracker.entities.user.role.Role;
-import com.NetCracker.payload.Request.DoctorSignupRequest;
-import com.NetCracker.payload.Request.PatientSignupRequest;
-import com.NetCracker.payload.Request.UserSignupRequest;
+import com.NetCracker.payload.Request.DoctorDTO;
+import com.NetCracker.payload.Request.PatientDTO;
+import com.NetCracker.payload.Request.UserDTO;
 import com.NetCracker.payload.Response.MessageResponse;
 import com.NetCracker.repositories.ConfirmationTokenRepository;
 import com.NetCracker.repositories.MedCardRepo;
@@ -29,11 +29,8 @@ import com.NetCracker.services.user.RoleService;
 import com.NetCracker.services.user.UserService;
 import com.NetCracker.utils.IncorrectRoleException;
 import com.NetCracker.utils.IncorrectRoomException;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -91,7 +88,7 @@ public class RegistrationService
     @Autowired
     private MedCardRepo medCardRepo;
 
-    public ResponseEntity<?> validateUserRegistrationData(UserSignupRequest userSignUpRequest)
+    public ResponseEntity<?> validateUserRegistrationData(UserDTO userSignUpRequest)
     {
         if (userRepository.existsByUserName(userSignUpRequest.getUserName()))
         {
@@ -129,10 +126,10 @@ public class RegistrationService
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public User registerUser(UserSignupRequest userSignupRequest) throws IncorrectRoleException
+    public User registerUser(UserDTO userDTO) throws IncorrectRoleException
     {
         Set<Role> persistedRoles = new HashSet<>();
-        for (var roleStr : userSignupRequest.getRoles())
+        for (var roleStr : userDTO.getRoles())
         {
             ERole enumRole = null;
             try
@@ -156,16 +153,16 @@ public class RegistrationService
             persistedRoles.add(role);
         }
 
-        User user = new User(userSignupRequest.getFirstName(), userSignupRequest.getLastName(),
-                userSignupRequest.getMiddleName(), userSignupRequest.getPhone(), userSignupRequest.getUserName(),
-                userSignupRequest.getEmail(), encoder.encode(userSignupRequest.getPassword()), persistedRoles);
+        User user = new User(userDTO.getFirstName(), userDTO.getLastName(),
+                userDTO.getMiddleName(), userDTO.getPhone(), userDTO.getUserName(),
+                userDTO.getEmail(), encoder.encode(userDTO.getPassword()), persistedRoles);
         userService.saveUser(user);
 
         return user;
     }
 
     @Transactional
-    public Doctor registerDoctor(DoctorSignupRequest doctorSignupRequest, ModelAndView modelAndView) throws DataAccessException, IOException, IncorrectRoleException, IncorrectRoomException
+    public Doctor registerDoctor(DoctorDTO doctorSignupRequest, ModelAndView modelAndView) throws DataAccessException, IOException, IncorrectRoleException, IncorrectRoomException
     {
         Room room = null;
         if (doctorSignupRequest.getRoomNumber() != null)
@@ -192,7 +189,7 @@ public class RegistrationService
             specializationSet.add(specialization);
         }
 
-        var persistedUser = registerUser((UserSignupRequest) doctorSignupRequest);
+        var persistedUser = registerUser((UserDTO) doctorSignupRequest);
         var newDoctor = new Doctor(doctorSignupRequest.getEducation(), room, specializationSet, persistedUser);
         var newSchedule = new DoctorSchedule(newDoctor);
 
@@ -206,9 +203,9 @@ public class RegistrationService
 
 
     @Transactional
-    public Patient registerPatient(PatientSignupRequest patientSignupRequest, ModelAndView modelAndView) throws DataAccessException, IOException, IncorrectRoleException
+    public Patient registerPatient(PatientDTO patientSignupRequest, ModelAndView modelAndView) throws DataAccessException, IOException, IncorrectRoleException
     {
-        var persistedUser = registerUser((UserSignupRequest) patientSignupRequest);
+        var persistedUser = registerUser((UserDTO) patientSignupRequest);
         var newPatient = new Patient(persistedUser, patientSignupRequest.getPassport(), patientSignupRequest.getPolys());
 
         patientService.savePatient(newPatient);

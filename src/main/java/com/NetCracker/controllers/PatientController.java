@@ -8,6 +8,7 @@ import com.NetCracker.entities.patient.Patient;
 import com.NetCracker.entities.user.User;
 import com.NetCracker.exceptions.PatientNotFoundException;
 import com.NetCracker.payload.Request.PatientSignupRequest;
+import com.NetCracker.payload.Request.PatientDTO;
 import com.NetCracker.payload.Response.PatientPersinalAccountDTO;
 import com.NetCracker.repositories.patient.PatientRepository;
 import com.NetCracker.services.PatientService;
@@ -156,8 +157,8 @@ public class PatientController {
 
     @PreAuthorize("hasRole('ROLE_PATIENT')")
     @GetMapping("/{id}")
-    public ResponseEntity<String> getPatientAccountInfoById(@PathVariable Long id, Authentication authentication) {
-
+    public ResponseEntity<String> getPatientAccountInfoById(@PathVariable Long id, Authentication authentication)
+    {
         Patient authenticatedPatient = null;
         try
         {
@@ -192,5 +193,41 @@ public class PatientController {
         }
 
         return ResponseEntity.ok().body(patientPersonalAccountStr);
+    }
+
+    @PutMapping("/update")
+    @PreAuthorize("hasRole('ROLE_PATIENT')")
+    public ResponseEntity<?> updatePatient(@RequestBody PatientDTO patientDTO, Authentication authentication)
+    {
+        Patient authenticatedPatient;
+        try
+        {
+            authenticatedPatient = authenticationService.getAuthenticatedPatient(authentication);
+        }
+        catch (ClassCastException e)
+        {
+            return ResponseEntity.internalServerError().body("Не удалось подтвердить Ваш аккаунт");
+        }
+        catch (DataAccessException e)
+        {
+            return new ResponseEntity<String>("Не удалось связаться с базой данных для подтверждения аккаунта",
+                    HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        if (authenticatedPatient == null)
+        {
+            return ResponseEntity.internalServerError().body("Не удалось подтвердить Ваш аккаунт");
+        }
+
+        Patient patient = patientService.findById(authenticatedPatient.getId());
+
+        patient.getUser().setFirstName(patientDTO.getFirstName());
+        patient.getUser().setLastName(patientDTO.getLastName());
+        patient.getUser().setPatronymic(patientDTO.getMiddleName());
+        patient.getUser().setPhone(patientDTO.getPhone());
+        patient.setPassport(patientDTO.getPassport());
+        patient.setPolys(patientDTO.getPolys());
+        patientService.savePatient(patient);
+
+        return ResponseEntity.ok(null);
     }
 }

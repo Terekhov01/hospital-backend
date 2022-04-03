@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 public class UserPersonalAccountDTO
 {
-    Long userId;
+    Long id;
     String userName;
     String firstName;
     String lastName;
@@ -16,7 +16,7 @@ public class UserPersonalAccountDTO
 
     public UserPersonalAccountDTO(User user)
     {
-        userId = user.getId();
+        id = user.getId();
         userName = user.getUsername();
         firstName = user.getFirstName();
         lastName = user.getLastName();

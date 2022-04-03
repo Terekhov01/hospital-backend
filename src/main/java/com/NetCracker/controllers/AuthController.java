@@ -8,13 +8,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import com.NetCracker.entities.ConfirmationToken;
-import com.NetCracker.payload.Request.DoctorSignupRequest;
-import com.NetCracker.payload.Request.UserSignupRequest;
+import com.NetCracker.payload.Request.DoctorDTO;
+import com.NetCracker.payload.Request.UserDTO;
 import com.NetCracker.repositories.ConfirmationTokenRepository;
 import com.NetCracker.repositories.MedCardRepo;
 import com.NetCracker.repositories.user.UserRepository;
 import com.NetCracker.payload.Response.JwtResponse;
-import com.NetCracker.payload.Response.MessageResponse;
 import com.NetCracker.repositories.patient.PatientRepository;
 import com.NetCracker.security.jwt.JwtUtils;
 import com.NetCracker.services.security.AuthenticationService;
@@ -28,8 +27,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.MailSendException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,7 +39,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.NetCracker.entities.user.User;
 import com.NetCracker.payload.Request.LoginRequest;
-import com.NetCracker.payload.Request.PatientSignupRequest;
+import com.NetCracker.payload.Request.PatientDTO;
 import com.NetCracker.repositories.RoleRepository;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -105,9 +104,9 @@ public class AuthController {
 
 	@PostMapping("/signup/doctor")
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	public ResponseEntity<?> registerDoctor(@Valid @RequestBody DoctorSignupRequest doctorSignupRequest, ModelAndView modelAndView)
+	public ResponseEntity<?> registerDoctor(@Valid @RequestBody DoctorDTO doctorSignupRequest, ModelAndView modelAndView)
 	{
-		var validationResult = registrationService.validateUserRegistrationData((UserSignupRequest) doctorSignupRequest);
+		var validationResult = registrationService.validateUserRegistrationData((UserDTO) doctorSignupRequest);
 		if (validationResult != null)
 		{
 			return validationResult;
@@ -141,9 +140,9 @@ public class AuthController {
 
 	@PostMapping("/signup/patient")
 	@PreAuthorize("permitAll()")
-	public ResponseEntity<?> registerPatient(@Valid @RequestBody PatientSignupRequest patientSignupRequest, ModelAndView modelAndView)
+	public ResponseEntity<?> registerPatient(@Valid @RequestBody PatientDTO patientSignupRequest, ModelAndView modelAndView)
 	{
-		var validationResult = registrationService.validateUserRegistrationData((UserSignupRequest) patientSignupRequest);
+		var validationResult = registrationService.validateUserRegistrationData((UserDTO) patientSignupRequest);
 		if (validationResult != null)
 		{
 			return validationResult;
@@ -162,9 +161,9 @@ public class AuthController {
 		{
 			return new ResponseEntity<>("Получены некорректные данные: роли полозователя указаны неверно", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		catch (MailSendException | IOException e)
+		catch (MailAuthenticationException | MailSendException | IOException e)
 		{
-			return new ResponseEntity<>("Ошибка отправки сообщения на электронную почту. Проверьте корректность" +
+			return new ResponseEntity<>("Ошибка отправки сообщения на электронную почту. Проверьте корректность " +
 					"введенных данных и попробуйте еще раз", HttpStatus.BAD_GATEWAY);
 		}
 		catch (Exception e)
