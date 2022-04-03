@@ -104,7 +104,7 @@ public class UserController {
         user.setPhone(userDTO.getPhone());
         userService.saveUser(user);
 
-        return ResponseEntity.ok("Изменения сохранены");
+        return ResponseEntity.ok("");
     }
 
     // update user rest api
