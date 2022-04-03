@@ -24,7 +24,7 @@ import java.util.*;
 public class Doctor
 {
     @Id
-//    @GeneratedValue(strategy = GenerationType.TABLE)
+    //@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
@@ -86,7 +86,7 @@ public class Doctor
         this.id = id;
     }
 
-    public Doctor(String education, Room room, Set<Specialist> specialist, User user)
+    public Doctor(String education, Room room, Set<Specialist> specialist, User user, Long id)
     {
         this.user = user;
         this.dateOfEmployment = new Date();
@@ -95,6 +95,7 @@ public class Doctor
         this.specialist = specialist;
         this.schedule = null;
         this.ratings = new ArrayList<>();
+        this.id = id;
     }
 
     @Override

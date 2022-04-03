@@ -161,7 +161,7 @@ public class RegistrationService
         return user;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.NESTED)
     public Doctor registerDoctor(DoctorDTO doctorSignupRequest, ModelAndView modelAndView) throws DataAccessException, IOException, IncorrectRoleException, IncorrectRoomException
     {
         Room room = null;
@@ -190,11 +190,12 @@ public class RegistrationService
         }
 
         var persistedUser = registerUser((UserDTO) doctorSignupRequest);
-        var newDoctor = new Doctor(doctorSignupRequest.getEducation(), room, specializationSet, persistedUser);
-        var newSchedule = new DoctorSchedule(newDoctor);
+        var newDoctor = new Doctor(doctorSignupRequest.getEducation(), room, specializationSet, persistedUser, persistedUser.getId());
+        //doctorUserService.save(newDoctor);
 
-        doctorUserService.save(newDoctor);
+        var newSchedule = new DoctorSchedule(newDoctor);
         scheduleService.save(newSchedule);
+
         specializationSet.forEach(specialization -> specialization.getDoctors().add(newDoctor));
 
         sendRegistrationEmail(persistedUser.getEmail(), createToken(persistedUser), modelAndView);

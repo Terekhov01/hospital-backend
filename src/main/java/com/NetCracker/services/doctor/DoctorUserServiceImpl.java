@@ -161,7 +161,7 @@ public class DoctorUserServiceImpl implements DoctorUserService {
     @Override
     //Doctor
     public Doctor findById(Long id) {
-        return doctorRepository.findById(id).get();
+        return doctorRepository.findById(id).orElse(null);
     }
 
     @Override
