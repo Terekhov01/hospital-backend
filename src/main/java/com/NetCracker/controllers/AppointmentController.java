@@ -222,7 +222,7 @@ class AppointmentController {
         {
             requestingDoctor = authenticationService.getAuthenticatedDoctor(authentication);
 
-            if (!requestingDoctor.getUser().getId().equals(appointmentRegistration.getDoctor().getId()))
+            if (!requestingDoctor.getId().equals(appointmentRegistration.getDoctor().getId()))
             {
                 return new ResponseEntity<String>("У Вас нет прав проводить эту встречу", HttpStatus.UNAUTHORIZED);
             }

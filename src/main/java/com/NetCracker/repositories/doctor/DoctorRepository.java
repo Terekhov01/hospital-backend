@@ -31,7 +31,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     List<Doctor> findAll();
 
-    @Query("select a from Doctor a where a.user.id = :id")
+    @Query("select a from Doctor a where a.id = :id")
     Optional<Doctor> findById(@Param("id") Long id);
 
     Optional<Doctor> findByUser_id(Long id);
