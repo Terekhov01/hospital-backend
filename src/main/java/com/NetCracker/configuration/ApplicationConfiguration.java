@@ -6,7 +6,8 @@ import org.springframework.context.annotation.PropertySources;
 
 //This configuration class loads required properties files
 @PropertySources({
-        @PropertySource("classpath:application.properties"),
+        @PropertySource("classpath:application-local.properties"),
+        @PropertySource("classpath:application-prod.properties"),
         @PropertySource("classpath:credentials.properties")
 })
 @Configuration

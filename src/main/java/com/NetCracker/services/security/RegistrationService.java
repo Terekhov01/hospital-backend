@@ -115,7 +115,7 @@ public class RegistrationService
         mailMessage.setSubject("Подтверждение регистрации!");
         mailMessage.setFrom("netclinictech@mail.ru");
         mailMessage.setText("Чтобы подтвердить аккаунт перейдите по ссылке "
-                + "http://localhost:8080/api/auth/confirm-account?token="
+                + "https://hospital.cfapps.io/api/auth/confirm-account?token="
                 + token.getConfirmationToken());
 
         emailSenderService.sendEmail(mailMessage);

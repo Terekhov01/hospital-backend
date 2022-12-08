@@ -40,7 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 import static java.util.stream.Collectors.toList;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RequestMapping("/api")
 class AppointmentController {
 

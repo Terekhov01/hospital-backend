@@ -1,0 +1,28 @@
+version: '2'
+
+services:
+  app:
+    image: 'docker-spring-boot-postgres:latest'
+    ports:
+      - "8080:8080"
+    build:
+      context: .
+    container_name: app
+    network_mode: host
+    depends_on:
+      - db
+    environment:
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://127.0.0.1:5432/medcard
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ec2-52-31-219-113.eu-west-1.compute.amazonaws.com:5432/df1mau7rgkhajp?useUnicode=yes&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_USERNAME=tqwqfqagvvzhul
+      - SPRING_DATASOURCE_PASSWORD=299149b10dd7e36b8ed9ff63069341680073952fcf2e5527169bb688ddec56b9
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+  db:
+    image: 'postgres:13.1-alpine'
+#    ports:
+#      - "5432:5432"
+    container_name: db
+    environment:
+      - POSTGRES_USER=tqwqfqagvvzhul
+      - POSTGRES_PASSWORD=299149b10dd7e36b8ed9ff63069341680073952fcf2e5527169bb688ddec56b9

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 //All controllers can be optimized. The easiest way is to reduce throw/catch sections amount
-@CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RequestMapping("schedule-pattern")
 @RestController
 public class SchedulePatternController

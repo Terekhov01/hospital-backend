@@ -39,6 +39,6 @@ public class PropertiesUtils
     }
 
     // It's convenient to have intellij idea to pop up hints about these files
-    public static final String applicationProperties = "src/main/resources/application.properties";
+    public static final String applicationProperties = "src/main/resources/application-local.properties";
     public static final String credentialProperties = "src/main/resources/credentials.properties";
 }

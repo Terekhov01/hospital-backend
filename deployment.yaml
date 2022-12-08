@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hospital-api
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      api: web
+  template:
+    metadata:
+      labels:
+        api: web
+    spec:
+      containers:
+        - name: hospital-api
+          image: back
+          imagePullPolicy: Never
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hospital-entrypoint
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+    api: web
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30001

@@ -31,7 +31,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping({"api/medCard"})
 @CrossOrigin(
-        origins = {"http://localhost:4200"}
+        origins = {"http://localhost:4200", "*"}
 )
 public class MedCardController {
     @Autowired

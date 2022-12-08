@@ -26,7 +26,7 @@ import java.time.*;
  * That means that functions below WILL CHANGE your DATABASE state!
  * Use them wisely.
  * Best way to test your application if database already has important information is to create a new one and change
- * file application.properties to point at a new test database
+ * file application-local.properties to point at a new test database
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {Main.class})

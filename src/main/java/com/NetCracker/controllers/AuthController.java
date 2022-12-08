@@ -43,7 +43,7 @@ import com.NetCracker.payload.Request.PatientDTO;
 import com.NetCracker.repositories.RoleRepository;
 import org.springframework.web.servlet.ModelAndView;
 
-@CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RequestMapping("/api/auth")
 @RestController
 @ComponentScan("com.NetCracker.Security")
@@ -179,7 +179,7 @@ public class AuthController {
 		ConfirmationToken token = confirmationTokenRepository.findByConfirmationToken(confirmationToken);
 
 		if(token != null)
-		{	response.sendRedirect("http://localhost:4200/");
+		{	response.sendRedirect("hospital.up.railway.app");
 			User user = userRepository.findByEmailIgnoreCase(token.getUser().getEmail());
 			user.setEnabled(true);
 			userRepository.save(user);
