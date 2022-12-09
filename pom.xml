@@ -14,7 +14,6 @@
     <groupId>org.example</groupId>
     <artifactId>hospitalapplication</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>war</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
