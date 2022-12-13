@@ -179,7 +179,7 @@ public class AuthController {
 		ConfirmationToken token = confirmationTokenRepository.findByConfirmationToken(confirmationToken);
 
 		if(token != null)
-		{	response.sendRedirect("hospital.up.railway.app");
+		{	response.sendRedirect("https://terekhov01.github.io/hospital-ui/ru");
 			User user = userRepository.findByEmailIgnoreCase(token.getUser().getEmail());
 			user.setEnabled(true);
 			userRepository.save(user);
